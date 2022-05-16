@@ -39,9 +39,9 @@ spring:
       on-profile: local
   data:
     mongodb:
-      host: ${auth.mongo.host:localhost}
-      port: ${auth.mongo.port:27017}
-      database: ${auth.mongo.database:test}
+      host: localhost
+      port: 27017
+      database: test
 
 ---
 spring:
@@ -51,9 +51,9 @@ spring:
       on-profile: default
   data:
     mongodb:
-      host: ${auth.mongo.host:localhost}
-      port: ${auth.mongo.port:27017}
-      database: ${auth.mongo.database:test}
+      host: localhost
+      port: 27017
+      database: test
 
 ---
 spring:

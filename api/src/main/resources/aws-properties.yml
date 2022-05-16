@@ -3,12 +3,12 @@ cloud:
     credentials:
       profile-name: ${aws.default.profile:dev}
     stack:
-      auto: ${management.aws.stack.auto:false}
+      auto: ${aws.stack.auto:false}
     s3:
-      bucket: ${management.aws.s3.bucket:lrc-dev-bucket}
+      bucket: ${aws.s3.bucket:lrc-dev-bucket}
     region:
-      static: ${management.aws.region:ap-northeast-2}
-      auto: ${management.aws.region.auto:false}
+      static: ${aws.region:ap-northeast-2}
+      auto: ${aws.region.auto:false}
     param-store:
       enabled: true
       fail-fast: true
