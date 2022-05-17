@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Getter
-public class AwsProperty {
+public class AwsProperties {
 
   @Value("${cloud.aws.credentials.profile-name}")
   private String profileName;

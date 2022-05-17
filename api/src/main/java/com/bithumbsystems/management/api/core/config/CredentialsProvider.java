@@ -1,7 +1,7 @@
 package com.bithumbsystems.management.api.core.config;
 
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperty;
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,13 +13,13 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 @RequiredArgsConstructor
 public class CredentialsProvider {
 
-    private final AwsProperty awsProperty;
+    private final AwsProperties awsProperties;
 
     @Bean
     public ProfileCredentialsProvider getProvider() {
-        log.debug("CredentialsProvider profile name => {}", awsProperty.getProfileName());
+        log.debug("CredentialsProvider profile name => {}", awsProperties.getProfileName());
         ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.builder()
-                .profileName(awsProperty.getProfileName()).build();
+                .profileName(awsProperties.getProfileName()).build();
 
         log.debug("key id => {}", credentialsProvider.resolveCredentials().accessKeyId());
         return credentialsProvider;

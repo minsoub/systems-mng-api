@@ -7,8 +7,8 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
 import com.amazonaws.services.simplesystemsmanagement.model.GetParameterRequest;
-import com.bithumbsystems.management.api.core.config.property.AwsProperty;
-import com.bithumbsystems.management.api.core.config.property.MongoProperty;
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.config.property.MongoProperties;
 import javax.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
@@ -23,18 +23,18 @@ public class ParameterStoreConfig {
 
     private AWSSimpleSystemsManagement awsSimpleSystemsManagement;
 
-    private MongoProperty mongoProperty;
+    private MongoProperties mongoProperties;
 
-    private final AwsProperty awsProperty;
+    private final AwsProperties awsProperties;
 
     private final CredentialsProvider credentialsProvider;
 
     @PostConstruct
     public void init() {
 
-        log.debug("config store [prefix] => {}", awsProperty.getPrefix());
-        log.debug("config store [name] => {}", awsProperty.getParamStoreName());
-        log.debug("config store [profile] => {}", awsProperty.getProfileName());
+        log.debug("config store [prefix] => {}", awsProperties.getPrefix());
+        log.debug("config store [name] => {}", awsProperties.getParamStoreName());
+        log.debug("config store [profile] => {}", awsProperties.getProfileName());
 
         log.debug("keyId => {}", credentialsProvider.getProvider().resolveCredentials().accessKeyId());
 
@@ -46,9 +46,9 @@ public class ParameterStoreConfig {
         this.awsSimpleSystemsManagement = AWSSimpleSystemsManagementClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
-                .withRegion(awsProperty.getRegion()).build();
+                .withRegion(awsProperties.getRegion()).build();
 
-        this.mongoProperty = new MongoProperty(
+        this.mongoProperties = new MongoProperties(
             getParameterValue(DB_URL),
             getParameterValue(USER),
             getParameterValue(PASSWORD),
@@ -58,7 +58,7 @@ public class ParameterStoreConfig {
     }
 
     protected String getParameterValue(String type) {
-        String parameterName = String.format("%s/%s_%s/%s", awsProperty.getPrefix(), awsProperty.getParamStoreName(), awsProperty.getProfileName(), type);
+        String parameterName = String.format("%s/%s_%s/%s", awsProperties.getPrefix(), awsProperties.getParamStoreName(), awsProperties.getProfileName(), type);
         GetParameterRequest request = new GetParameterRequest();
         request.setName(parameterName);
         request.setWithDecryption(true);

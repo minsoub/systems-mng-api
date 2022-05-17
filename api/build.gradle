@@ -15,7 +15,7 @@ dependencies {
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-messaging:2.4.1'
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-parameter-store-config:2.4.1'
 
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.8.5'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
 
     implementation 'commons-io:commons-io:2.11.0'
     implementation('org.mapstruct:mapstruct:1.4.2.Final')

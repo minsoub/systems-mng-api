@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.foundation.controller;
+package com.bithumbsystems.management.api.v1.foundation.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
