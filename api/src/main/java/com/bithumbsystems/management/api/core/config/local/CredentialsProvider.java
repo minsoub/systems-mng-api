@@ -1,8 +1,7 @@
-package com.bithumbsystems.management.api.core.config;
+package com.bithumbsystems.management.api.core.config.local;
 
 
 import lombok.Getter;
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,19 +14,17 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 @Getter
 @Configuration
 @RequiredArgsConstructor
+@Profile("local")
 public class CredentialsProvider {
 
-    @Value("${spring.profiles.active:local}")
-    private String activeProfiles;
+    @Value("${cloud.aws.credentials.profile-name}")
+    private String profileName;
 
-    private final AwsProperties awsProperties;
-
-    @Profile("local")
     @Bean
     public ProfileCredentialsProvider getProvider() {
-        log.debug("CredentialsProvider profile name => {}", awsProperties.getProfileName());
+        log.debug("CredentialsProvider profile name => {}", profileName);
         ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.builder()
-            .profileName(awsProperties.getProfileName()).build();
+            .profileName(profileName).build();
 
         log.debug("key id => {}", credentialsProvider.resolveCredentials().accessKeyId());
         return credentialsProvider;

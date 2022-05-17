@@ -19,7 +19,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
   @Override
   public void configurePathMatching(PathMatchConfigurer configurer) {
-    configurer.addPathPrefix(applicationProperties.getVersion() + applicationProperties.getPrefix()
+    configurer.addPathPrefix( applicationProperties.getPrefix() + applicationProperties.getVersion()
         , (path) -> Arrays
             .stream(applicationProperties.getExcludePrefixPath())
             .anyMatch(p -> !(path.getName().indexOf(p) > 0))

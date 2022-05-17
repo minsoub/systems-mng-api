@@ -8,9 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 public class AwsProperties {
 
-  @Value("${cloud.aws.credentials.profile-name}")
-  private String profileName;
-
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
 

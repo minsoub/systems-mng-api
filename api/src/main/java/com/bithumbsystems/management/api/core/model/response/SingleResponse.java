@@ -4,12 +4,12 @@ import com.bithumbsystems.management.api.core.model.enums.ReturnCode;
 import lombok.Getter;
 
 @Getter
-public class SingleResponse<T> extends Response {
-    private final ReturnCode status;
+public class SingleResponse<T> {
+    private final ReturnCode result;
     private final T data;
 
     public SingleResponse(T data) {
-        this.status = ReturnCode.SUCCESS;
+        this.result = ReturnCode.SUCCESS;
         this.data = data;
     }
 }
