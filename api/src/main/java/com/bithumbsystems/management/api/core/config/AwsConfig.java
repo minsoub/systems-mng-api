@@ -1,7 +1,8 @@
 package com.bithumbsystems.management.api.core.config;
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperty;
+
 import lombok.Getter;
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 @RequiredArgsConstructor
 public class AwsConfig {
 
-    private final AwsProperty awsProperty;
+    private final AwsProperties awsProperties;
 
     private final CredentialsProvider credentialsProvider;
 
@@ -43,5 +44,4 @@ public class AwsConfig {
             throw new Exception("Not profile aws credentails...");
         }
     }
-
 }

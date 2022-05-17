@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.foundation.service;
+package com.bithumbsystems.management.api.v1.foundation.service;
 
 import org.springframework.stereotype.Service;
 

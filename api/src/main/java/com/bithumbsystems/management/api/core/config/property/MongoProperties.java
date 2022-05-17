@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MongoProperty {
+public class MongoProperties {
 
   String mongodbUrl;
   String mongodbUser;

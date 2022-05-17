@@ -33,7 +33,7 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return config.getMongoProperty().getMongodbName();
+        return config.getMongoProperties().getMongodbName();
     }
 
 
@@ -93,11 +93,11 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
 
     private ConnectionString getConnectionString() {
         String str = String.format("mongodb://%s:%s@%s:%s/%s?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false",
-                config.getMongoProperty().getMongodbUser(),
-                config.getMongoProperty().getMongodbPassword(),
-                config.getMongoProperty().getMongodbUrl(),
-                config.getMongoProperty().getMongodbPort(),
-                config.getMongoProperty().getMongodbName()
+                config.getMongoProperties().getMongodbUser(),
+                config.getMongoProperties().getMongodbPassword(),
+                config.getMongoProperties().getMongodbUrl(),
+                config.getMongoProperties().getMongodbPort(),
+                config.getMongoProperties().getMongodbName()
         );
 
         return new ConnectionString(str);

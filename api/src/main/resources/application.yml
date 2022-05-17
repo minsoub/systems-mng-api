@@ -7,6 +7,12 @@ spring:
   devtools:
     restart:
       enabled: false
+
+application:
+  version: /v1
+  prefix: /api
+  exclude-prefix-path: springdoc
+
 management:
   endpoints:
     web:

@@ -7,6 +7,7 @@
 - Spring Boot : 2.6.7
 - Build : Gradle 7.4.1
 - Spring Data MongoDB Reactive
+- Spring Boot Webflux
 - Spring Boot Actuator
 - Spring Boot Security
 - Spring Docs Openapi

@@ -1,11 +1,11 @@
-package com.bithumbsystems.management.api.file.controller;
+package com.bithumbsystems.management.api.v1.file.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperty;
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
-import com.bithumbsystems.management.api.file.service.FileService;
+import com.bithumbsystems.management.api.v1.file.service.FileService;
 import com.bithumbsystems.persistence.mongodb.file.model.entity.File;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.nio.ByteBuffer;
@@ -42,7 +42,7 @@ import reactor.core.publisher.Mono;
 public class FileController {
 
     private final FileService fileService;
-    private final AwsProperty awsProperty;
+    private final AwsProperties awsProperties;
 
     @PostMapping(value = "/upload/s3", consumes = MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<?>> s3upload(@RequestHeader HttpHeaders headers,  @RequestPart("files") Mono<FilePart> filePart) {
@@ -75,7 +75,7 @@ public class FileController {
 
                                         fileSize.set((long) buf.array().length); // dataBuffer.readableByteCount());
 
-                                        return fileService.upload(fileKey, fileName.toString(), fileSize.get(), awsProperty.getBucket(), buf)
+                                        return fileService.upload(fileKey, fileName.toString(), fileSize.get(), awsProperties.getBucket(), buf)
                                                 .flatMap(res -> {
                                                     log.debug("service upload res => {}", res);
                                                     File info = File.builder()
@@ -106,7 +106,7 @@ public class FileController {
                                 log.debug("find file => {}", res);
                                 fileName.set(res.getFileName());
                                 // s3에서 파일을 다운로드 받는다.
-                                return fileService.download(fileKey, awsProperty.getBucket());
+                                return fileService.download(fileKey, awsProperties.getBucket());
                  })
                 .log()
                 .map(inputStream -> {
@@ -125,7 +125,7 @@ public class FileController {
         return fileService.findById(fileKey)
                 .flatMap(res -> {
                     log.debug("find file => {}", res);
-                    return fileService.s3delete(fileKey, awsProperty.getBucket())
+                    return fileService.s3delete(fileKey, awsProperties.getBucket())
                             .flatMap(deleteObjectResponse -> {
                                 log.debug("service delete called..");
                                 return fileService.delete(fileKey);

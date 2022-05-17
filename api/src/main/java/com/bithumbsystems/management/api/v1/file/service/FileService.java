@@ -1,7 +1,7 @@
-package com.bithumbsystems.management.api.file.service;
+package com.bithumbsystems.management.api.v1.file.service;
 
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
-import com.bithumbsystems.management.api.file.exception.FileException;
+import com.bithumbsystems.management.api.v1.file.exception.FileException;
 import com.bithumbsystems.persistence.mongodb.file.model.entity.File;
 import com.bithumbsystems.persistence.mongodb.file.service.FileDomainService;
 import java.io.InputStream;
