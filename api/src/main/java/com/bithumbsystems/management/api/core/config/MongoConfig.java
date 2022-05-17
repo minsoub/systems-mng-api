@@ -64,10 +64,10 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
 
         String pemContents = new String(Files.readAllBytes(resource.toPath()));
         var allCertificates = Arrays.stream(pemContents
-                        .split(endOfCertificateDelimiter))
-                .filter(line -> !line.isBlank())
-                .map(line -> line + endOfCertificateDelimiter)
-                .collect(Collectors.toUnmodifiableList());
+                .split(endOfCertificateDelimiter))
+            .filter(line -> !line.isBlank())
+            .map(line -> line + endOfCertificateDelimiter)
+            .collect(Collectors.toUnmodifiableList());
 
         var certificateFactory = CertificateFactory.getInstance("X.509");
         var keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -93,11 +93,11 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
 
     private ConnectionString getConnectionString() {
         String str = String.format("mongodb://%s:%s@%s:%s/%s?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false",
-                config.getMongoProperties().getMongodbUser(),
-                config.getMongoProperties().getMongodbPassword(),
-                config.getMongoProperties().getMongodbUrl(),
-                config.getMongoProperties().getMongodbPort(),
-                config.getMongoProperties().getMongodbName()
+            config.getMongoProperties().getMongodbUser(),
+            config.getMongoProperties().getMongodbPassword(),
+            config.getMongoProperties().getMongodbUrl(),
+            config.getMongoProperties().getMongodbPort(),
+            config.getMongoProperties().getMongodbName()
         );
 
         return new ConnectionString(str);
