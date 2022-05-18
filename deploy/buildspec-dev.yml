@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     SPRING_PROFILE: "dev"
-    REPO_URI: "807380035085.dkr.ecr.ap-northeast-2.amazonaws.com/systems-mng-api-dev-rep"
+    REPO_URI: "807380035085.dkr.ecr.ap-northeast-2.amazonaws.com/systems-mng-api-dev-repo"
 phases:
   install:
     runtime-versions:
