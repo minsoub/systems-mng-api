@@ -32,7 +32,7 @@ phases:
       - ./gradlew assemble
       - echo Build started on `date`
       - echo Building the Docker image ...
-      - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest --build-arg JAR_FILE=./management/build/libs/management-0.0.1-SNAPSHOT.jar --build-arg PROFILES=${SPRING_PROFILE} --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN .
+      - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest --build-arg JAR_FILE=./api/build/libs/api-0.0.1-SNAPSHOT.jar --build-arg PROFILES=${SPRING_PROFILE} --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN .
       - echo Build completed on `date`
   post_build:
     commands:
@@ -44,7 +44,7 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - printf '[{"name":"systems-mng-app-dev-container", "imageUri":"%s"}]' $REPOSITORY_URI:latest > imageDefinitions.json
+      - printf '[{"name":"systems-mng-api-dev-container", "imageUri":"%s"}]' $REPOSITORY_URI:latest > imageDefinitions.json
       - ls -al
 cache:
   paths:
