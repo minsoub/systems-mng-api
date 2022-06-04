@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: systems-mng-api
+  namespace: NAMESPACE
+  labels:
+    app: systems-mng-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: systems-mng-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: systems-mng-api
+    spec:
+      containers:
+        - name: systems-mng-api
+          image: AWS_ECR_URI
+          ports:
+            - containerPort: 8080
+          resources: {}
