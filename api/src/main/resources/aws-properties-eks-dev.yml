@@ -4,17 +4,17 @@ cloud:
       profile-name: ${aws.default.profile:eks-dev}
       instanceProfile: true
     stack:
-      auto: ${auth.aws.stack.auto:false}
+      auto: ${management.aws.stack.auto:false}
+    s3:
+      bucket: ${management.aws.s3.bucket:lrc-dev-bucket}
     region:
-      static: ${auth.aws.region:ap-northeast-2}
-      auto: ${auth.aws.region.auto:false}
+      static: ${management.aws.region:ap-northeast-2}
+      auto: ${management.aws.region.auto:false}
     param-store:
       enabled: true
       fail-fast: true
       prefix: /smartadmin
-      doc-name: docdb
-      redis-name: redis
-      kms-name: kms
+      name: docdb
 
 logging:
   level:
