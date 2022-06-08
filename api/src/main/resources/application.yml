@@ -7,17 +7,40 @@ spring:
   devtools:
     restart:
       enabled: false
+  data:
+    mongodb:
+      auto-index-creation: true
+      uuid-representation: standard
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
 
 application:
   version: /v1
   prefix: /api
   exclude-prefix-path: springdoc
 
+jwt:
+  secret: ${management.api.jwt.secret:eyJzdWIiOiJtaW5zb3ViQGJpdGh1bWJzeXN0ZW1zLmNvbSIsIm5hbWUiOiJCaXRodW1iU3lzdGVtcyIsImlhdCI6MjA5OTEyMzExMjF9.Lpo86rOQtvBRfVKDGhICUWuZ92rgBIVPM9PVAUiRhAM}
+
 management:
   endpoints:
     web:
       exposure:
         include: metrics, prometheus, health
+
+logging:
+  level:
+    root: ${management.api.logging.level.root:DEBUG}
+    org.springframework.data.convert.CustomConversions: ERROR
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: ${management.api.logging.level.mongo:DEBUG}
+    io:
+      spring:
+        cloud: INFO
+  config: classpath:logback-spring-${spring.profiles.active}.xml
 
 ---
 spring:

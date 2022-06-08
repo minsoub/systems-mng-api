@@ -15,16 +15,23 @@ import reactor.core.publisher.Mono;
 public class ExceptionHandlers {
 
   @ExceptionHandler(Exception.class)
-  public Mono<ResponseEntity<?>> serverExceptionHandler(Exception ex) {
+  public ResponseEntity<Mono<?>> serverExceptionHandler(Exception ex) {
     log.error(ex.getMessage(), ex);
     ErrorData errorData = new ErrorData(ErrorCode.UNKNOWN_ERROR);
-    return Mono.just(ResponseEntity.internalServerError().body(new ErrorResponse(errorData)));
+    return ResponseEntity.internalServerError().body(Mono.just(new ErrorResponse(errorData)));
   }
 
   @ExceptionHandler(FileException.class)
-  public Mono<ResponseEntity<?>> fileExceptionHandler(FileException ex) {
+  public ResponseEntity<Mono<?>> fileExceptionHandler(FileException ex) {
     log.error(ex.getMessage(), ex);
     ErrorResponse errorResponse = new ErrorResponse(new ErrorData(ex.getErrorCode()));
-    return Mono.just(ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(errorResponse));
+    return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(Mono.just(errorResponse));
+  }
+
+  @ExceptionHandler(InvalidTokenException.class)
+  public ResponseEntity<Mono<?>> invalidTokenExceptionHandler(InvalidTokenException ex) {
+    log.error(ex.getMessage(), ex);
+    ErrorResponse errorResponse = new ErrorResponse(new ErrorData(ex.getErrorCode()));
+    return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(Mono.just(errorResponse));
   }
 }

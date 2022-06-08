@@ -6,10 +6,15 @@ import lombok.Getter;
 @Getter
 public class SingleResponse<T> {
     private final ReturnCode result;
-    private final T data;
+    private T data = null;
 
     public SingleResponse(T data) {
         this.result = ReturnCode.SUCCESS;
         this.data = data;
     }
+
+    public SingleResponse() {
+        this.result = ReturnCode.SUCCESS;
+    }
+
 }

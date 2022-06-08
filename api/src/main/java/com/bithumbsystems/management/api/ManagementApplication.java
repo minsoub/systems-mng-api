@@ -11,15 +11,15 @@ import org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfigurati
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.config.EnableReactiveMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 import org.springframework.web.reactive.config.EnableWebFlux;
-
-
 
 @SpringBootApplication(scanBasePackages = "com.bithumbsystems")
 @EnableWebFlux
 @ConfigurationPropertiesScan("com.bithumbsystems.management.api.core.config")
 @EnableReactiveMongoRepositories("com.bithumbsystems.persistence.mongodb")
+@EnableReactiveMongoAuditing
 @OpenAPIDefinition(info = @Info(title = "System Management API", version = "1.0", description = "System Management APIs v1.0"))
 public class ManagementApplication {
 
