@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.6.7'
+    id 'org.springframework.boot' version '2.7.0'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
 }
@@ -7,13 +7,13 @@ plugins {
 bootJar {
     enabled = true
     bootJarMainClassName {
-        mainClass = 'com.bithumbsystems.lrc.api.LrcAppApiApplication'
+        mainClass = 'com.bithumbsystems.management.api.ManagementApplication'
     }
 }
 
 bootRun {
     bootRunMainClassName {
-        mainClass = 'com.bithumbsystems.lrc.api.LrcAppApiApplication'
+        mainClass = 'com.bithumbsystems.management.api.ManagementApplication'
     }
 }
 
@@ -45,6 +45,7 @@ allprojects {
 
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+        implementation 'net.logstash.logback:logstash-logback-encoder:7.1.1'
 
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

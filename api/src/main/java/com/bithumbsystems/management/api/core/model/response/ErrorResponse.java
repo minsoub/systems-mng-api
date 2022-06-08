@@ -13,7 +13,7 @@ public class ErrorResponse {
   private final ErrorData data;
 
   public ErrorResponse(ErrorData data) {
-    this.result = ReturnCode.ERROR;
+    this.result = ReturnCode.FAIL;
     this.data = data;
   }
 }

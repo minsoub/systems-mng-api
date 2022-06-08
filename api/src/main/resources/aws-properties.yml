@@ -14,22 +14,3 @@ cloud:
       fail-fast: true
       prefix: /smartadmin
       name: docdb
-
-
-logging:
-  level:
-    root: ${management.api.logging.level.root:DEBUG}
-    org.springframework.data.convert.CustomConversions: ERROR
-    org:
-      springframework:
-        data:
-          mongodb:
-            core:
-              MongoTemplate: ${management.api.logging.level.mongo:INFO}
-    com:
-      amazonaws:
-        util:
-          EC2MetadataUtils: error
-    io:
-      spring:
-        cloud: INFO

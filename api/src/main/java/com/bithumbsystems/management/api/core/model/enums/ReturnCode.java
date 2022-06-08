@@ -8,5 +8,5 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @ToString
 public enum ReturnCode {
-    SUCCESS, ERROR
+    SUCCESS, FAIL
 }
