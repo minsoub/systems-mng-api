@@ -6,6 +6,7 @@ import com.bithumbsystems.management.api.v1.site.model.request.SiteRegisterReque
 import com.bithumbsystems.management.api.v1.site.model.response.SiteResponse;
 import com.bithumbsystems.persistence.mongodb.site.model.entity.Site;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,12 +31,20 @@ public class SiteService {
    * @return the mono
    */
   public Mono<Page<SiteResponse>> findBySearchText(String searchText, PageRequest pageRequest) {
-    return siteDomainService.findBySearchText(searchText, pageRequest)
+    return siteDomainService.findPageBySearchText(searchText, pageRequest)
         .map(SiteMapper.INSTANCE::siteToSiteResponse)
-        .log()
         .collectList()
         .zipWith(siteDomainService.countBySearchText(searchText).map(c -> c))
         .map(t -> new PageImpl<>(t.getT1(), pageRequest, t.getT2()));
+  }
+
+  public Mono<List<SiteResponse>> findBySearchText(String searchText) {
+    return siteDomainService.findBySearchText(searchText).flatMap(
+        site -> {
+          SiteResponse SiteResponse = SiteMapper.INSTANCE.siteToSiteResponse(site);
+          return Mono.just(SiteResponse);
+        }
+    ).collectList();
   }
 
   /**

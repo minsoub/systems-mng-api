@@ -2,12 +2,13 @@ package com.bithumbsystems.management.api.v1.site.controller;
 
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
+import com.bithumbsystems.management.api.core.model.response.MultiResponse;
+import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.site.model.request.SiteRegisterRequest;
 import com.bithumbsystems.management.api.v1.site.service.SiteService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,38 +33,55 @@ public class SiteController {
    * List response entity.
    *
    * @param searchText the search text
-   * @param page       the page
-   * @param size       the size
    * @return the response entity
    */
   @GetMapping("/sites")
-  public ResponseEntity<Mono<?>> list(@RequestParam(required = false, defaultValue = "") String searchText,
-      @RequestParam(required = false, defaultValue = "0") int page,
-      @RequestParam(required = false, defaultValue = "10") int size) {
-    return ResponseEntity.ok(siteService.findBySearchText(searchText, PageRequest.of(page,size)));
+  public ResponseEntity<Mono<?>> list(@RequestParam(required = false, defaultValue = "") String searchText) {
+    return ResponseEntity.ok().body(
+        siteService.findBySearchText(searchText).map(siteResponses -> new MultiResponse(siteResponses))
+    );
   }
 
   /**
    * Create response entity.
    *
    * @param siteRegisterRequest the site register request
+   * @param account             the account
    * @return the response entity
    */
   @PostMapping("/site")
   public ResponseEntity<Mono<?>> create(@RequestBody SiteRegisterRequest siteRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
-    return ResponseEntity.ok(siteService.create(siteRegisterRequest, account));
+    return ResponseEntity.ok().body(siteService.create(siteRegisterRequest, account)
+        .map(siteResponse -> new SingleResponse(siteResponse)));
   }
 
+  /**
+   * Gets one.
+   *
+   * @param siteId the site id
+   * @return the one
+   */
   @GetMapping("/site/{siteId}")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId) {
-    return ResponseEntity.ok(siteService.getOne(siteId));
+    return ResponseEntity.ok().body(siteService.getOne(siteId)
+        .map(siteResponse -> new SingleResponse(siteResponse)));
   }
 
+  /**
+   * Update response entity.
+   *
+   * @param siteId              the site id
+   * @param siteRegisterRequest the site register request
+   * @param account             the account
+   * @return the response entity
+   */
   @PutMapping("/site/{siteId}")
   public ResponseEntity<Mono<?>> update(@PathVariable String siteId,
       @RequestBody SiteRegisterRequest siteRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
-    return ResponseEntity.ok(siteService.update(siteId, siteRegisterRequest, account));
+    return ResponseEntity.ok().body(
+        siteService.update(siteId, siteRegisterRequest, account)
+            .map(siteResponse -> new SingleResponse(siteResponse)));
   }
 }

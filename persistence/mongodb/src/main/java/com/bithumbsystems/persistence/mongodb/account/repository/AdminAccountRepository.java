@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface AdminAccountRepository extends ReactiveMongoRepository<AdminAccount, String> {
+public interface AdminAccountRepository extends ReactiveMongoRepository<AdminAccount, String>, AdminAccountCustomRepository {
     Mono<AdminAccount> findByEmail(String email);
 
     Mono<AdminAccount> findById(String adminAccountId);

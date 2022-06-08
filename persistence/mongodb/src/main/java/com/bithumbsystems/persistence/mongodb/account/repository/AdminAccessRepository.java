@@ -7,9 +7,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAccess, String> {
+public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAccess, String>, AdminAccessCustomRepository {
 
     Flux<AdminAccess> findBySiteId(String siteId);
 
     Mono<AdminAccess> findByAdminAccountId(String adminAccountId);
+
+    Mono<Void> deleteByAdminAccountId(String adminAccountId);
 }

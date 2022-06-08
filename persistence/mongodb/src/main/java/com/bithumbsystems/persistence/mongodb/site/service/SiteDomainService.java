@@ -15,12 +15,16 @@ public class SiteDomainService {
 
   private final SiteRepository siteRepository;
 
-  public Flux<Site> findBySearchText(String searchText, Pageable pageable) {
-    return siteRepository.findBySearchText(searchText, pageable);
+  public Flux<Site> findPageBySearchText(String searchText, Pageable pageable) {
+    return siteRepository.findPageBySearchText(searchText, pageable);
+  }
+
+  public Flux<Site> findBySearchText(String searchText) {
+    return siteRepository.findBySearchText(searchText);
   }
 
   public Mono<Long> countBySearchText(String searchText) {
-    return siteRepository.countBySearchText(searchText).log();
+    return siteRepository.countBySearchText(searchText);
   }
 
   public Mono<Site> save(Site site) {

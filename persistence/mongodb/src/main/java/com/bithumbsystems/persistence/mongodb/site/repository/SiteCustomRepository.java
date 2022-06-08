@@ -9,7 +9,9 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface SiteCustomRepository {
 
-  Flux<Site> findBySearchText(String searchText, Pageable page);
+  Flux<Site> findPageBySearchText(String searchText, Pageable page);
+
+  Flux<Site> findBySearchText(String searchText);
 
   Mono<Long> countBySearchText(String searchText);
 }

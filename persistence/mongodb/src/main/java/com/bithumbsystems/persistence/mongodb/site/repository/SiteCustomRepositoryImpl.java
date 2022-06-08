@@ -18,15 +18,27 @@ public class SiteCustomRepositoryImpl implements SiteCustomRepository {
 
   private final ReactiveMongoTemplate reactiveMongoTemplate;
 
-  public Flux<Site> findBySearchText(String searchText, Pageable page) {
+  @Override
+  public Flux<Site> findPageBySearchText(String searchText, Pageable page) {
     var reg = ".*" + searchText + ".*";
     return reactiveMongoTemplate
         .find(query(new Criteria()
                 .orOperator(
                     where("name").regex(reg),
-                    where("id").regex(reg))), Site.class);
+                    where("id").regex(reg))).with(page), Site.class);
   }
 
+  @Override
+  public Flux<Site> findBySearchText(String searchText) {
+    var reg = ".*" + searchText + ".*";
+    return reactiveMongoTemplate
+        .find(query(new Criteria()
+            .orOperator(
+                where("name").regex(reg),
+                where("id").regex(reg))), Site.class);
+  }
+
+  @Override
   public Mono<Long> countBySearchText(String searchText) {
     var reg = ".*" + searchText + ".*";
     return reactiveMongoTemplate
