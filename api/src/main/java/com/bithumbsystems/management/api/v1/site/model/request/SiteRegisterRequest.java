@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class SiteRegisterRequest {
-  private String siteName;
+  private String name;
   private Boolean isUse;
   private String description;
   private LocalDateTime validStartDate;

@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class SiteResponse {
-  private String siteId;
-  private String siteName;
+  private String id;
+  private String name;
   private Boolean isUse;
   private String description;
   private LocalDateTime validStartDate;

@@ -29,7 +29,7 @@ public class SiteDomainService {
 
   public Mono<Site> save(Site site) {
     site.setCreateDate(LocalDateTime.now());
-    return siteRepository.save(site);
+    return siteRepository.insert(site);
   }
 
   public Mono<Site> update(Site site) {

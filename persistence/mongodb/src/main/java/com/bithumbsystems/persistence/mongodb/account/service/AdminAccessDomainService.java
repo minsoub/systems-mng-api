@@ -33,7 +33,7 @@ public class AdminAccessDomainService {
     public Mono<AdminAccess> save(AdminAccess adminAccess, String adminAccountId) {
         adminAccess.setCreateAdminAccountId(adminAccountId);
         adminAccess.setCreateDate(LocalDateTime.now());
-        return adminAccessRepository.save(adminAccess);
+        return adminAccessRepository.insert(adminAccess);
     }
 
     public Mono<Void> delete(String adminAccountId) {
