@@ -20,11 +20,26 @@ public class RoleManagementDomainService {
     return roleManagementRepository.insert(roleManagement);
   }
 
+  public Mono<RoleManagement> update(RoleManagement roleManagement, String accountId, String roleManagementId) {
+    roleManagement.setId(roleManagementId);
+    roleManagement.setUpdateAdminAccountId(accountId);
+    roleManagement.setUpdateDate(LocalDateTime.now());
+    return roleManagementRepository.save(roleManagement);
+  }
+
   public Mono<Boolean> isExist(String id) {
     return roleManagementRepository.existsById(id);
   }
 
   public Flux<RoleManagement> findBySiteIdAndIsUse(String siteId, Boolean isUse) {
     return roleManagementRepository.findBySiteIdAndIsUse(siteId, isUse);
+  }
+
+  public Mono<RoleManagement> findById(String roleManagementId) {
+    return roleManagementRepository.findById(roleManagementId);
+  }
+
+  public Mono<Boolean> existsById(String roleManagementId) {
+    return roleManagementRepository.existsById(roleManagementId);
   }
 }

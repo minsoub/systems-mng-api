@@ -13,6 +13,7 @@ import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomainService;
+import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,8 @@ public class AccountService {
 
   private final AdminAccessDomainService adminAccessDomainService;
 
+  private final RoleManagementDomainService roleManagementDomainService;
+
   private final MailService mailService;
 
   /**
@@ -43,9 +46,24 @@ public class AccountService {
    */
   public Mono<List<AccountSearchResponse>> search(String searchText) {
     return adminAccountDomainService.findBySearchText(searchText)
-        .map(adminAccount -> new AccountSearchResponse(adminAccount.getId(),
-            adminAccount.getName(),
-            adminAccount.getEmail()))
+        .flatMap(adminAccount -> adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+            .flatMap(adminAccess -> roleManagementDomainService.findById(adminAccess.getRoleManagementId())
+                .map(roleManagement -> new AccountSearchResponse(
+                    adminAccount.getId(),
+                    adminAccount.getName(),
+                    adminAccount.getEmail(),
+                    adminAccount.getLastLoginDate(),
+                    adminAccount.getStatus(),
+                    roleManagement.getName(),
+                    roleManagement.getValidEndDate()
+                ))).switchIfEmpty(Mono.just(new AccountSearchResponse(
+                    adminAccount.getId(),
+                    adminAccount.getName(),
+                    adminAccount.getEmail(),
+                    adminAccount.getLastLoginDate(),
+                    adminAccount.getStatus()
+                )
+            )))
         .collectList();
   }
 
@@ -68,6 +86,7 @@ public class AccountService {
           adminAccount.setStatusByIsUse(accountRegisterRequest.getIsUse());
           adminAccount.setOldPassword(adminAccount.getPassword().trim());
           adminAccount.setPassword(accountRegisterRequest.getPassword().trim());
+
           return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
               adminAccessDomainService.save(AdminAccess.builder()
                   .adminAccountId(adminAccount.getId())
@@ -85,16 +104,18 @@ public class AccountService {
         log.info("send mail");
         mailService.send(a.getT1().getEmail());
       }
-    }).map(tuple -> {
+    }).flatMap(tuple -> {
       AdminAccount adminAccount = tuple.getT1();
       AdminAccess adminAccess = tuple.getT2();
-      return AccountResponse.builder()
-          .email(adminAccount.getEmail())
-          .roleManagementName(adminAccess.getRoleManagementId())
-          .lastLoginDate(adminAccount.getLastLoginDate())
-          .name(adminAccount.getName())
-          .status(adminAccount.getStatus())
-          .build();
+        return roleManagementDomainService.findById(adminAccess.getRoleManagementId())
+            .map(roleManagement -> AccountResponse.builder()
+                .email(adminAccount.getEmail())
+                .roleManagementName(roleManagement.getName())
+                .lastLoginDate(adminAccount.getLastLoginDate())
+                .name(adminAccount.getName())
+                .status(adminAccount.getStatus())
+                .build()
+        );
     }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
 
@@ -105,14 +126,18 @@ public class AccountService {
    */
   public Mono<List<AccountResponse>> allList() {
     return adminAccessDomainService.findAll()
-        .flatMap(adminAccess -> adminAccountDomainService.findByAdminAccountId(adminAccess.getAdminAccountId())
-            .map(adminAccount -> AccountResponse.builder()
-                .status(adminAccount.getStatus())
-                .roleManagementName(adminAccess.getRoleManagementId())
-                .lastLoginDate(adminAccount.getLastLoginDate())
-                .email(adminAccount.getEmail())
-                .name(adminAccount.getName())
-                .build()))
+        .flatMap(adminAccess -> {
+          var account = adminAccountDomainService.findByAdminAccountId(adminAccess.getAdminAccountId());
+          var role = roleManagementDomainService.findById(adminAccess.getRoleManagementId());
+          return account.zipWith(role)
+              .map(tuple2 -> AccountResponse.builder()
+                  .status(tuple2.getT1().getStatus())
+                  .roleManagementName(tuple2.getT2().getName())
+                  .lastLoginDate(tuple2.getT1().getLastLoginDate())
+                  .email(tuple2.getT1().getEmail())
+                  .name(tuple2.getT1().getName())
+                  .build());
+        })
         .collectList();
   }
 

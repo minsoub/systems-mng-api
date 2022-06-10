@@ -22,6 +22,10 @@ public class AdminAccessDomainService {
         return adminAccessRepository.findByAdminAccountId(adminAccountId);
     }
 
+    public Flux<AdminAccess> findByAdminAccountIds(String... adminAccountIds) {
+        return adminAccessRepository.findByAdminAccountIdContaining(adminAccountIds);
+    }
+
     public Flux<AdminAccess> findAll() {
         return adminAccessRepository.findAll();
     }
@@ -34,6 +38,12 @@ public class AdminAccessDomainService {
         adminAccess.setCreateAdminAccountId(adminAccountId);
         adminAccess.setCreateDate(LocalDateTime.now());
         return adminAccessRepository.insert(adminAccess);
+    }
+
+    public Mono<AdminAccess> update(AdminAccess adminAccess, String adminAccountId) {
+        adminAccess.setUpdateAdminAccountId(adminAccountId);
+        adminAccess.setUpdateDate(LocalDateTime.now());
+        return adminAccessRepository.save(adminAccess);
     }
 
     public Mono<Void> delete(String adminAccountId) {

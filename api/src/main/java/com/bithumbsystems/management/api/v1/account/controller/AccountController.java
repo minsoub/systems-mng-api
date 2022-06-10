@@ -34,7 +34,7 @@ public class AccountController {
    * @return the response entity
    */
   @GetMapping("/accounts")
-  public ResponseEntity<Mono<?>> accountsSearch(@RequestParam String searchText) {
+  public ResponseEntity<Mono<?>> accountsSearch(@RequestParam(required = false, defaultValue = "") String searchText) {
     return ResponseEntity.ok().body(accountService.search(searchText)
         .map(accountSearchResponses -> new MultiResponse(accountSearchResponses)));
   }
