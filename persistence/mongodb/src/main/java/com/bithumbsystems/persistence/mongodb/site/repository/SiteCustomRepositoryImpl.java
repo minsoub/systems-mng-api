@@ -5,15 +5,18 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 import com.bithumbsystems.persistence.mongodb.site.model.entity.Site;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class SiteCustomRepositoryImpl implements SiteCustomRepository {
 
   private final ReactiveMongoTemplate reactiveMongoTemplate;
@@ -29,13 +32,26 @@ public class SiteCustomRepositoryImpl implements SiteCustomRepository {
   }
 
   @Override
-  public Flux<Site> findBySearchText(String searchText) {
+  public Flux<Site> findBySearchText(String searchText, Boolean isUse) {
     var reg = ".*" + searchText + ".*";
+    var condition = new Query();
+    if(isUse == null) {
+      condition = query(new Criteria()
+          .orOperator(
+              where("name").regex(reg),
+              where("id").regex(reg)));
+    } else {
+      condition = query(new Criteria()
+              .andOperator(
+                  where("is_use").is(isUse)
+              )
+              .orOperator(
+                  where("name").regex(reg),
+                  where("id").regex(reg)));
+    }
+
     return reactiveMongoTemplate
-        .find(query(new Criteria()
-            .orOperator(
-                where("name").regex(reg),
-                where("id").regex(reg))), Site.class);
+        .find(condition, Site.class);
   }
 
   @Override

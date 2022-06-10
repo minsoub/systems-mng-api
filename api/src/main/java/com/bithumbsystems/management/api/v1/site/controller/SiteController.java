@@ -36,9 +36,10 @@ public class SiteController {
    * @return the response entity
    */
   @GetMapping("/sites")
-  public ResponseEntity<Mono<?>> list(@RequestParam(required = false, defaultValue = "") String searchText) {
+  public ResponseEntity<Mono<?>> list(@RequestParam(required = false, defaultValue = "") String searchText
+  , @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(
-        siteService.findBySearchText(searchText).map(siteResponses -> new MultiResponse(siteResponses))
+        siteService.findBySearchText(searchText, isUse).map(siteResponses -> new MultiResponse(siteResponses))
     );
   }
 

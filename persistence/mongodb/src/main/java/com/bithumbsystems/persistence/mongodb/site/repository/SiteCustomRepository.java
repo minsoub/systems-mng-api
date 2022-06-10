@@ -11,7 +11,7 @@ public interface SiteCustomRepository {
 
   Flux<Site> findPageBySearchText(String searchText, Pageable page);
 
-  Flux<Site> findBySearchText(String searchText);
+  Flux<Site> findBySearchText(String searchText, Boolean isUse);
 
   Mono<Long> countBySearchText(String searchText);
 }

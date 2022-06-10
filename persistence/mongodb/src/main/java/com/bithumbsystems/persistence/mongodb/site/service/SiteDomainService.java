@@ -19,8 +19,8 @@ public class SiteDomainService {
     return siteRepository.findPageBySearchText(searchText, pageable);
   }
 
-  public Flux<Site> findBySearchText(String searchText) {
-    return siteRepository.findBySearchText(searchText);
+  public Flux<Site> findBySearchText(String searchText, Boolean isUse) {
+    return siteRepository.findBySearchText(searchText, isUse);
   }
 
   public Mono<Long> countBySearchText(String searchText) {

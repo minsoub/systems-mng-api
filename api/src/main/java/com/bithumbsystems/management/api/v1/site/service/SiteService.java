@@ -38,8 +38,8 @@ public class SiteService {
         .map(t -> new PageImpl<>(t.getT1(), pageRequest, t.getT2()));
   }
 
-  public Mono<List<SiteResponse>> findBySearchText(String searchText) {
-    return siteDomainService.findBySearchText(searchText).flatMap(
+  public Mono<List<SiteResponse>> findBySearchText(String searchText, Boolean isUse) {
+    return siteDomainService.findBySearchText(searchText, isUse).flatMap(
         site -> {
           SiteResponse SiteResponse = SiteMapper.INSTANCE.siteToSiteResponse(site);
           return Mono.just(SiteResponse);
