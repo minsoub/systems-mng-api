@@ -9,5 +9,5 @@ import reactor.core.publisher.Mono;
 public interface AdminAccountRepository extends ReactiveMongoRepository<AdminAccount, String>, AdminAccountCustomRepository {
     Mono<AdminAccount> findByEmail(String email);
 
-    Mono<AdminAccount> findById(String adminAccountId);
+    //Mono<AdminAccount> findById(String adminAccountId);
 }
