@@ -4,13 +4,14 @@ import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "admin_account")
-@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class AdminAccount {
@@ -25,6 +26,7 @@ public class AdminAccount {
     private String otpSecretKey;
     private LocalDateTime lastLoginDate;
     private Status status;
+    private Boolean isUse;
     private LocalDateTime lastPasswordUpdateDate;
 
     private LocalDateTime createDate;

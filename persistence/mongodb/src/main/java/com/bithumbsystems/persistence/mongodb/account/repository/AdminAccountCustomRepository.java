@@ -5,5 +5,5 @@ import reactor.core.publisher.Flux;
 
 public interface AdminAccountCustomRepository {
 
-    Flux<AdminAccount> findBySearchText(String searchText);
+    Flux<AdminAccount> findBySearchText(String searchText, Boolean isUse);
 }
