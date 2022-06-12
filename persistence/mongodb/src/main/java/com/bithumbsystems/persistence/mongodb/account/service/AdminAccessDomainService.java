@@ -3,13 +3,16 @@ package com.bithumbsystems.persistence.mongodb.account.service;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.repository.AdminAccessRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminAccessDomainService {
 
     private final AdminAccessRepository adminAccessRepository;
@@ -22,8 +25,8 @@ public class AdminAccessDomainService {
         return adminAccessRepository.findByAdminAccountId(adminAccountId);
     }
 
-    public Flux<AdminAccess> findByAdminAccountIds(String... adminAccountIds) {
-        return adminAccessRepository.findByAdminAccountIdContaining(adminAccountIds);
+    public Flux<AdminAccess> findByAdminAccountIds(List<String> adminAccountIds) {
+        return adminAccessRepository.findByAdminAccountIdIn(adminAccountIds);
     }
 
     public Flux<AdminAccess> findAll() {
@@ -41,6 +44,7 @@ public class AdminAccessDomainService {
     }
 
     public Mono<AdminAccess> update(AdminAccess adminAccess, String adminAccountId) {
+        log.info(adminAccess.toString());
         adminAccess.setUpdateAdminAccountId(adminAccountId);
         adminAccess.setUpdateDate(LocalDateTime.now());
         return adminAccessRepository.save(adminAccess);

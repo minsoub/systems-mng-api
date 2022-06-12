@@ -9,6 +9,7 @@ import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementReg
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
 import com.bithumbsystems.management.api.v1.role.service.RoleManagementService;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -86,9 +87,8 @@ public class RoleManagementController {
     );
   }
 
-  //
   @PutMapping("/role/{roleManagementId}/accounts")
-  public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody String[] accounts,
+  public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody List<String> accounts,
       @PathVariable String roleManagementId,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(

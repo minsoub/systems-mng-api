@@ -8,18 +8,20 @@ import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementReg
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
 import com.bithumbsystems.management.api.v1.role.model.response.RoleManagementMappingResponse;
 import com.bithumbsystems.management.api.v1.role.model.response.RoleManagementResponse;
+import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
-import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RoleManagementService {
 
   private final RoleManagementDomainService roleManagementDomainService;
@@ -55,22 +57,27 @@ public class RoleManagementService {
   }
 
   @Transactional
-  public Mono<RoleManagementMappingResponse> mappingAccounts(String[] accounts, String roleManagementId, Account account) {
-    return roleManagementDomainService.findById(roleManagementId)
+  public Mono<RoleManagementMappingResponse> mappingAccounts(List<String> accounts, String roleManagementId, Account account) {
+    var roleManagementMappingResponse = roleManagementDomainService.findById(roleManagementId)
         .switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE)))
-        .flatMap(roleManagement -> {
-          RoleManagementMappingResponse response = RoleManagementMappingResponse.builder()
-              .id(roleManagementId)
-              .name(roleManagement.getName())
-              .emailList(Collections.emptyList())
-              .build();
-          return adminAccessDomainService.findByAdminAccountIds(accounts)
-              .flatMap(adminAccess -> {
-                adminAccess.setRoleManagementId(roleManagementId);
-                return adminAccessDomainService.update(adminAccess, account.getAccountId());
-              })
-              .doOnNext((adminAccess) -> response.getEmailList().add(adminAccess.getEmail()))
-              .then(Mono.just(response));
+        .map(roleManagement -> RoleManagementMappingResponse.builder()
+            .id(roleManagementId)
+            .name(roleManagement.getName())
+            .build());
+
+    var getAccountEmails = adminAccessDomainService.findByAdminAccountIds(accounts)
+        .flatMap(adminAccess -> {
+          log.info(adminAccess.getEmail());
+          adminAccess.setRoleManagementId(roleManagementId);
+          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
+              AdminAccess::getEmail);
+        })
+        .collectList();
+
+    return roleManagementMappingResponse.zipWith(getAccountEmails)
+        .map(tuple -> {
+          tuple.getT1().setEmailList(tuple.getT2());
+          return tuple.getT1();
         });
   }
 }

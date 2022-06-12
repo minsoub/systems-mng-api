@@ -1,6 +1,7 @@
 package com.bithumbsystems.persistence.mongodb.account.repository;
 
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
+import java.util.List;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -15,5 +16,5 @@ public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAcce
 
     Mono<Void> deleteByAdminAccountId(String adminAccountId);
 
-    Flux<AdminAccess> findByAdminAccountIdContaining(String... accountIds);
+    Flux<AdminAccess> findByAdminAccountIdIn(List<String> adminAccountId);
 }
