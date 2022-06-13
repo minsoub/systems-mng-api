@@ -7,5 +7,6 @@ import reactor.core.publisher.Flux;
 public interface RoleManagementRepository extends ReactiveMongoRepository<RoleManagement, String> {
 
   Flux<RoleManagement> findBySiteIdAndIsUse(String siteId, Boolean isUse);
+  Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type);
 
 }

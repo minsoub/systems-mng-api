@@ -35,6 +35,10 @@ public class RoleManagementDomainService {
     return roleManagementRepository.findBySiteIdAndIsUse(siteId, isUse);
   }
 
+  public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
+    return roleManagementRepository.findBySiteIdAndIsUseAndType(siteId, isUse, type);
+  }
+
   public Mono<RoleManagement> findById(String roleManagementId) {
     return roleManagementRepository.findById(roleManagementId);
   }

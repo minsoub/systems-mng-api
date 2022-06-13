@@ -39,8 +39,8 @@ public class RoleManagementController {
 
   @GetMapping("/roles")
   public ResponseEntity<Mono<?>> getRoleManagements(@RequestParam String siteId,
-      @RequestParam Boolean isUse) {
-      return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse)
+      @RequestParam Boolean isUse, @RequestParam String type) {
+      return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse, type)
           .map(roleManagementResponses -> new MultiResponse(roleManagementResponses)));
   }
 
