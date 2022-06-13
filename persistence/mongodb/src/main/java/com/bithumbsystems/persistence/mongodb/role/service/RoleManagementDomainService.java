@@ -1,6 +1,7 @@
 package com.bithumbsystems.persistence.mongodb.role.service;
 
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
+import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementCustomRepository;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 public class RoleManagementDomainService {
 
   private final RoleManagementRepository roleManagementRepository;
+  private final RoleManagementCustomRepository roleRepository;
 
   public Mono<RoleManagement> save(RoleManagement roleManagement, String accountId) {
     roleManagement.setCreateAdminAccountId(accountId);
@@ -36,7 +38,7 @@ public class RoleManagementDomainService {
   }
 
   public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
-    return roleManagementRepository.findBySiteIdAndIsUseAndType(siteId, isUse, type);
+    return roleRepository.findBySiteIdAndIsUseAndType(siteId, isUse, type);
   }
 
   public Mono<RoleManagement> findById(String roleManagementId) {

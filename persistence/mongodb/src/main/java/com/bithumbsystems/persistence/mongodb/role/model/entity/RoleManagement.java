@@ -1,7 +1,11 @@
 package com.bithumbsystems.persistence.mongodb.role.model.entity;
 
 import com.bithumbsystems.persistence.mongodb.role.model.enums.RoleType;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,8 +22,9 @@ public class RoleManagement {
   private String name;
   private RoleType type;
   private Boolean isUse;
-  private LocalDateTime validStartDate;
-  private LocalDateTime validEndDate;
+  private LocalDate validStartDate;
+  private LocalDate validEndDate;
+  //private String validDate;
   private String siteId;
   private LocalDateTime createDate;
   private String createAdminAccountId;
@@ -27,7 +32,7 @@ public class RoleManagement {
   private String updateAdminAccountId;
 
   public RoleManagement(String id, String name, RoleType type, Boolean isUse,
-      LocalDateTime validStartDate, LocalDateTime validEndDate, String siteId) {
+      LocalDate validStartDate, LocalDate validEndDate, String siteId) {
     this.id = id;
     this.name = name;
     this.type = type;
@@ -35,5 +40,6 @@ public class RoleManagement {
     this.validStartDate = validStartDate;
     this.validEndDate = validEndDate;
     this.siteId = siteId;
+    //this.validDate = validStartDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "~"+validEndDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
   }
 }
