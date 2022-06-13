@@ -37,10 +37,18 @@ public class RoleManagementController {
         .map(m -> new SingleResponse(m)));
   }
 
+  /**
+   * Role 관리 : 리스트 검색 조회
+   *
+   * @param siteId
+   * @param isUse
+   * @param type
+   * @return
+   */
   @GetMapping("/roles")
-  public ResponseEntity<Mono<?>> getRoleManagements(@RequestParam String siteId,
-      @RequestParam Boolean isUse) {
-      return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse)
+  public ResponseEntity<Mono<?>> getRoleManagements(@RequestParam(required = false, defaultValue = "") String siteId,
+      @RequestParam(required = false, defaultValue = "true") Boolean isUse, @RequestParam(required = false, defaultValue = "") String type) {
+      return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse, type)
           .map(roleManagementResponses -> new MultiResponse(roleManagementResponses)));
   }
 

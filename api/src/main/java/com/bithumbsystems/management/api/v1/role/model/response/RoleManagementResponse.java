@@ -12,6 +12,7 @@ public class RoleManagementResponse {
   private String name;
   private String validStartDate;
   private String validEndDate;
+  private String validDate;
   private Boolean isUse;
   private String siteId;
   private RoleType type;

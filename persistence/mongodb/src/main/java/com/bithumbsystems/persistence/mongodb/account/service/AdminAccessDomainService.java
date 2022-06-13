@@ -36,6 +36,9 @@ public class AdminAccessDomainService {
     public Flux<AdminAccess> findBySearchText(String searchText) {
         return adminAccessRepository.findBySearchText(searchText);
     }
+    public Mono<AdminAccess> findByAdminAccountIdAndRoleManagementIdAndSiteId(String adminAccountId, String roleManagementId, String siteId) {
+        return adminAccessRepository.findByAdminAccountIdAndRoleManagementIdAndSiteId(adminAccountId, roleManagementId, siteId);
+    }
 
     public Mono<AdminAccess> save(AdminAccess adminAccess, String adminAccountId) {
         adminAccess.setCreateAdminAccountId(adminAccountId);

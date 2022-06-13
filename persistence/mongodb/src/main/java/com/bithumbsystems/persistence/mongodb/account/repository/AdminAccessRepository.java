@@ -17,4 +17,6 @@ public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAcce
     Mono<Void> deleteByAdminAccountId(String adminAccountId);
 
     Flux<AdminAccess> findByAdminAccountIdIn(List<String> adminAccountId);
+
+    Mono<AdminAccess> findByAdminAccountIdAndRoleManagementIdAndSiteId(String adminAccountId, String roleManagementId, String siteId);
 }

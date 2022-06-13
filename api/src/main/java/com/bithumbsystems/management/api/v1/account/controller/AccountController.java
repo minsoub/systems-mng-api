@@ -4,12 +4,14 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
+import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
 import com.bithumbsystems.management.api.v1.account.service.AccountService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,8 +52,8 @@ public class AccountController {
    * @param account                the account
    * @return the response entity
    */
-  @PostMapping("/account")
-  public ResponseEntity<Mono<?>> create(@RequestBody AccountRegisterRequest accountRegisterRequest,
+  @PostMapping("/access")
+  public ResponseEntity<Mono<?>> create(@RequestBody AccessRegisterRequest accountRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(accountService.createAccessAccount(accountRegisterRequest, account)
         .map(accountResponse -> new SingleResponse(accountResponse)));
@@ -67,6 +69,37 @@ public class AccountController {
   public ResponseEntity<Mono<?>> accessList() {
     return ResponseEntity.ok().body(accountService.allList()
         .map(accountResponse -> new MultiResponse(accountResponse)));
+  }
+
+
+  /**
+   * 통합 시스템 관리자가 계정을 등록
+   *
+   * @param accountRegisterRequest the account register request
+   * @param account                the account
+   * @return the response entity
+   */
+  @PostMapping("/account")
+  public ResponseEntity<Mono<?>> adminAccountCreate(@RequestBody AccountRegisterRequest accountRegisterRequest,
+                                        @Parameter(hidden = true) @CurrentUser Account account) {
+    return ResponseEntity.ok().body(accountService.createAccount(accountRegisterRequest, account)
+            .map(accountResponse -> new SingleResponse(accountResponse)));
+  }
+
+  /**
+   * 통합 시스템 관리자가 계정 정보를 수정한다.
+   *
+   * @param adminAccountId
+   * @param accountRegisterRequest
+   * @param account
+   * @return
+   */
+  @PutMapping("/account/{adminAccountId}")
+  public ResponseEntity<Mono<?>> adminAccountupdate(@PathVariable String adminAccountId, @RequestBody AccountRegisterRequest accountRegisterRequest,
+                                           @Parameter(hidden = true) @CurrentUser Account account) {
+
+    return ResponseEntity.ok().body(accountService.updateAccount(accountRegisterRequest, adminAccountId, account)
+            .map(accountResponse -> new SingleResponse(accountResponse)));
   }
 
   /**
@@ -90,7 +123,20 @@ public class AccountController {
   @GetMapping("/account/{adminAccountId}")
   public ResponseEntity<Mono<?>> accountDetail(@PathVariable String adminAccountId) {
     return ResponseEntity.ok().body(accountService.detailData(adminAccountId)
-            .then(Mono.just(new SingleResponse())));
+                    .map(accountResponse -> new SingleResponse(accountResponse)));
+  }
+
+  /**
+   * 통합시스템 관리 - 계정정보 일괄 삭제
+   *
+   * @param adminAccountIdList
+   * @param account
+   * @return
+   */
+  @DeleteMapping("/account/{adminAccountIdList}")
+  public ResponseEntity<Mono<?>> deleteList(@PathVariable String adminAccountIdList, @Parameter(hidden = true) @CurrentUser Account account) {
+    return ResponseEntity.ok().body(accountService.deleteAccountList(adminAccountIdList, account)
+            .map(result -> new SingleResponse(result)));
   }
 
   /**
@@ -136,11 +182,11 @@ public class AccountController {
   }
 
   /**
-   * Delete mng list response entity.
+   * 통합관리 - 계정정보 일괄 삭제
    *
-   * @param adminAccountIdList the admin account id list
-   * @param account            the account
-   * @return the response entity
+   * @param adminAccountIdList
+   * @param account
+   * @return
    */
   @DeleteMapping("/accountmng/{adminAccountIdList}")
   public ResponseEntity<Mono<?>> deleteMngList(@PathVariable String adminAccountIdList, @Parameter(hidden = true) @CurrentUser Account account) {

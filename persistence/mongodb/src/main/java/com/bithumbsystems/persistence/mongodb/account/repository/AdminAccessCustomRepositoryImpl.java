@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 public class AdminAccessCustomRepositoryImpl implements AdminAccessCustomRepository {
@@ -22,4 +23,13 @@ public class AdminAccessCustomRepositoryImpl implements AdminAccessCustomReposit
                 where("name").regex(reg),
                 where("email").regex(reg))), AdminAccess.class);
   }
+//
+//  public Flux<AdminAccess> findByAdminAccountIdAndRoleManagementIdAndSiteId(String adminAccountId, String roleManagementId, String siteId) {
+//    return reactiveMongoTemplate
+//            .find(query(new Criteria()
+//                    .andOperator(
+//                            where("admin_account_id").regex(adminAccountId),
+//                            where("role_management_id").regex(roleManagementId),
+//                            where("site_id").regex(siteId))), AdminAccess.class);
+//  }
 }

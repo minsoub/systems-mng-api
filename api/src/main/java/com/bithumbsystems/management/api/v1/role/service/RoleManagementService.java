@@ -45,8 +45,8 @@ public class RoleManagementService {
             roleManagementDomainService.update(roleManagement, account.getAccountId(), roleManagementId));
   }
 
-  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, Boolean isUse) {
-    return roleManagementDomainService.findBySiteIdAndIsUse(siteId, isUse)
+  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, Boolean isUse, String type) {
+    return roleManagementDomainService.findBySiteIdAndIsUseAndType(siteId, isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
         .collectList();
