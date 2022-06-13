@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.v1.role.exception;
+package com.bithumbsystems.management.api.v1.menu.exception;
 
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import lombok.Getter;
@@ -7,9 +7,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 @Getter
-public class RoleManagementException extends RuntimeException {
+public class MenuException extends RuntimeException {
   private final ErrorCode errorCode;
-  public RoleManagementException(ErrorCode errorCode) {
+
+  public MenuException(ErrorCode errorCode) {
     super(errorCode.getMessage());
     this.errorCode = errorCode;
   }

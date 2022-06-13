@@ -10,9 +10,15 @@ import com.bithumbsystems.management.api.v1.account.model.request.AccountRegiste
 import com.bithumbsystems.management.api.v1.account.service.AccountService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 /**
@@ -28,6 +34,7 @@ public class AccountController {
    * Accounts search response entity.
    *
    * @param searchText the search text
+   * @param isUse      the is use
    * @return the response entity
    */
   @GetMapping("/accounts")
@@ -73,10 +80,12 @@ public class AccountController {
     return ResponseEntity.ok().body(accountService.deleteAccess(adminAccountId)
         .then(Mono.just(new SingleResponse())));
   }
+
   /**
    * 통합시스템 관리 - 계정관리 상세 조회
-   * @param adminAccountId
-   * @return
+   *
+   * @param adminAccountId the admin account id
+   * @return response entity
    */
   @GetMapping("/account/{adminAccountId}")
   public ResponseEntity<Mono<?>> accountDetail(@PathVariable String adminAccountId) {
@@ -100,8 +109,9 @@ public class AccountController {
 
   /**
    * 통합관리 - 계정정보 상세조회
-   * @param adminAccountId
-   * @return
+   *
+   * @param adminAccountId the admin account id
+   * @return response entity
    */
   @GetMapping("/accountmng/{adminAccountId}")
   public ResponseEntity<Mono<?>> detailMng(@PathVariable String adminAccountId) {
@@ -111,10 +121,11 @@ public class AccountController {
 
   /**
    * 통합관리 - 계정정보 수정
-   * @param adminAccountId
-   * @param accountRegisterRequest
-   * @param account
-   * @return
+   *
+   * @param adminAccountId         the admin account id
+   * @param accountRegisterRequest the account register request
+   * @param account                the account
+   * @return response entity
    */
   @PutMapping("/accountmng/{adminAccountId}")
   public ResponseEntity<Mono<?>> updateMng(@PathVariable String adminAccountId, @RequestBody AccountMngUpdateRequest accountRegisterRequest,
@@ -123,6 +134,14 @@ public class AccountController {
     return ResponseEntity.ok().body(accountService.updateMngAccount(accountRegisterRequest, adminAccountId, account)
             .map(accountResponse -> new SingleResponse(accountResponse)));
   }
+
+  /**
+   * Delete mng list response entity.
+   *
+   * @param adminAccountIdList the admin account id list
+   * @param account            the account
+   * @return the response entity
+   */
   @DeleteMapping("/accountmng/{adminAccountIdList}")
   public ResponseEntity<Mono<?>> deleteMngList(@PathVariable String adminAccountIdList, @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(accountService.deleteMngAccountList(adminAccountIdList, account)

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,21 +33,16 @@ public class SiteCustomRepositoryImpl implements SiteCustomRepository {
   @Override
   public Flux<Site> findBySearchText(String searchText, Boolean isUse) {
     var reg = ".*" + searchText + ".*";
-    var condition = new Query();
-    if(isUse == null) {
-      condition = query(new Criteria()
-          .orOperator(
-              where("name").regex(reg),
-              where("id").regex(reg)));
-    } else {
-      condition = query(new Criteria()
-              .andOperator(
-                  where("is_use").is(isUse)
-              )
-              .orOperator(
-                  where("name").regex(reg),
-                  where("id").regex(reg)));
-    }
+
+    var condition = query(
+        isUse == null ? new Criteria().orOperator(
+                where("name").regex(reg),
+                where("id").regex(reg)) :
+            new Criteria().orOperator(
+                where("name").regex(reg),
+                where("id").regex(reg),
+                where("is_use").is(isUse))
+    );
 
     return reactiveMongoTemplate
         .find(condition, Site.class);

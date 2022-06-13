@@ -40,4 +40,8 @@ public class SiteDomainService {
   public Mono<Site> findById(String siteId) {
     return siteRepository.findById(siteId);
   }
+
+  public Mono<Boolean> existsById(String siteId) {
+    return siteRepository.existsById(siteId);
+  }
 }
