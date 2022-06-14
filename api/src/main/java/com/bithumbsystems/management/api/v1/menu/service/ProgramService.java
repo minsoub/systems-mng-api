@@ -22,7 +22,7 @@ import reactor.core.scheduler.Schedulers;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MenuService {
+public class ProgramService {
 
   private final MenuDomainService menuDomainService;
   private final SiteDomainService siteDomainService;

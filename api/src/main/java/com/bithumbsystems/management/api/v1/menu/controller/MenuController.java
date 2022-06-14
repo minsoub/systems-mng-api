@@ -53,14 +53,14 @@ public class MenuController {
   public ResponseEntity<Mono<?>> getMenuList(@PathVariable String siteId,
       @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(menuService.getMenuList(siteId, isUse)
-        .map(accountResponse -> new SingleResponse(accountResponse)));
+        .map(menuListResponses -> new SingleResponse(menuListResponses)));
   }
 
 //  @GetMapping("/site/{siteId}/menu/{menuId}/programs")
-//  public ResponseEntity<Mono<?>> getPrograms(@RequestBody AccountRegisterRequest accountRegisterRequest,
+//  public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId, @PathVariable String menuId,
 //      @Parameter(hidden = true) @CurrentUser Account account) {
-//    return ResponseEntity.ok().body(menuService.getPrograms(accountRegisterRequest, account)
-//        .map(accountResponse -> new SingleResponse(accountResponse)));
+//    return ResponseEntity.ok().body(menuService.getPrograms(siteId, menuId, account)
+//        .map(menuProgramResponse -> new SingleResponse(menuProgramResponse)));
 //  }
 
 

@@ -53,6 +53,7 @@ spring:
       host: localhost
       port: 27017
       database: test
+
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---

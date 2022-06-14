@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.core.config;
+package com.bithumbsystems.management.api.core.config.local;
 
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_NAME;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PASSWORD;
@@ -8,6 +8,7 @@ import static com.bithumbsystems.management.api.core.config.constant.ParameterSt
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
 
+import com.bithumbsystems.management.api.core.config.AwsConfig;
 import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.config.property.MongoProperties;
 import javax.annotation.PostConstruct;
@@ -23,50 +24,51 @@ import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
 
 @Log4j2
 @Data
+@Profile("local|default")
 @Configuration
-@Profile("dev|prod|eks-dev")
-public class ParameterStoreConfig {
+public class LocalParameterStoreConfig {
 
     private SsmClient ssmClient;
     private MongoProperties mongoProperties;
-
     private final AwsProperties awsProperties;
-
+    private final CredentialsProvider credentialsProvider;
     private final AwsConfig awsConfig;
-    @Value("${cloud.aws.credentials.profile-name}")
+
+    @Value("${spring.profiles.active:}")
     private String profileName;
 
     @PostConstruct
     public void init() {
 
         log.debug("config store [prefix] => {}", awsProperties.getPrefix());
-        log.debug("config store [name] => {}", awsProperties.getParamStoreDocName());
+        log.debug("config store [doc name] => {}", awsProperties.getParamStoreDocName());
+        log.debug("config store [kms name] => {}", awsProperties.getParamStoreKmsName());
 
         this.ssmClient = SsmClient.builder()
-            .region(Region.of(awsProperties.getRegion()))
-            .build();
+                .credentialsProvider(credentialsProvider.getProvider()) // 로컬에서 개발로 붙을때 사용
+                .region(Region.of(awsProperties.getRegion()))
+                .build();
 
         this.mongoProperties = new MongoProperties(
-            getParameterValue(awsProperties.getParamStoreDocName(), DB_URL),
-            getParameterValue(awsProperties.getParamStoreDocName(), DB_USER),
-            getParameterValue(awsProperties.getParamStoreDocName(), DB_PASSWORD),
-            getParameterValue(awsProperties.getParamStoreDocName(), DB_PORT),
-            getParameterValue(awsProperties.getParamStoreDocName(), DB_NAME)
+                getParameterValue(awsProperties.getParamStoreDocName(), DB_URL),
+                getParameterValue(awsProperties.getParamStoreDocName(), DB_USER),
+                getParameterValue(awsProperties.getParamStoreDocName(), DB_PASSWORD),
+                getParameterValue(awsProperties.getParamStoreDocName(), DB_PORT),
+                getParameterValue(awsProperties.getParamStoreDocName(), DB_NAME)
         );
 
         // KMS Parameter Key
         this.awsConfig.setKmsKey(getParameterValue(awsProperties.getParamStoreKmsName(), KMS_ALIAS_NAME));
         this.awsConfig.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
-
     }
 
     protected String getParameterValue(String storeName, String type) {
         String parameterName = String.format("%s/%s_%s/%s", awsProperties.getPrefix(), storeName, profileName, type);
 
         GetParameterRequest request = GetParameterRequest.builder()
-            .name(parameterName)
-            .withDecryption(true)
-            .build();
+                .name(parameterName)
+                .withDecryption(true)
+                .build();
 
         GetParameterResponse response = this.ssmClient.getParameter(request);
 

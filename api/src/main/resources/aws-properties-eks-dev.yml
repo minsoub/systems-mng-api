@@ -14,8 +14,9 @@ cloud:
       enabled: true
       fail-fast: true
       prefix: /smartadmin
-      name: docdb
-
+      doc-name: docdb
+      kms-name: kms
+      message-name: message
 logging:
   level:
     root: ${management.api.logging.level.root:DEBUG}

@@ -1,8 +1,13 @@
 package com.bithumbsystems.management.api.v1.account.service;
 
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_ACCOUNT_REGISTER;
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
+
 import com.bithumbsystems.management.api.core.config.resolver.Account;
-import com.bithumbsystems.management.api.core.util.AES256Util;
-import com.bithumbsystems.management.api.core.util.MailService;
+import com.bithumbsystems.management.api.core.model.enums.MailForm;
+import com.bithumbsystems.management.api.core.util.FileUtil;
+import com.bithumbsystems.management.api.core.util.message.MailSenderInfo;
+import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
@@ -17,11 +22,11 @@ import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import javax.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.*;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * The type Account service.
@@ -46,7 +50,7 @@ public class AccountService {
 
   private final RoleManagementDomainService roleManagementDomainService;
 
-  private final MailService mailService;
+  private final MessageService messageService;
 
   private final PasswordEncoder passwordEncoder;
 
@@ -149,10 +153,23 @@ public class AccountService {
                   .build(), account.getAccountId())
           );
         }
-    ).doOnSuccess((a) -> {
+    )
+        .publishOn(Schedulers.boundedElastic()).doOnSuccess((a) -> {
       if(accountRegisterRequest.getIsSendMail()) {
-        log.info("send mail");
-        mailService.send(a.getT1().getEmail());
+        try {
+          String html = FileUtil.readResourceFile(MailForm.DEFAULT.getPath());
+          log.info("send mail: " + html);
+
+          messageService.send(
+              MailSenderInfo.builder()
+              .bodyHTML(html)
+              .subject(MailForm.DEFAULT.getSubject())
+              .emailAddress(a.getT1().getEmail())
+              .build()
+          );
+        } catch (MessagingException | IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     }).flatMap(tuple -> {
       AdminAccount adminAccount = tuple.getT1();

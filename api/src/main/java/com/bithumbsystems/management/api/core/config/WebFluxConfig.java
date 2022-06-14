@@ -55,8 +55,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
   public ObjectMapper objectMapper() {
     JavaTimeModule module = new JavaTimeModule();
     LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-    LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
     module.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
 
