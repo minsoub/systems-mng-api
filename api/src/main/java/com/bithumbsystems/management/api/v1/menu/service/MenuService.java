@@ -85,7 +85,7 @@ public class MenuService {
   }
 
   public Mono<MenuResponse> getOne(String siteId, String menuId) {
-    return menuDomainService.findByIdAndSiteId(siteId, menuId)
+    return menuDomainService.findBySiteIdAndId(siteId, menuId)
         .flatMap(menu -> Mono.just(menu)
             .map(MenuMapper.INSTANCE::menuToMenuResponse));
   }

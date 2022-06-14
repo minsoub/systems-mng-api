@@ -23,10 +23,14 @@ public class RoleManagementDomainService {
   }
 
   public Mono<RoleManagement> update(RoleManagement roleManagement, String accountId, String roleManagementId) {
-    roleManagement.setId(roleManagementId);
-    roleManagement.setUpdateAdminAccountId(accountId);
-    roleManagement.setUpdateDate(LocalDateTime.now());
-    return roleManagementRepository.save(roleManagement);
+    return roleManagementRepository.findById(roleManagementId).flatMap(before -> {
+      roleManagement.setId(before.getId());
+      roleManagement.setCreateDate(before.getCreateDate());
+      roleManagement.setCreateAdminAccountId(before.getCreateAdminAccountId());
+      roleManagement.setUpdateAdminAccountId(accountId);
+      roleManagement.setUpdateDate(LocalDateTime.now());
+      return roleManagementRepository.save(roleManagement);
+    });
   }
 
   public Mono<Boolean> isExist(String id) {

@@ -2,8 +2,6 @@ package com.bithumbsystems.persistence.mongodb.menu.service;
 
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.repository.MenuRepository;
-import com.bithumbsystems.persistence.mongodb.menu.repository.ProgramRepository;
-import com.bithumbsystems.persistence.mongodb.menu.repository.SiteMenuProgramRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,8 +13,6 @@ import reactor.core.publisher.Mono;
 public class MenuDomainService {
 
   private final MenuRepository menuRepository;
-  private final ProgramRepository programRepository;
-  private final SiteMenuProgramRepository siteMenuProgramRepository;
 
   public Mono<Menu> save(Menu menu, String accountId) {
     menu.setCreateDate(LocalDateTime.now());
@@ -25,13 +21,13 @@ public class MenuDomainService {
   }
 
   public Mono<Menu> update(Menu menu, String accountId) {
-    menu.setUpdateAdminAccountId(accountId);
-    menu.setUpdateDate(LocalDateTime.now());
-    return menuRepository.save(menu);
-  }
-
-  public Mono<Menu> findByIdAndSiteId(String siteId, String menuId) {
-    return menuRepository.findBySiteIdAndId(siteId, menuId);
+    return menuRepository.findById(menu.getId()).flatMap(before -> {
+      menu.setCreateDate(before.getCreateDate());
+      menu.setCreateAdminAccountId(before.getCreateAdminAccountId());
+      menu.setUpdateAdminAccountId(accountId);
+      menu.setUpdateDate(LocalDateTime.now());
+      return menuRepository.save(menu);
+    });
   }
 
   public Flux<?> findListBySiteId(String siteId, Boolean isUse, Class<?> outputType) {
@@ -42,4 +38,7 @@ public class MenuDomainService {
     return menuRepository.findMenuListBySiteId(siteId, isUse, parentsMenuId);
   }
 
+  public Mono<Menu> findBySiteIdAndId(String siteId, String menuId) {
+    return menuRepository.findBySiteIdAndId(siteId, menuId);
+  }
 }

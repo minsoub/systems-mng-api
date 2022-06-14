@@ -4,7 +4,6 @@ import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
 import com.bithumbsystems.persistence.mongodb.account.repository.AdminAccountRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,9 +27,13 @@ public class AdminAccountDomainService {
     }
 
     public Mono<AdminAccount> update(AdminAccount adminAccount, String adminAccountId) {
-        adminAccount.setUpdateAdminAccountId(adminAccountId);
-        adminAccount.setUpdateDate(LocalDateTime.now());
-        return adminAccountRepository.save(adminAccount);
+        return adminAccountRepository.findById(adminAccount.getId()).flatMap(before -> {
+            adminAccount.setCreateAdminAccountId(before.getCreateAdminAccountId());
+            adminAccount.setCreateDate(before.getCreateDate());
+            adminAccount.setUpdateAdminAccountId(adminAccountId);
+            adminAccount.setUpdateDate(LocalDateTime.now());
+            return adminAccountRepository.save(adminAccount);
+        });
     }
 
     /**

@@ -47,10 +47,13 @@ public class AdminAccessDomainService {
     }
 
     public Mono<AdminAccess> update(AdminAccess adminAccess, String adminAccountId) {
-        log.info(adminAccess.toString());
-        adminAccess.setUpdateAdminAccountId(adminAccountId);
-        adminAccess.setUpdateDate(LocalDateTime.now());
-        return adminAccessRepository.save(adminAccess);
+        return adminAccessRepository.findById(adminAccess.getId()).flatMap(before -> {
+            adminAccess.setCreateAdminAccountId(before.getCreateAdminAccountId());
+            adminAccess.setCreateDate(before.getCreateDate());
+            adminAccess.setUpdateAdminAccountId(adminAccountId);
+            adminAccess.setUpdateDate(LocalDateTime.now());
+            return adminAccessRepository.save(adminAccess);
+        });
     }
 
     public Mono<Void> delete(String adminAccountId) {

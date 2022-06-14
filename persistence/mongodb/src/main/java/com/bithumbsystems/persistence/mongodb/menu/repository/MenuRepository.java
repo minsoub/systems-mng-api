@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 public interface MenuRepository extends ReactiveMongoRepository<Menu, String>, MenuCustomRepository {
 
-  Mono<Menu> findBySiteIdAndId(String id, String siteId);
+  Mono<Menu> findBySiteIdAndId(String siteId, String id);
 
   Flux<Menu> findBySiteId(String siteId);
 
