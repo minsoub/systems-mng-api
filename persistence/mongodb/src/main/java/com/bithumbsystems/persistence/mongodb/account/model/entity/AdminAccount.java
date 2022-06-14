@@ -2,18 +2,15 @@ package com.bithumbsystems.persistence.mongodb.account.model.entity;
 
 import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "admin_account")
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class AdminAccount {
     @Id
     private String id;
