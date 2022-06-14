@@ -46,6 +46,16 @@ public class AdminAccessDomainService {
         return adminAccessRepository.insert(adminAccess);
     }
 
+    /**
+     * 사용자 접근 테이블에서 Role과 일치하는 사용자 리스트를 조회한다.
+     *
+     * @param roleManagementId
+     * @return
+     */
+    public Flux<AdminAccess> findByRoleManagementId(String roleManagementId) {
+        return adminAccessRepository.findByRoleManagementId(roleManagementId);
+    }
+
     public Mono<AdminAccess> update(AdminAccess adminAccess, String adminAccountId) {
         return adminAccessRepository.findById(adminAccess.getId()).flatMap(before -> {
             adminAccess.setCreateAdminAccountId(before.getCreateAdminAccountId());

@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface AdminAccessCustomRepository {
 
     Flux<AdminAccess> findBySearchText(String searchText);
+
 }

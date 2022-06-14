@@ -5,6 +5,7 @@ import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.role.model.mapper.RoleMapper;
+import com.bithumbsystems.management.api.v1.role.model.request.RoleAccountsRequest;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementRegisterRequest;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
 import com.bithumbsystems.management.api.v1.role.service.RoleManagementService;
@@ -85,22 +86,25 @@ public class RoleManagementController {
     );
   }
 
+  /**
+   * 등록된 Role의 사용자 리스트를 가져온다.
+   *
+   * @param roleManagementId
+   * @return
+   */
   @GetMapping("/role/{roleManagementId}/accounts")
   public ResponseEntity<Mono<?>> getAccountInRoleManagement(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
-        roleManagementService.getOne(roleManagementId)
-            .map(r ->
-                new SingleResponse(RoleMapper.INSTANCE.roleManagementToResponse(r))
-            )
-    );
+        roleManagementService.getAccessUserList(roleManagementId)  // getOne(roleManagementId)
+                .map(roleManagementResponses -> new MultiResponse(roleManagementResponses)));
   }
 
   @PutMapping("/role/{roleManagementId}/accounts")
-  public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody List<String> accounts,
+  public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody RoleAccountsRequest accounts,
       @PathVariable String roleManagementId,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(
-        roleManagementService.mappingAccounts(accounts, roleManagementId, account)
+        roleManagementService.mappingAccounts(accounts.getAccounts(), roleManagementId, account)
             .map(r -> new SingleResponse(r))
     );
   }
