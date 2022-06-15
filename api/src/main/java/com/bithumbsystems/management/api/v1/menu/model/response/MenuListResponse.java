@@ -15,5 +15,6 @@ public class MenuListResponse {
   private Boolean isUse;
   private String siteId;
   private Integer order;
+  private String parentMenuId;
   private List<MenuListResponse> childMenu;
 }
