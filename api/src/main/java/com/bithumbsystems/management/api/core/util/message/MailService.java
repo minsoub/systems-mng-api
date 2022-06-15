@@ -1,8 +1,8 @@
 package com.bithumbsystems.management.api.core.util.message;
 
 import com.amazonaws.util.IOUtils;
-import com.bithumbsystems.management.api.core.config.AwsConfig;
 import com.bithumbsystems.management.api.core.config.local.CredentialsProvider;
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,6 +17,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
@@ -27,16 +28,12 @@ import software.amazon.awssdk.services.ses.model.SendRawEmailRequest;
 import software.amazon.awssdk.services.ses.model.SesException;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class MailService implements MessageService {
 
   private final CredentialsProvider credentialsProvider;
-  private final AwsConfig awsConfig;
-
-  public MailService(CredentialsProvider credentialsProvider, AwsConfig awsConfig) {
-    this.credentialsProvider = credentialsProvider;
-    this.awsConfig = awsConfig;
-  }
+  private final AwsProperties awsProperties;
 
   @Override
   public void sendWithFile(MailSenderInfo mailSenderInfo) throws IOException {
@@ -131,7 +128,7 @@ public class MailService implements MessageService {
     try {
       log.debug("Attempting to send an email through Amazon SES " + "using the AWS SDK for Java...");
 
-      Region region = Region.of(awsConfig.getAwsProperties().getRegion());
+      Region region = Region.of(awsProperties.getRegion());
       SesClient client = SesClient.builder()
           .credentialsProvider(credentialsProvider.getProvider())
           .region(region)
@@ -163,7 +160,7 @@ public class MailService implements MessageService {
   }
 
   private MimeMessage getMimeMessage(String emailAddress, String subject) throws MessagingException {
-    MimeMessage message = null;
+    MimeMessage message;
     Session session = Session.getDefaultInstance(new Properties());
 
     // Create a new MimeMessage object.
@@ -171,7 +168,7 @@ public class MailService implements MessageService {
 
     // Add subject, from, and to lines.
     message.setSubject(subject, "UTF-8");
-    message.setFrom(new InternetAddress(awsConfig.getEmailSender()));
+    message.setFrom(new InternetAddress(awsProperties.getEmailSender()));
     message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailAddress));
     return message;
   }

@@ -8,7 +8,6 @@ import static com.bithumbsystems.management.api.core.config.constant.ParameterSt
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
 
-import com.bithumbsystems.management.api.core.config.AwsConfig;
 import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.config.property.MongoProperties;
 import javax.annotation.PostConstruct;
@@ -32,7 +31,7 @@ public class LocalParameterStoreConfig {
     private MongoProperties mongoProperties;
     private final AwsProperties awsProperties;
     private final CredentialsProvider credentialsProvider;
-    private final AwsConfig awsConfig;
+    private final LocalAwsConfig awsConfig;
 
     @Value("${spring.profiles.active:}")
     private String profileName;
@@ -58,8 +57,8 @@ public class LocalParameterStoreConfig {
         );
 
         // KMS Parameter Key
-        this.awsConfig.setKmsKey(getParameterValue(awsProperties.getParamStoreKmsName(), KMS_ALIAS_NAME));
-        this.awsConfig.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
+        this.awsProperties.setKmsKey(getParameterValue(awsProperties.getParamStoreKmsName(), KMS_ALIAS_NAME));
+        this.awsProperties.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
     }
 
     protected String getParameterValue(String storeName, String type) {
