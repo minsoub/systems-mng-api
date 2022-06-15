@@ -4,12 +4,15 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.v1.menu.exception.MenuException;
 import com.bithumbsystems.management.api.v1.menu.model.mapper.MenuMapper;
+import com.bithumbsystems.management.api.v1.menu.model.mapper.ProgramMapper;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
 import com.bithumbsystems.management.api.v1.menu.model.response.MenuListResponse;
 import com.bithumbsystems.management.api.v1.menu.model.response.MenuResponse;
+import com.bithumbsystems.management.api.v1.menu.model.response.ProgramResponse;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.service.MenuDomainService;
+import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,8 @@ public class MenuService {
 
   private final MenuDomainService menuDomainService;
   private final SiteDomainService siteDomainService;
+
+  private final ProgramDomainService programDomainService;
 
   public Mono<List<MenuListResponse>> getMenuList(String siteId, Boolean isUse) {
     return menuDomainService.findList(siteId, isUse, null)
@@ -104,7 +109,15 @@ public class MenuService {
         }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.NOT_EXIST_MENU)));
   }
 
-//  public Optional<Object> getPrograms(String siteId, String menuId, Account account) {
-//
-//  }
+  public Mono<List<ProgramResponse>> getPrograms(String siteId, String menuId) {
+    return menuDomainService.findBySiteIdAndId(siteId, menuId)
+        .flatMap(menu -> programDomainService.findMenuPrograms(siteId, menu.getId())
+            .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program)))
+            .collectList());
+  }
+
+  public Mono<List<ProgramResponse>> mappingMenuPrograms(String siteId, String menuId, List<String> programIds, Account account) {
+    return programDomainService.saveSiteMenuProgram(siteId, menuId, programIds, account.getAccountId())
+        .then(getPrograms(siteId,menuId));
+  }
 }

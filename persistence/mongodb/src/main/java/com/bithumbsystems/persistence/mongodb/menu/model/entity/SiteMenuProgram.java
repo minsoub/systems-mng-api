@@ -2,18 +2,18 @@ package com.bithumbsystems.persistence.mongodb.menu.model.entity;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "site_menu_program")
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 public class SiteMenuProgram {
   @Id
@@ -21,10 +21,6 @@ public class SiteMenuProgram {
   private String menuId;
   private String programId;
   private String siteId;
-  @CreatedDate
   private LocalDateTime createDate;
   private String createAdminAccountId;
-  @LastModifiedDate
-  private LocalDateTime updateDate;
-  private String updateAdminAccountId;
 }

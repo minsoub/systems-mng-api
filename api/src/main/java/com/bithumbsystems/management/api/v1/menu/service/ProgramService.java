@@ -25,8 +25,8 @@ public class ProgramService {
   private final SiteDomainService siteDomainService;
   private final ProgramDomainService programDomainService;
 
-  public Mono<List<ProgramResponse>> getList(String siteId, Boolean isUse) {
-    return programDomainService.findListBySiteIdAndIsUse(siteId, isUse)
+  public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse) {
+    return programDomainService.findBySearchText(siteId, searchText, isUse)
         .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectList();
   }
 

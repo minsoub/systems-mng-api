@@ -30,8 +30,10 @@ public class ProgramController {
   private final ProgramService programService;
 
   @GetMapping("/site/{siteId}/programs")
-  public ResponseEntity<Mono<?>> getList(@PathVariable String siteId, @RequestParam Boolean isUse) {
-    return ResponseEntity.ok().body(programService.getList(siteId, isUse)
+  public ResponseEntity<Mono<?>> getList(@PathVariable String siteId,
+      @RequestParam(required = false, defaultValue = "") String searchText,
+      @RequestParam Boolean isUse) {
+    return ResponseEntity.ok().body(programService.getList(siteId, searchText, isUse)
         .map(programResponse -> new SingleResponse(programResponse)));
   }
 
