@@ -38,11 +38,12 @@ public class SiteCustomRepositoryImpl implements SiteCustomRepository {
         isUse == null ? new Criteria().orOperator(
                 where("name").regex(reg),
                 where("id").regex(reg)) :
-            new Criteria().orOperator(
-                where("name").regex(reg),
-                where("id").regex(reg),
-                where("is_use").is(isUse))
-    );
+            new Criteria().andOperator(
+                  where("is_use").is(isUse)
+               ).orOperator(
+                  where("name").regex(reg),
+                  where("id").regex(reg)
+               ));
 
     return reactiveMongoTemplate
         .find(condition, Site.class);

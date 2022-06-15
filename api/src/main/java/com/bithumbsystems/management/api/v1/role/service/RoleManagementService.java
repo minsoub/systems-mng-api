@@ -6,6 +6,7 @@ import com.bithumbsystems.management.api.v1.role.exception.RoleManagementExcepti
 import com.bithumbsystems.management.api.v1.role.model.mapper.RoleMapper;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementRegisterRequest;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
+import com.bithumbsystems.management.api.v1.role.model.response.RoleAccessResponse;
 import com.bithumbsystems.management.api.v1.role.model.response.RoleManagementMappingResponse;
 import com.bithumbsystems.management.api.v1.role.model.response.RoleManagementResponse;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
@@ -50,6 +51,19 @@ public class RoleManagementService {
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
         .collectList();
+  }
+
+    /**
+     * 등록된 Role의 사용자 리스트를 가져온다.
+     *
+     * @param roleManagementId
+     * @return
+     */
+  public Mono<List<RoleAccessResponse>> getAccessUserList(String roleManagementId) {
+      return adminAccessDomainService.findByRoleManagementId(roleManagementId)
+              .flatMap(roleAccess ->
+                      Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
+                      .collectList();
   }
 
   public Mono<RoleManagement> getOne(String roleManagementId) {
