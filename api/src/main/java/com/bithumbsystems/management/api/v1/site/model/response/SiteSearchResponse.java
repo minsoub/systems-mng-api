@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.site.model.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,8 +13,8 @@ public class SiteSearchResponse {
   private String id;
   private String name;
   private Boolean isUse;
-  private LocalDateTime validStartDate;
-  private LocalDateTime validEndDate;
+  private LocalDate validStartDate;
+  private LocalDate validEndDate;
   private String description;
   private String adminAccountId;
   private String adminAccountEmail;

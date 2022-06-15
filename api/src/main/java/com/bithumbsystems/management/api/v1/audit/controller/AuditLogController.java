@@ -1,0 +1,37 @@
+package com.bithumbsystems.management.api.v1.audit.controller;
+
+import com.bithumbsystems.management.api.core.model.response.SingleResponse;
+import com.bithumbsystems.management.api.v1.audit.model.request.AuditLogSearchRequest;
+import com.bithumbsystems.management.api.v1.audit.service.AuditLogService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+/**
+ * The type Menu controller.
+ */
+@Slf4j
+@RestController
+@RequestMapping
+@RequiredArgsConstructor
+public class AuditLogController {
+
+  private final AuditLogService auditLogService;
+
+  /**
+   * Gets one.
+   *
+   * @param auditLogSearchRequest the audit log search request
+   * @return the one
+   */
+  @GetMapping("/audit/logs")
+  public ResponseEntity<Mono<?>> getPage(@RequestBody AuditLogSearchRequest auditLogSearchRequest) {
+    return ResponseEntity.ok().body(auditLogService.getPage(auditLogSearchRequest)
+        .map(SingleResponse::new));
+  }
+}

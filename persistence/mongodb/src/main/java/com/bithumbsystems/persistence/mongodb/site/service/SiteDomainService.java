@@ -1,6 +1,8 @@
 package com.bithumbsystems.persistence.mongodb.site.service;
 
 import com.bithumbsystems.persistence.mongodb.site.model.entity.Site;
+import com.bithumbsystems.persistence.mongodb.site.model.entity.SiteFileInfo;
+import com.bithumbsystems.persistence.mongodb.site.repository.SiteFileInfoRepository;
 import com.bithumbsystems.persistence.mongodb.site.repository.SiteRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Mono;
 public class SiteDomainService {
 
   private final SiteRepository siteRepository;
+  private final SiteFileInfoRepository siteFileInfoRepository;
 
   public Flux<Site> findPageBySearchText(String searchText, Pageable pageable) {
     return siteRepository.findPageBySearchText(searchText, pageable);
@@ -43,5 +46,31 @@ public class SiteDomainService {
 
   public Mono<Boolean> existsById(String siteId) {
     return siteRepository.existsById(siteId);
+  }
+
+  public Mono<SiteFileInfo> saveFileInfo(String siteId, SiteFileInfo siteFileInfo, String accountId) {
+    siteFileInfo.setSiteId(siteId);
+    siteFileInfo.setCreateDate(LocalDateTime.now());
+    siteFileInfo.setCreateAdminAccountId(accountId);
+    return siteFileInfoRepository.insert(siteFileInfo);
+  }
+
+  public Mono<SiteFileInfo> updateFileInfo(String siteId, SiteFileInfo siteFileInfo, String accountId) {
+    return siteFileInfoRepository.findById(siteId).flatMap(before -> {
+      siteFileInfo.setSiteId(siteId);
+      siteFileInfo.setCreateDate(before.getCreateDate());
+      siteFileInfo.setCreateAdminAccountId(before.getCreateAdminAccountId());
+      siteFileInfo.setUpdateDate(LocalDateTime.now());
+      siteFileInfo.setUpdateAdminAccountId(accountId);
+      return siteFileInfoRepository.save(siteFileInfo);
+   });
+  }
+
+  public Mono<SiteFileInfo> findFileInfoBySiteId(String siteId, Boolean isUse) {
+    return siteFileInfoRepository.findBySiteIdAndIsUse(siteId, isUse);
+  }
+
+  public Flux<SiteFileInfo> findFileInfoList(Boolean isUse) {
+    return siteFileInfoRepository.findByIsUse(isUse);
   }
 }

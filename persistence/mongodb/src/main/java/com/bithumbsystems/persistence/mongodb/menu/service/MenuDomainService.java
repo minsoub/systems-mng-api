@@ -38,6 +38,10 @@ public class MenuDomainService {
     return menuRepository.findMenuListBySiteId(siteId, isUse, parentsMenuId);
   }
 
+  public Flux<Menu> findAll() {
+    return menuRepository.findByIsUseIsTrue();
+  }
+
   public Mono<Menu> findBySiteIdAndId(String siteId, String menuId) {
     return menuRepository.findBySiteIdAndId(siteId, menuId);
   }

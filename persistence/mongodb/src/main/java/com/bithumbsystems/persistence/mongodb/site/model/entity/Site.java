@@ -1,5 +1,6 @@
 package com.bithumbsystems.persistence.mongodb.site.model.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,8 +23,8 @@ public class Site {
   private String id;
   private String name;
   private Boolean isUse;
-  private LocalDateTime validStartDate;
-  private LocalDateTime validEndDate;
+  private LocalDate validStartDate;
+  private LocalDate validEndDate;
   private String description;
   private String adminAccountId;
   private String adminAccountEmail;

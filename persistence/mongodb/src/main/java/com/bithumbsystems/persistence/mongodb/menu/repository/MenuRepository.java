@@ -11,4 +11,6 @@ public interface MenuRepository extends ReactiveMongoRepository<Menu, String>, M
 
   Flux<Menu> findBySiteId(String siteId);
 
+  Flux<Menu> findByIsUseIsTrue();
+
 }

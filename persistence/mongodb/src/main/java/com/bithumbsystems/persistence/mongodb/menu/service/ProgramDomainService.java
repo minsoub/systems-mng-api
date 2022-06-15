@@ -58,6 +58,11 @@ public class ProgramDomainService {
         .flatMap(siteMenuProgram -> programRepository.findById(siteMenuProgram.getProgramId()));
   }
 
+  public Flux<Program> findMenuPrograms(String menuId) {
+    return siteMenuProgramRepository.findByMenuId(menuId)
+        .flatMap(siteMenuProgram -> programRepository.findById(siteMenuProgram.getProgramId()));
+  }
+
   @Transactional
   public Mono<Void> saveSiteMenuProgram(String siteId, String menuId, List<String> programIds, String accountId) {
     return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId)

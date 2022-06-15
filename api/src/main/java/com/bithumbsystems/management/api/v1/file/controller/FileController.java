@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
@@ -31,9 +30,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * The type File controller.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/files")
@@ -41,111 +42,122 @@ import reactor.core.publisher.Mono;
 @Tag(name = "File Test APIs", description = "File Test APIs for demo purpose")
 public class FileController {
 
-    private final FileService fileService;
-    private final AwsProperties awsProperties;
+  private final FileService fileService;
+  private final AwsProperties awsProperties;
 
-    @PostMapping(value = "/upload/s3", consumes = MULTIPART_FORM_DATA_VALUE)
-    public Mono<ResponseEntity<?>> s3upload(@RequestHeader HttpHeaders headers,  @RequestPart("files") Mono<FilePart> filePart) {
+  /**
+   * S 3 upload mono.
+   *
+   * @param headers  the headers
+   * @param filePart the file part
+   * @return the mono
+   */
+  @PostMapping(value = "/upload/s3", consumes = MULTIPART_FORM_DATA_VALUE)
+  public Mono<ResponseEntity<?>> s3upload(@RequestHeader HttpHeaders headers,
+      @RequestPart("files") Mono<FilePart> filePart) {
 
-        String fileKey = UUID.randomUUID().toString();
+    String fileKey = UUID.randomUUID().toString();
 
-        MediaType mediaType = headers.getContentType();
+    MediaType mediaType = headers.getContentType();
 
-        if (mediaType == null) {
-            mediaType = MediaType.APPLICATION_OCTET_STREAM;
-        }
-
-        AtomicReference<String> fileName = new AtomicReference<>();
-        AtomicReference<Long> fileSize = new AtomicReference<>();
-
-        return filePart.doOnNext(part -> {
-                    log.debug("file name => " + part.filename());
-                    fileName.set(part.filename());
-                })
-                //        .map(part ->part.content().concatMap(dataBuffer->{ return dataBuffer.asByteBuffer();}))
-               .map(Part::content)
-               .log()
-               .flatMap(data -> {
-                   log.debug("Here is ....");
-                   return DataBufferUtils.join(data)
-                                    .flatMap(dataBuffer -> {
-                                        log.debug("dataBuffer join...");
-                                        ByteBuffer buf = dataBuffer.asByteBuffer();
-                                        log.debug("byte size ===> " + buf.array().length);
-
-                                        fileSize.set((long) buf.array().length); // dataBuffer.readableByteCount());
-
-                                        return fileService.upload(fileKey, fileName.toString(), fileSize.get(), awsProperties.getBucket(), buf)
-                                                .flatMap(res -> {
-                                                    log.debug("service upload res => {}", res);
-                                                    File info = File.builder()
-                                                            .fileKey(fileKey)
-                                                            .fileName(fileName.toString())
-                                                            .createdAt(new Date())
-                                                            .createdId("test")
-                                                            .delYn(false)
-                                                            .build();
-                                                    return fileService.save(info);
-                                                });
-                                    });
-                   })
-               .log()
-               .map(res -> {
-                   log.debug("=========res => {}", res);
-                   return ResponseEntity.ok().body(new SingleResponse(res));
-               });
+    if (mediaType == null) {
+      mediaType = MediaType.APPLICATION_OCTET_STREAM;
     }
 
-    @GetMapping(value = "/download/s3/{fileKey}", produces = APPLICATION_OCTET_STREAM_VALUE)
-    public Mono<ResponseEntity<?>> s3upload(@PathVariable String fileKey) {
+    AtomicReference<String> fileName = new AtomicReference<>();
+    AtomicReference<Long> fileSize = new AtomicReference<>();
 
-        AtomicReference<String> fileName = new AtomicReference<>();
+    return filePart.doOnNext(part -> {
+          log.debug("file name => " + part.filename());
+          fileName.set(part.filename());
+        })
+        //        .map(part ->part.content().concatMap(dataBuffer->{ return dataBuffer.asByteBuffer();}))
+        .map(Part::content)
+        .log()
+        .flatMap(data -> {
+          log.debug("Here is ....");
+          return DataBufferUtils.join(data)
+              .flatMap(dataBuffer -> {
+                log.debug("dataBuffer join...");
+                ByteBuffer buf = dataBuffer.asByteBuffer();
+                log.debug("byte size ===> " + buf.array().length);
 
-        return fileService.findById(fileKey)
-                 .flatMap(res -> {
-                                log.debug("find file => {}", res);
-                                fileName.set(res.getFileName());
-                                // s3에서 파일을 다운로드 받는다.
-                                return fileService.download(fileKey, awsProperties.getBucket());
-                 })
-                .log()
-                .map(inputStream -> {
-                    log.debug("finaly result...here");
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentDispositionFormData(fileName.toString(), fileName.toString());
-                    ResponseEntity<?> entity = ResponseEntity.ok().cacheControl(CacheControl.noCache())
-                            .headers(headers)
-                            .body(new InputStreamResource(inputStream));
-                    return entity;
-                });
-    }
+                fileSize.set((long) buf.array().length); // dataBuffer.readableByteCount());
 
-    @DeleteMapping("/delete/s3/{fileKey}")
-    public Mono<ResponseEntity<?>> s3delete(@PathVariable String fileKey) {
-        return fileService.findById(fileKey)
-                .flatMap(res -> {
-                    log.debug("find file => {}", res);
-                    return fileService.s3delete(fileKey, awsProperties.getBucket())
-                            .flatMap(deleteObjectResponse -> {
-                                log.debug("service delete called..");
-                                return fileService.delete(fileKey);
-                            });
-                })
-                .log()
-                .map(result -> {
-                    SingleResponse<?> response = new SingleResponse(result);
-                    log.debug("response => {}", response);
-                    return ResponseEntity.ok().body(response);
-                });
-    }
+                return fileService.upload(fileKey, fileName.toString(), fileSize.get(),
+                        awsProperties.getBucket(), buf)
+                    .flatMap(res -> {
+                      log.debug("service upload res => {}", res);
+                      File info = File.builder()
+                          .fileKey(fileKey)
+                          .fileName(fileName.toString())
+                          .createdAt(new Date())
+                          .createdId("test")
+                          .delYn(false)
+                          .build();
+                      return fileService.save(info);
+                    });
+              });
+        })
+        .log()
+        .map(res -> {
+          log.debug("=========res => {}", res);
+          return ResponseEntity.ok().body(new SingleResponse(res));
+        });
+  }
 
-    Mono<byte[]> mergeDataBuffers(Flux<DataBuffer> dataBufferFlux) {
-        return DataBufferUtils.join(dataBufferFlux)
-                .map(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    DataBufferUtils.release(dataBuffer);
-                    return bytes;
-                });
-    }
+  /**
+   * S 3 upload mono.
+   *
+   * @param fileKey the file key
+   * @return the mono
+   */
+  @GetMapping(value = "/download/s3/{fileKey}", produces = APPLICATION_OCTET_STREAM_VALUE)
+  public Mono<ResponseEntity<?>> s3upload(@PathVariable String fileKey) {
+
+    AtomicReference<String> fileName = new AtomicReference<>();
+
+    return fileService.findById(fileKey)
+        .flatMap(res -> {
+          log.debug("find file => {}", res);
+          fileName.set(res.getFileName());
+          // s3에서 파일을 다운로드 받는다.
+          return fileService.download(fileKey, awsProperties.getBucket());
+        })
+        .log()
+        .map(inputStream -> {
+          log.debug("finaly result...here");
+          HttpHeaders headers = new HttpHeaders();
+          headers.setContentDispositionFormData(fileName.toString(), fileName.toString());
+          ResponseEntity<?> entity = ResponseEntity.ok().cacheControl(CacheControl.noCache())
+              .headers(headers)
+              .body(new InputStreamResource(inputStream));
+          return entity;
+        });
+  }
+
+  /**
+   * S 3 delete mono.
+   *
+   * @param fileKey the file key
+   * @return the mono
+   */
+  @DeleteMapping("/delete/s3/{fileKey}")
+  public Mono<ResponseEntity<?>> s3delete(@PathVariable String fileKey) {
+    return fileService.findById(fileKey)
+        .flatMap(res -> {
+          log.debug("find file => {}", res);
+          return fileService.s3delete(fileKey, awsProperties.getBucket())
+              .flatMap(deleteObjectResponse -> {
+                log.debug("service delete called..");
+                return fileService.delete(fileKey);
+              });
+        })
+        .log()
+        .map(result -> {
+          SingleResponse<?> response = new SingleResponse(result);
+          log.debug("response => {}", response);
+          return ResponseEntity.ok().body(response);
+        });
+  }
 }
