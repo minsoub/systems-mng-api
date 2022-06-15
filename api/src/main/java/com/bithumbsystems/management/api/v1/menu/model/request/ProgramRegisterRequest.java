@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ProgramRegisterRequest {
-  private String id;
+  //private String id;
   private String name;
   private RoleType type;
   private String kindName;

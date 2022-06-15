@@ -40,6 +40,7 @@ public class MenuService {
           .siteId(menu.getSiteId())
           .isUse(menu.getIsUse())
           .order(menu.getOrder())
+          .parent_menu_id(menu.getParentsMenuId())
           .childMenu(new ArrayList<>())
           .build())
         ).flatMap(response -> menuDomainService.findList(siteId, isUse, response.getId())
@@ -51,6 +52,7 @@ public class MenuService {
                   .siteId(m.getSiteId())
                   .isUse(m.getIsUse())
                   .order(m.getOrder())
+                  .parent_menu_id(m.getParentsMenuId())
                   .childMenu(new ArrayList<>())
                   .build();
 
@@ -61,6 +63,7 @@ public class MenuService {
                       .siteId(c.getSiteId())
                       .isUse(c.getIsUse())
                       .order(c.getOrder())
+                      .parent_menu_id(m.getParentsMenuId())
                       .childMenu(new ArrayList<>())
                       .build())).collectList()
                   .flatMap(c -> {
