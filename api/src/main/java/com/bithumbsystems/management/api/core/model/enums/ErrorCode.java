@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ErrorCode {
   UNKNOWN_ERROR("F001", "error"),
+  INVALID_DATA("F999", "data is null or empty"),
+
   INVALID_FILE("F002","file is invalid"),
   FAIL_SAVE_FILE("F003","file save fail"),
   INVALID_TOKEN("F004","Invalid token"),
@@ -16,7 +18,6 @@ public enum ErrorCode {
   NOT_EXIST_SITE("M404","NOT_EXIST_SITE"),
   NOT_EXIST_MENU("M401","NOT_EXIST_MENU"),
   NOT_EXIST_PROGRAM("P401","NOT_EXIST_PROGRAM"),
-
   FAIL_SAVE_MENU("M402","FAIL_SAVE_MENU"),
   FAIL_SEND_MAIL("M411","FAIL_SEND_MAIL");
 

@@ -3,11 +3,12 @@ package com.bithumbsystems.management.api.v1.menu.controller;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
+import com.bithumbsystems.management.api.v1.menu.model.request.MenuMappingRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
 import com.bithumbsystems.management.api.v1.menu.service.MenuService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +42,11 @@ public class MenuController {
    * @return the response entity
    */
   @PostMapping("/site/{siteId}/menu")
-  public ResponseEntity<Mono<?>> create(@PathVariable String siteId, @RequestBody MenuRegisterRequest menuRegisterRequest,
+  public ResponseEntity<Mono<?>> create(@PathVariable String siteId,
+      @RequestBody MenuRegisterRequest menuRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(menuService.create(siteId, menuRegisterRequest, account)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -57,7 +59,7 @@ public class MenuController {
   @GetMapping("/site/{siteId}/menu/{menuId}")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId, @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getOne(siteId, menuId)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -74,7 +76,7 @@ public class MenuController {
       @RequestBody MenuUpdateRequest menuUpdateRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(menuService.update(siteId, menuId, menuUpdateRequest, account)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -88,36 +90,41 @@ public class MenuController {
   public ResponseEntity<Mono<?>> getMenuList(@PathVariable String siteId,
       @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(menuService.getMenuList(siteId, isUse)
-        .map(menuListResponses -> new SingleResponse(menuListResponses)));
+        .map(SingleResponse::new));
   }
 
   /**
    * 메뉴와 연결된 프로그램 목록
    *
-   * @param siteId  the site id
-   * @param menuId  the menu id
+   * @param siteId the site id
+   * @param menuId the menu id
    * @return the programs
    */
   @GetMapping("/site/{siteId}/menu/{menuId}/programs")
-  public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId, @PathVariable String menuId) {
+  public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId,
+      @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getPrograms(siteId, menuId)
-        .map(menuProgramResponse -> new SingleResponse(menuProgramResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
    * 메뉴와 프로그램 연결
    *
-   * @param siteId  the site id
-   * @param menuId  the menu id
-   * @param programIds the programIds
+   * @param siteId             the site id
+   * @param menuId             the menu id
+   * @param menuMappingRequest the menu mapping request
+   * @param account            the account
    * @return the programs
    */
   @PutMapping("/site/{siteId}/menu/{menuId}/programs")
-  public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId, @PathVariable String menuId,
-      @RequestBody List<String> programIds,
+  @Operation(summary = "메뉴와 프로그램 연결" , description = "메뉴에 속한 프로그램 연결")
+  public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId,
+      @PathVariable String menuId,
+      @RequestBody MenuMappingRequest menuMappingRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
-    return ResponseEntity.ok().body(menuService.mappingMenuPrograms(siteId, menuId, programIds, account)
-        .map(menuProgramResponse -> new SingleResponse(menuProgramResponse)));
+    return ResponseEntity.ok()
+        .body(menuService.mappingMenuPrograms(siteId, menuId, menuMappingRequest, account)
+            .map(SingleResponse::new));
   }
 
 

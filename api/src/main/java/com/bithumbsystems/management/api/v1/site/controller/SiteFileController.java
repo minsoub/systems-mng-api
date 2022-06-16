@@ -96,7 +96,7 @@ public class SiteFileController {
    * @param account             the account
    * @return the mono
    */
-  @PutMapping("/site/{siteId}/file/{fileId}")
+  @PutMapping("/site/{siteId}/file")
   public ResponseEntity<Mono<?>> updateFileManagement(@PathVariable String siteId,
       @RequestBody SiteFileInfoRequest siteFileInfoRequest,
       @CurrentUser Account account) {
