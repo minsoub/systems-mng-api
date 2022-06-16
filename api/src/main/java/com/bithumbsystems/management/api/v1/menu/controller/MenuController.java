@@ -42,6 +42,7 @@ public class MenuController {
    * @return the response entity
    */
   @PostMapping("/site/{siteId}/menu")
+  @Operation(summary = "메뉴 생성", description = "사이트 관리> 메뉴관리: 메뉴 생성")
   public ResponseEntity<Mono<?>> create(@PathVariable String siteId,
       @RequestBody MenuRegisterRequest menuRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -57,6 +58,7 @@ public class MenuController {
    * @return the one
    */
   @GetMapping("/site/{siteId}/menu/{menuId}")
+  @Operation(summary = "메뉴 조회", description = "사이트 관리> 메뉴관리: 메뉴 조회")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId, @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getOne(siteId, menuId)
         .map(SingleResponse::new));
@@ -72,6 +74,7 @@ public class MenuController {
    * @return the response entity
    */
   @PutMapping("/site/{siteId}/menu/{menuId}")
+  @Operation(summary = "메뉴 수정", description = "사이트 관리> 메뉴관리: 메뉴 수정")
   public ResponseEntity<Mono<?>> update(@PathVariable String siteId, @PathVariable String menuId,
       @RequestBody MenuUpdateRequest menuUpdateRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -87,6 +90,7 @@ public class MenuController {
    * @return the menu list
    */
   @GetMapping("/site/{siteId}/menu-list")
+  @Operation(summary = "메뉴 목록 조회", description = "사이트 관리> 메뉴관리: 메뉴 목록 조회")
   public ResponseEntity<Mono<?>> getMenuList(@PathVariable String siteId,
       @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(menuService.getMenuList(siteId, isUse)
@@ -101,6 +105,7 @@ public class MenuController {
    * @return the programs
    */
   @GetMapping("/site/{siteId}/menu/{menuId}/programs")
+  @Operation(summary = "메뉴와 연결된 프로그램 목록", description = "사이트 관리> 메뉴관리: 프로그램 연결 조회")
   public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId,
       @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getPrograms(siteId, menuId)
@@ -117,7 +122,7 @@ public class MenuController {
    * @return the programs
    */
   @PutMapping("/site/{siteId}/menu/{menuId}/programs")
-  @Operation(summary = "메뉴와 프로그램 연결" , description = "메뉴에 속한 프로그램 연결")
+  @Operation(summary = "메뉴와 프로그램 연결" , description = "사이트 관리> 메뉴관리: 메뉴에 속한 프로그램 연결 작업")
   public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId,
       @PathVariable String menuId,
       @RequestBody MenuMappingRequest menuMappingRequest,

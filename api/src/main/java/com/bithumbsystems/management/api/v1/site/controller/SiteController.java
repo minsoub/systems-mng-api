@@ -6,6 +6,7 @@ import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.site.model.request.SiteRegisterRequest;
 import com.bithumbsystems.management.api.v1.site.service.SiteService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ public class SiteController {
    * @return the response entity
    */
   @GetMapping("/sites")
+  @Operation(summary = "사이트 목록 조회", description = "통합 시스템 관리: 사이트 목록")
   public ResponseEntity<Mono<?>> list(
       @RequestParam(required = false, defaultValue = "") String searchText
       , @RequestParam(required = false) Boolean isUse) {
@@ -53,6 +55,7 @@ public class SiteController {
    * @return the response entity
    */
   @PostMapping("/site")
+  @Operation(summary = "사이트 생성", description = "통합 시스템 관리: 사이트 생성")
   public ResponseEntity<Mono<?>> create(@RequestBody SiteRegisterRequest siteRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(siteService.create(siteRegisterRequest, account)
@@ -66,6 +69,7 @@ public class SiteController {
    * @return the one
    */
   @GetMapping("/site/{siteId}")
+  @Operation(summary = "사이트 조회", description = "통합 시스템 관리: 사이트 단건 조회")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId) {
     return ResponseEntity.ok().body(siteService.getOne(siteId)
         .map(SingleResponse::new));
@@ -80,6 +84,7 @@ public class SiteController {
    * @return the response entity
    */
   @PutMapping("/site/{siteId}")
+  @Operation(summary = "사이트 수정", description = "통합 시스템 관리: 사이트 단건 수정")
   public ResponseEntity<Mono<?>> update(@PathVariable String siteId,
       @RequestBody SiteRegisterRequest siteRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
