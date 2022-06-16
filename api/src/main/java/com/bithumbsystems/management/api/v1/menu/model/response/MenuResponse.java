@@ -12,6 +12,7 @@ public class MenuResponse {
 
   private String id;
   private String name;
+  private String siteId;
   private String parentsMenuId;
   private Boolean isUse;
   private String url;
