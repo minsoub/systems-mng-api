@@ -17,7 +17,6 @@ import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.service.MenuDomainService;
 import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -63,7 +62,6 @@ public class MenuService {
                 .build())
             .flatMap(
                 childResponse -> menuDomainService.findList(siteId, isUse, childResponse.getId())
-                    .delaySequence(Duration.ofSeconds(3))
                     .flatMap(c -> Mono.just(MenuListResponse.builder()
                         .name(c.getName())
                         .id(c.getId())
