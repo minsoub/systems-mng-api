@@ -160,7 +160,7 @@ public class MailService implements MessageService {
   }
 
   private MimeMessage getMimeMessage(String emailAddress, String subject) throws MessagingException {
-    MimeMessage message;
+    MimeMessage message = null;
     Session session = Session.getDefaultInstance(new Properties());
 
     // Create a new MimeMessage object.
