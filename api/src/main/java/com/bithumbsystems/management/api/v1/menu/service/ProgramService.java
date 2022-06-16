@@ -11,6 +11,7 @@ import com.bithumbsystems.management.api.v1.menu.model.response.ProgramResponse;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Program;
 import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,8 @@ public class ProgramService {
 
   public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse) {
     return programDomainService.findBySearchText(siteId, searchText, isUse)
-        .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectList();
+        .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectSortedList(
+            Comparator.comparing(ProgramResponse::getCreateDate));
   }
 
   public Mono<ProgramResponse> create(String siteId, ProgramRegisterRequest programRegisterRequest, Account account) {

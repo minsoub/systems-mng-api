@@ -6,6 +6,7 @@ import com.bithumbsystems.management.api.v1.site.model.request.SiteRegisterReque
 import com.bithumbsystems.management.api.v1.site.model.response.SiteResponse;
 import com.bithumbsystems.persistence.mongodb.site.model.entity.Site;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,7 @@ public class SiteService {
           SiteResponse SiteResponse = SiteMapper.INSTANCE.siteToSiteResponse(site);
           return Mono.just(SiteResponse);
         }
-    ).collectList();
+    ).collectSortedList(Comparator.comparing(SiteResponse::getCreateDate));
   }
 
   /**

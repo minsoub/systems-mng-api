@@ -39,7 +39,7 @@ public class MenuCustomRepositoryImpl implements MenuCustomRepository {
     return reactiveMongoTemplate.aggregate(aggregation, "menu", outputType);
   }
 
-
+  @Override
   public Flux<Menu> findMenuListBySiteId(String siteId, Boolean isUse, String parentMenuId) {
     var siteCondition = where("site_id").is(siteId);
     var isUseCondition = where("is_use").is(isUse);

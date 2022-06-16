@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.role.model.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,5 +13,6 @@ public class MenuResourceResponse {
   private String id;
   private String name;
   private Boolean visible;
+  private LocalDateTime createDate;
   private List<ProgramResourceResponse> programList;
 }

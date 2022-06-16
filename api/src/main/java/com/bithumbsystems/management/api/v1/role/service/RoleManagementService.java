@@ -24,6 +24,7 @@ import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleAuthorizationDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -101,7 +102,7 @@ public class RoleManagementService {
     return roleManagementDomainService.findBySiteIdAndIsUseAndType(siteId, isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
-        .collectList();
+        .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate));
   }
 
   /**
@@ -114,7 +115,7 @@ public class RoleManagementService {
     return adminAccessDomainService.findByRoleManagementId(roleManagementId)
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
-        .collectList();
+        .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate));
   }
 
   /**
@@ -178,6 +179,7 @@ public class RoleManagementService {
             .flatMap(menu -> Mono.just(MenuResourceResponse.builder()
                 .id(menu.getId())
                 .name(menu.getName())
+                .createDate(menu.getCreateDate())
                 .build()))
             .publishOn(Schedulers.boundedElastic())
             .doOnNext(menu -> roleAuthorization.flatMap(r -> {
@@ -205,12 +207,12 @@ public class RoleManagementService {
                   program.setIsCheck(isCheck);
                   return Mono.just(program);
                 }).subscribe())
-                .collectList()
+                .collectSortedList(Comparator.comparing(ProgramResourceResponse::getCreateDate))
                 .flatMap(c -> {
                   menuResource.setProgramList(c);
                   return Mono.just(menuResource);
                 }))
-            .collectList()
+            .collectSortedList(Comparator.comparing(MenuResourceResponse::getCreateDate))
             .flatMap(Mono::just);
 
     return allMenuList.flatMap(list -> {
@@ -241,7 +243,7 @@ public class RoleManagementService {
                     .visible(true)
                     .programId(roleResourceRequest.getProgramId())
                     .build()))
-            .collectList()
+            .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
             .flatMap(authorizationResources -> {
               roleAuthorization.setAuthorizationResources(authorizationResources);
               return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());

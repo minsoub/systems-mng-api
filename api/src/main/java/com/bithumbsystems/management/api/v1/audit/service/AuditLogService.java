@@ -4,6 +4,7 @@ import com.bithumbsystems.management.api.v1.audit.model.mapper.AuditLogMapper;
 import com.bithumbsystems.management.api.v1.audit.model.request.AuditLogSearchRequest;
 import com.bithumbsystems.management.api.v1.audit.model.response.AuditLogSearchResponse;
 import com.bithumbsystems.persistence.mongodb.audit.service.AuditLogDomainService;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,7 +25,7 @@ public class AuditLogService {
             auditLogSearchRequest.getEndDate(),
             PageRequest.of(auditLogSearchRequest.getPage(), auditLogSearchRequest.getSize()))
         .map(AuditLogMapper.INSTANCE::auditLogToResponse)
-        .collectList()
+        .collectSortedList(Comparator.comparing(AuditLogSearchResponse::getCreateDate))
         .zipWith(auditLogDomainService.countBySearchText(auditLogSearchRequest.getSearchText(),
             auditLogSearchRequest.getStartDate(),
             auditLogSearchRequest.getEndDate())

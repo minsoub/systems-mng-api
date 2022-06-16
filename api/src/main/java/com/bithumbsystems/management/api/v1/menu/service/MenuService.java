@@ -15,6 +15,7 @@ import com.bithumbsystems.persistence.mongodb.menu.service.MenuDomainService;
 import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,12 +72,12 @@ public class MenuService {
                     return Mono.just(childResponse);
                   }).subscribe();
               return childResponse;
-            }).collectList()
+            }).collectSortedList(Comparator.comparing(MenuListResponse::getOrder))
             .flatMap(r -> {
               response.setChildMenu(r);
               return Mono.just(response);
             }))
-        .collectList();
+        .collectSortedList(Comparator.comparing(MenuListResponse::getOrder));
   }
 
   public Mono<MenuResponse> create(String siteId, MenuRegisterRequest menuRegisterRequest, Account account) {
@@ -116,7 +117,7 @@ public class MenuService {
     return menuDomainService.findBySiteIdAndId(siteId, menuId)
         .flatMap(menu -> programDomainService.findMenuPrograms(siteId, menu.getId())
             .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program)))
-            .collectList());
+            .collectSortedList(Comparator.comparing(ProgramResponse::getCreateDate)));
   }
 
   public Mono<List<ProgramResponse>> mappingMenuPrograms(String siteId, String menuId, List<String> programIds, Account account) {

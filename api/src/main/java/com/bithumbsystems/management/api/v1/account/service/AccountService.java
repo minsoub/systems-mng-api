@@ -27,6 +27,7 @@ import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomain
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.mail.MessagingException;
@@ -389,9 +390,10 @@ public class AccountService {
                   .lastLoginDate(tuple2.getT1().getLastLoginDate())
                   .email(tuple2.getT1().getEmail())
                   .name(tuple2.getT1().getName())
+                  .createDate(tuple2.getT1().getCreateDate())
                   .build());
         })
-        .collectList();
+        .collectSortedList(Comparator.comparing(AccountResponse::getCreateDate));
   }
 
   /**

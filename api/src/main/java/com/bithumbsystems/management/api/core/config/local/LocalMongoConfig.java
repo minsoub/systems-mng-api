@@ -7,10 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.data.mongodb.ReactiveMongoDatabaseFactory;
 import org.springframework.data.mongodb.ReactiveMongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractReactiveMongoConfiguration;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.convert.NoOpDbRefResolver;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.transaction.ReactiveTransactionManager;
 import org.springframework.transaction.reactive.TransactionalOperator;
 
@@ -47,5 +53,18 @@ public class LocalMongoConfig extends AbstractReactiveMongoConfiguration {
     @Bean
     public TransactionalOperator transactionOperator(ReactiveTransactionManager manager) {
         return TransactionalOperator.create(manager);
+    }
+
+    @Bean
+    @Primary
+    public MappingMongoConverter mappingMongoConverter(ReactiveMongoDatabaseFactory databaseFactory,
+        MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
+        mappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
+
+        MappingMongoConverter converter = new MappingMongoConverter(NoOpDbRefResolver.INSTANCE, mappingContext);
+        converter.setCustomConversions(customConversions);
+        converter.setCodecRegistryProvider(databaseFactory);
+
+        return converter;
     }
 }
