@@ -7,6 +7,7 @@ import com.bithumbsystems.management.api.v1.menu.model.mapper.MenuMapper;
 import com.bithumbsystems.management.api.v1.menu.model.mapper.ProgramMapper;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
+import com.bithumbsystems.management.api.v1.menu.model.response.MenuDetailResponse;
 import com.bithumbsystems.management.api.v1.menu.model.response.MenuListResponse;
 import com.bithumbsystems.management.api.v1.menu.model.response.MenuResponse;
 import com.bithumbsystems.management.api.v1.menu.model.response.ProgramResponse;
@@ -20,6 +21,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -93,11 +95,68 @@ public class MenuService {
         }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.FAIL_SAVE_MENU)));
   }
 
-  public Mono<MenuResponse> getOne(String siteId, String menuId) {
-    return menuDomainService.findBySiteIdAndId(siteId, menuId)
-        .flatMap(menu -> Mono.just(menu)
-            .map(MenuMapper.INSTANCE::menuToMenuResponse));
-  }
+    public Mono<MenuDetailResponse> getOne(String siteId, String menuId) {
+        log.debug("search key => {}, {}", siteId, menuId);
+        return menuDomainService.findBySiteIdAndId(siteId, menuId)
+                .flatMap(menu -> {
+                    log.debug("search data => {}", menu);
+                    if (StringUtils.hasLength(menu.getParentsMenuId())) {
+                        return menuDomainService.findBySiteIdAndId(siteId, menu.getParentsMenuId())
+                                .flatMap(result -> Mono.just(MenuDetailResponse.builder()
+                                        .id(menu.getId())
+                                        .name(menu.getName())
+                                        .siteId(menu.getSiteId())
+                                        .parentsMenuId((menu.getParentsMenuId()))
+                                        .parentsMenuName(result.getName())
+                                        .order(menu.getOrder())
+                                        .isUse(menu.getIsUse())
+                                        .url(menu.getUrl())
+                                        .type(menu.getType())
+                                        .target(menu.getTarget())
+                                        .icon(menu.getIcon())
+                                        .externalLink(menu.getExternalLink())
+                                        .description(menu.getDescription())
+                                        .build()
+                                ))
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    return Mono.just(MenuDetailResponse.builder()
+                                            .id(menu.getId())
+                                            .name(menu.getName())
+                                            .siteId(menu.getSiteId())
+                                            .parentsMenuId((menu.getParentsMenuId()))
+                                            .parentsMenuName("")
+                                            .order(menu.getOrder())
+                                            .isUse(menu.getIsUse())
+                                            .url(menu.getUrl())
+                                            .type(menu.getType())
+                                            .target(menu.getTarget())
+                                            .icon(menu.getIcon())
+                                            .externalLink(menu.getExternalLink())
+                                            .description(menu.getDescription())
+                                            .build() );
+                                }));
+                    } else {
+                        return Mono.just(MenuDetailResponse.builder()
+                                .id(menu.getId())
+                                .name(menu.getName())
+                                .siteId(menu.getSiteId())
+                                .parentsMenuId((menu.getParentsMenuId()))
+                                .parentsMenuName("")
+                                .order(menu.getOrder())
+                                .isUse(menu.getIsUse())
+                                .url(menu.getUrl())
+                                .type(menu.getType())
+                                .target(menu.getTarget())
+                                .icon(menu.getIcon())
+                                .externalLink(menu.getExternalLink())
+                                .description(menu.getDescription())
+                                .build());
+                    }
+                }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.UNKNOWN_ERROR)));
+
+        //.flatMap(menu -> Mono.just(menu)
+        //    .map(MenuMapper.INSTANCE::menuToMenuResponse));
+    }
 
   public Mono<MenuResponse> update(String siteId, String menuId, MenuUpdateRequest menuUpdateRequest, Account account) {
     return siteDomainService.existsById(siteId)

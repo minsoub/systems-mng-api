@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MenuRegisterRequest {
 
-  private String id;
+  //private String id;
   private String name;
   private String parentsMenuId;
   private Boolean isUse;
