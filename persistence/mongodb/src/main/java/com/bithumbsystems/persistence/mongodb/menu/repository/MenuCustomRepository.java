@@ -3,6 +3,7 @@ package com.bithumbsystems.persistence.mongodb.menu.repository;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
 public interface MenuCustomRepository {
