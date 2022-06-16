@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * The type Role management service.
@@ -181,14 +180,13 @@ public class RoleManagementService {
                 .name(menu.getName())
                 .createDate(menu.getCreateDate())
                 .build()))
-            .publishOn(Schedulers.boundedElastic())
-            .doOnNext(menu -> roleAuthorization.flatMap(r -> {
+            .flatMap(menu -> roleAuthorization.flatMap(r -> {
               var visible = r.getAuthorizationResources().stream()
                   .anyMatch(a -> a.getMenuId().equals(menu.getId()));
               log.info("v {}", visible);
               menu.setVisible(visible);
               return Mono.just(menu);
-            }).subscribe())
+            }))
             .flatMap(menuResource -> programDomainService.findMenuPrograms(menuResource.getId())
                 .flatMap(program -> Mono.just(ProgramResourceResponse.builder()
                     .id(program.getId())
@@ -199,14 +197,13 @@ public class RoleManagementService {
                     .actionUrl(program.getActionUrl())
                     .description(program.getDescription())
                     .build()))
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext(program -> roleAuthorization.flatMap(r -> {
+                .flatMap(program -> roleAuthorization.flatMap(r -> {
                   var isCheck = r.getAuthorizationResources().stream()
                       .anyMatch(a -> a.getProgramId().contains(program.getId()));
                   log.info("isCheck {}", isCheck);
                   program.setIsCheck(isCheck);
                   return Mono.just(program);
-                }).subscribe())
+                }))
                 .collectSortedList(Comparator.comparing(ProgramResourceResponse::getCreateDate))
                 .flatMap(c -> {
                   menuResource.setProgramList(c);

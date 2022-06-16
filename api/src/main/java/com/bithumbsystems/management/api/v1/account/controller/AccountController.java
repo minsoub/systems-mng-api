@@ -9,6 +9,7 @@ import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegi
 import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
 import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
 import com.bithumbsystems.management.api.v1.account.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ public class AccountController {
    * @return the response entity
    */
   @GetMapping("/accounts")
+  @Operation(summary = "계정 검색")
   public ResponseEntity<Mono<?>> accountsSearch(
       @RequestParam(required = false, defaultValue = "") String searchText,
       @RequestParam(required = false) Boolean isUse) {
@@ -82,6 +84,7 @@ public class AccountController {
    * @return the response entity
    */
   @PostMapping("/account")
+  @Operation(summary = "통합 시스템 관리자가 계정을 등록", description = "통합 시스템 관리자가 계정을 등록")
   public ResponseEntity<Mono<?>> adminAccountCreate(
       @RequestBody AccountRegisterRequest accountRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {

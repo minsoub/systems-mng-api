@@ -3,11 +3,12 @@ package com.bithumbsystems.management.api.v1.menu.controller;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
+import com.bithumbsystems.management.api.v1.menu.model.request.MenuMappingRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
 import com.bithumbsystems.management.api.v1.menu.service.MenuService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -109,18 +110,20 @@ public class MenuController {
   /**
    * 메뉴와 프로그램 연결
    *
-   * @param siteId     the site id
-   * @param menuId     the menu id
-   * @param programIds the programIds
+   * @param siteId             the site id
+   * @param menuId             the menu id
+   * @param menuMappingRequest the menu mapping request
+   * @param account            the account
    * @return the programs
    */
   @PutMapping("/site/{siteId}/menu/{menuId}/programs")
+  @Operation(summary = "메뉴와 프로그램 연결" , description = "메뉴에 속한 프로그램 연결")
   public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId,
       @PathVariable String menuId,
-      @RequestBody List<String> programIds,
+      @RequestBody MenuMappingRequest menuMappingRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok()
-        .body(menuService.mappingMenuPrograms(siteId, menuId, programIds, account)
+        .body(menuService.mappingMenuPrograms(siteId, menuId, menuMappingRequest, account)
             .map(SingleResponse::new));
   }
 

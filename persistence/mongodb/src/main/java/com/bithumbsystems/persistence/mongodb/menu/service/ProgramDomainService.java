@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -64,21 +63,18 @@ public class ProgramDomainService {
   }
 
   @Transactional
-  public Mono<Void> saveSiteMenuProgram(String siteId, String menuId, List<String> programIds, String accountId) {
+  public Mono<List<SiteMenuProgram>> saveSiteMenuProgram(String siteId, String menuId,
+      List<String> programIds, String accountId) {
     return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId)
-        .publishOn(Schedulers.immediate())
-            .doOnSuccess((t) -> {
-              final var siteMenuPrograms = programIds
-                  .stream()
-                  .map(programId -> SiteMenuProgram.builder()
-                    .menuId(menuId)
-                    .siteId(siteId)
-                    .createDate(LocalDateTime.now())
-                    .createAdminAccountId(accountId)
-                    .programId(programId)
-                    .build()
-                  ).collect(Collectors.toList());
-              siteMenuProgramRepository.saveAll(siteMenuPrograms).subscribe();
-            });
+        .then(siteMenuProgramRepository.saveAll(programIds
+            .stream()
+            .map(programId -> SiteMenuProgram.builder()
+                .menuId(menuId)
+                .siteId(siteId)
+                .createDate(LocalDateTime.now())
+                .createAdminAccountId(accountId)
+                .programId(programId)
+                .build()
+            ).collect(Collectors.toList())).collectList());
   }
 }
