@@ -3,6 +3,7 @@ package com.bithumbsystems.management.api.core.config;
 import com.bithumbsystems.management.api.core.config.property.ApplicationProperties;
 import com.bithumbsystems.management.api.core.config.resolver.CustomArgumentResolver;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
@@ -57,8 +58,13 @@ public class WebFluxConfig implements WebFluxConfigurer {
     module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
     module.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
 
+    SimpleModule simpleModule = new SimpleModule();
+    StringDeserializer stringDeserializer = new StringDeserializer();
+    simpleModule.addDeserializer(String.class, stringDeserializer);
+
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(module);
+//    objectMapper.registerModule(simpleModule);
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);

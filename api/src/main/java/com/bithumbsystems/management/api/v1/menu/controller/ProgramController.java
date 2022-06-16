@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+/**
+ * The type Program controller.
+ */
 @Slf4j
 @RestController
 @RequestMapping
@@ -29,39 +32,82 @@ public class ProgramController {
 
   private final ProgramService programService;
 
+  /**
+   * Gets list.
+   *
+   * @param siteId     the site id
+   * @param searchText the search text
+   * @param isUse      the is use
+   * @return the list
+   */
   @GetMapping("/site/{siteId}/programs")
   public ResponseEntity<Mono<?>> getList(@PathVariable String siteId,
       @RequestParam(required = false, defaultValue = "") String searchText,
       @RequestParam Boolean isUse) {
     return ResponseEntity.ok().body(programService.getList(siteId, searchText, isUse)
-        .map(programResponse -> new SingleResponse(programResponse)));
+        .map(SingleResponse::new));
   }
 
+  /**
+   * Create response entity.
+   *
+   * @param siteId                 the site id
+   * @param programRegisterRequest the program register request
+   * @param account                the account
+   * @return the response entity
+   */
   @PostMapping("/site/{siteId}/program")
-  public ResponseEntity<Mono<?>> create(@PathVariable String siteId, @RequestBody ProgramRegisterRequest programRegisterRequest,
+  public ResponseEntity<Mono<?>> create(@PathVariable String siteId,
+      @RequestBody ProgramRegisterRequest programRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(programService.create(siteId, programRegisterRequest, account)
-        .map(programResponse -> new SingleResponse(programResponse)));
+        .map(SingleResponse::new));
   }
 
+  /**
+   * Gets one.
+   *
+   * @param siteId    the site id
+   * @param programId the program id
+   * @return the one
+   */
   @GetMapping("/site/{siteId}/program/{programId}")
-  public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId, @PathVariable String programId) {
+  public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId,
+      @PathVariable String programId) {
     return ResponseEntity.ok().body(programService.getOne(siteId, programId)
-        .map(programResponse -> new SingleResponse(programResponse)));
+        .map(SingleResponse::new));
   }
 
+  /**
+   * Update response entity.
+   *
+   * @param siteId               the site id
+   * @param programId            the program id
+   * @param programUpdateRequest the program update request
+   * @param account              the account
+   * @return the response entity
+   */
   @PutMapping("/site/{siteId}/program/{programId}")
   public ResponseEntity<Mono<?>> update(@PathVariable String siteId, @PathVariable String programId,
       @RequestBody ProgramUpdateRequest programUpdateRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
-    return ResponseEntity.ok().body(programService.update(siteId, programId, programUpdateRequest, account)
-        .map(programResponse -> new SingleResponse(programResponse)));
+    return ResponseEntity.ok()
+        .body(programService.update(siteId, programId, programUpdateRequest, account)
+            .map(SingleResponse::new));
   }
 
+  /**
+   * Delete response entity.
+   *
+   * @param siteId    the site id
+   * @param programId the program id
+   * @return the response entity
+   */
   @DeleteMapping("/site/{siteId}/program/{programId}")
-  public ResponseEntity<Mono<?>> delete(@PathVariable String siteId, @PathVariable String programId) {
+  public ResponseEntity<Mono<?>> delete(@PathVariable String siteId,
+      @PathVariable String programId) {
     return ResponseEntity.ok().body(programService.delete(siteId, programId)
-        .map(response -> new SingleResponse(response)));
+        .map(SingleResponse::new));
   }
 
 }

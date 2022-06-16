@@ -41,10 +41,11 @@ public class MenuController {
    * @return the response entity
    */
   @PostMapping("/site/{siteId}/menu")
-  public ResponseEntity<Mono<?>> create(@PathVariable String siteId, @RequestBody MenuRegisterRequest menuRegisterRequest,
+  public ResponseEntity<Mono<?>> create(@PathVariable String siteId,
+      @RequestBody MenuRegisterRequest menuRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(menuService.create(siteId, menuRegisterRequest, account)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -57,7 +58,7 @@ public class MenuController {
   @GetMapping("/site/{siteId}/menu/{menuId}")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId, @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getOne(siteId, menuId)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -74,7 +75,7 @@ public class MenuController {
       @RequestBody MenuUpdateRequest menuUpdateRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(menuService.update(siteId, menuId, menuUpdateRequest, account)
-        .map(menuResponse -> new SingleResponse(menuResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -88,36 +89,39 @@ public class MenuController {
   public ResponseEntity<Mono<?>> getMenuList(@PathVariable String siteId,
       @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(menuService.getMenuList(siteId, isUse)
-        .map(menuListResponses -> new SingleResponse(menuListResponses)));
+        .map(SingleResponse::new));
   }
 
   /**
    * 메뉴와 연결된 프로그램 목록
    *
-   * @param siteId  the site id
-   * @param menuId  the menu id
+   * @param siteId the site id
+   * @param menuId the menu id
    * @return the programs
    */
   @GetMapping("/site/{siteId}/menu/{menuId}/programs")
-  public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId, @PathVariable String menuId) {
+  public ResponseEntity<Mono<?>> getPrograms(@PathVariable String siteId,
+      @PathVariable String menuId) {
     return ResponseEntity.ok().body(menuService.getPrograms(siteId, menuId)
-        .map(menuProgramResponse -> new SingleResponse(menuProgramResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
    * 메뉴와 프로그램 연결
    *
-   * @param siteId  the site id
-   * @param menuId  the menu id
+   * @param siteId     the site id
+   * @param menuId     the menu id
    * @param programIds the programIds
    * @return the programs
    */
   @PutMapping("/site/{siteId}/menu/{menuId}/programs")
-  public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId, @PathVariable String menuId,
+  public ResponseEntity<Mono<?>> mappingMenuPrograms(@PathVariable String siteId,
+      @PathVariable String menuId,
       @RequestBody List<String> programIds,
       @Parameter(hidden = true) @CurrentUser Account account) {
-    return ResponseEntity.ok().body(menuService.mappingMenuPrograms(siteId, menuId, programIds, account)
-        .map(menuProgramResponse -> new SingleResponse(menuProgramResponse)));
+    return ResponseEntity.ok()
+        .body(menuService.mappingMenuPrograms(siteId, menuId, programIds, account)
+            .map(SingleResponse::new));
   }
 
 

@@ -33,13 +33,15 @@ public class SiteController {
    * List response entity.
    *
    * @param searchText the search text
+   * @param isUse      the is use
    * @return the response entity
    */
   @GetMapping("/sites")
-  public ResponseEntity<Mono<?>> list(@RequestParam(required = false, defaultValue = "") String searchText
-  , @RequestParam(required = false) Boolean isUse) {
+  public ResponseEntity<Mono<?>> list(
+      @RequestParam(required = false, defaultValue = "") String searchText
+      , @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(
-        siteService.findBySearchText(searchText, isUse).map(siteResponses -> new MultiResponse(siteResponses))
+        siteService.findBySearchText(searchText, isUse).map(MultiResponse::new)
     );
   }
 
@@ -54,7 +56,7 @@ public class SiteController {
   public ResponseEntity<Mono<?>> create(@RequestBody SiteRegisterRequest siteRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(siteService.create(siteRegisterRequest, account)
-        .map(siteResponse -> new SingleResponse(siteResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -66,7 +68,7 @@ public class SiteController {
   @GetMapping("/site/{siteId}")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId) {
     return ResponseEntity.ok().body(siteService.getOne(siteId)
-        .map(siteResponse -> new SingleResponse(siteResponse)));
+        .map(SingleResponse::new));
   }
 
   /**
@@ -83,6 +85,6 @@ public class SiteController {
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(
         siteService.update(siteId, siteRegisterRequest, account)
-            .map(siteResponse -> new SingleResponse(siteResponse)));
+            .map(SingleResponse::new));
   }
 }
