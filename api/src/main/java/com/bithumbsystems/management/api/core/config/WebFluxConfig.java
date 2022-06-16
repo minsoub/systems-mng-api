@@ -64,7 +64,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(module);
-//    objectMapper.registerModule(simpleModule);
+    objectMapper.registerModule(simpleModule);
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
