@@ -3,6 +3,7 @@ package com.bithumbsystems.management.api.v1.audit.controller;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.audit.model.request.AuditLogSearchRequest;
 import com.bithumbsystems.management.api.v1.audit.service.AuditLogService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class AuditLogController {
    * @return the one
    */
   @GetMapping("/audit/logs")
+  @Operation(summary = "감사로그 조회" , description = "운영 관리> 감사로그 조회")
   public ResponseEntity<Mono<?>> getPage(@RequestBody AuditLogSearchRequest auditLogSearchRequest) {
     return ResponseEntity.ok().body(auditLogService.getPage(auditLogSearchRequest)
         .map(SingleResponse::new));

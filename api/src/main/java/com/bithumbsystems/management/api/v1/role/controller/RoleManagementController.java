@@ -44,6 +44,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @GetMapping("/role/{roleId}/check")
+  @Operation(summary = "ROLE 중복체크", description = "Role 관리 : 등록시 중복체크")
   public ResponseEntity<Mono<?>> checkDuplicate(@PathVariable String roleId) {
     return ResponseEntity.ok().body(roleManagementService.checkDuplicate(roleId)
         .map(SingleResponse::new));
@@ -58,6 +59,7 @@ public class RoleManagementController {
    * @return role managements
    */
   @GetMapping("/roles")
+  @Operation(summary = "ROLE 리스트 검색", description = "Role 관리 : 리스트 검색 조회")
   public ResponseEntity<Mono<?>> getRoleManagements(
       @RequestParam(required = false, defaultValue = "") String siteId,
       @RequestParam(required = false, defaultValue = "true") Boolean isUse,
@@ -74,6 +76,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PostMapping("/role")
+  @Operation(summary = "ROLE 등록", description = "Role 관리 : 등록")
   public ResponseEntity<Mono<?>> create(
       @RequestBody Mono<RoleManagementRegisterRequest> registerRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -92,6 +95,7 @@ public class RoleManagementController {
    * @return the role management
    */
   @GetMapping("/role/{roleManagementId}")
+  @Operation(summary = "ROLE 조회", description = "Role 관리 : ROLE 단건 조회")
   public ResponseEntity<Mono<?>> getRoleManagement(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getOne(roleManagementId)
@@ -110,6 +114,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PutMapping("/role/{roleManagementId}")
+  @Operation(summary = "ROLE 수정", description = "Role 관리 : ROLE 단건 수정")
   public ResponseEntity<Mono<?>> updateRoleManagement(
       @RequestBody Mono<RoleManagementUpdateRequest> updateRequest,
       @PathVariable String roleManagementId,
@@ -129,6 +134,7 @@ public class RoleManagementController {
    * @return account in role management
    */
   @GetMapping("/role/{roleManagementId}/accounts")
+  @Operation(summary = "ROLE 사용자 매핑 조회", description = "Role 관리 : 사용자 매핑 조회")
   public ResponseEntity<Mono<?>> getAccountInRoleManagement(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getAccessUserList(roleManagementId)  // getOne(roleManagementId)
@@ -144,6 +150,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PutMapping("/role/{roleManagementId}/accounts")
+  @Operation(summary = "ROLE 사용자 매핑", description = "Role 관리 : 사용자 매핑")
   public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody RoleAccountsRequest accounts,
       @PathVariable String roleManagementId,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -161,7 +168,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @GetMapping("/role/{roleManagementId}/resources")
-  @Operation(summary = "Role 전체 메뉴 조회", description = "Role에 해당되는 메뉴를 불러 온다")
+  @Operation(summary = "Role 메뉴 프로그램 조회", description = "권한 관리: 메뉴 프로그램 조회")
   public ResponseEntity<Mono<?>> getResources(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getResources(roleManagementId)
@@ -177,6 +184,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PostMapping("/role/{roleManagementId}/resources")
+  @Operation(summary = "Role 메뉴 프로그램 매핑", description = "권한 관리: 메뉴 프로그램 매핑")
   public ResponseEntity<Mono<?>> mappingMenu(
       @RequestBody Flux<RoleResourceRequest> roleResourceRequests,
       @PathVariable String roleManagementId,
