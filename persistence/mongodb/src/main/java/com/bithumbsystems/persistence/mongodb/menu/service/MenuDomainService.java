@@ -30,9 +30,9 @@ public class MenuDomainService {
     });
   }
 
-  public Flux<?> findListBySiteId(String siteId, Boolean isUse, Class<?> outputType) {
-    return menuRepository.findMenuListBySiteId(siteId, isUse, outputType);
-  }
+//  public Flux<?> findListBySiteId(String siteId, Boolean isUse, Class<?> outputType) {
+//    return menuRepository.findMenuListBySiteId(siteId, isUse, outputType);
+//  }
 
   public Flux<Menu> findList(String siteId, Boolean isUse, String parentsMenuId) {
     return menuRepository.findMenuListBySiteId(siteId, isUse, parentsMenuId);
@@ -43,6 +43,6 @@ public class MenuDomainService {
   }
 
   public Mono<Menu> findBySiteIdAndId(String siteId, String menuId) {
-    return menuRepository.findBySiteIdAndId(siteId, menuId);
+    return menuRepository.findBySiteIdAndId(siteId, menuId).log();
   }
 }

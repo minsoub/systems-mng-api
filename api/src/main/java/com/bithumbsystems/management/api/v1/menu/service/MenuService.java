@@ -120,23 +120,21 @@ public class MenuService {
                                         .description(menu.getDescription())
                                         .build()
                                 ))
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    return Mono.just(MenuDetailResponse.builder()
-                                            .id(menu.getId())
-                                            .name(menu.getName())
-                                            .siteId(menu.getSiteId())
-                                            .parentsMenuId((menu.getParentsMenuId()))
-                                            .parentsMenuName("")
-                                            .order(menu.getOrder())
-                                            .isUse(menu.getIsUse())
-                                            .url(menu.getUrl())
-                                            .type(menu.getType())
-                                            .target(menu.getTarget())
-                                            .icon(menu.getIcon())
-                                            .externalLink(menu.getExternalLink())
-                                            .description(menu.getDescription())
-                                            .build() );
-                                }));
+                                .switchIfEmpty(Mono.defer(() -> Mono.just(MenuDetailResponse.builder()
+                                        .id(menu.getId())
+                                        .name(menu.getName())
+                                        .siteId(menu.getSiteId())
+                                        .parentsMenuId((menu.getParentsMenuId()))
+                                        .parentsMenuName("")
+                                        .order(menu.getOrder())
+                                        .isUse(menu.getIsUse())
+                                        .url(menu.getUrl())
+                                        .type(menu.getType())
+                                        .target(menu.getTarget())
+                                        .icon(menu.getIcon())
+                                        .externalLink(menu.getExternalLink())
+                                        .description(menu.getDescription())
+                                        .build() )));
                     } else {
                         return Mono.just(MenuDetailResponse.builder()
                                 .id(menu.getId())
@@ -154,7 +152,7 @@ public class MenuService {
                                 .description(menu.getDescription())
                                 .build());
                     }
-                }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.UNKNOWN_ERROR)));
+                }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.INVALID_DATA)));
 
         //.flatMap(menu -> Mono.just(menu)
         //    .map(MenuMapper.INSTANCE::menuToMenuResponse));
@@ -178,7 +176,9 @@ public class MenuService {
   public Mono<List<ProgramResponse>> getPrograms(String siteId, String menuId) {
     return menuDomainService.findBySiteIdAndId(siteId, menuId)
         .flatMap(menu -> programDomainService.findMenuPrograms(siteId, menu.getId())
+            .log()
             .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program)))
+            .log()
             .collectSortedList(Comparator.comparing(ProgramResponse::getCreateDate)));
   }
 
@@ -190,5 +190,10 @@ public class MenuService {
             .map(MenuMapper.INSTANCE::menuProgramToMenuProgramResponse)
             .collect(
                 Collectors.toList()));
+  }
+
+  public Mono<List<ProgramResponse>> deleteMappingMenuPrograms(String siteId, String menuId, MenuMappingRequest menuMappingRequest) {
+    return programDomainService.deleteSiteMenuProgram(siteId, menuId, menuMappingRequest.getProgramIds())
+        .then(getPrograms(siteId, menuId));
   }
 }

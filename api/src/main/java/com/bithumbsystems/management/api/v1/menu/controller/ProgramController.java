@@ -45,7 +45,7 @@ public class ProgramController {
   @Operation(summary = "프로그램 목록" , description = "통합 시스템 관리> 프로그램 관리: 목록")
   public ResponseEntity<Mono<?>> getList(@PathVariable String siteId,
       @RequestParam(required = false, defaultValue = "") String searchText,
-      @RequestParam Boolean isUse) {
+      @RequestParam(required = false) Boolean isUse) {
     return ResponseEntity.ok().body(programService.getList(siteId, searchText, isUse)
         .map(SingleResponse::new));
   }

@@ -1,30 +1,28 @@
 package com.bithumbsystems.persistence.mongodb.role.model.entity;
 
 import com.bithumbsystems.persistence.mongodb.role.model.enums.RoleType;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "role_management")
 @Getter
 @Setter
 @ToString
 public class RoleManagement {
-  @Id
+  @MongoId
   private String id;
   private String name;
   private RoleType type;
   private Boolean isUse;
   private LocalDate validStartDate;
   private LocalDate validEndDate;
-  //private String validDate;
+  @Indexed
   private String siteId;
   private LocalDateTime createDate;
   private String createAdminAccountId;

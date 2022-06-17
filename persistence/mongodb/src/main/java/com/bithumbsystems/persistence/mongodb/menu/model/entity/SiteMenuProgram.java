@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "site_menu_program")
 @AllArgsConstructor
@@ -15,8 +17,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Builder
 @NoArgsConstructor
+@CompoundIndexes({
+    @CompoundIndex(name = "menu_program_site", def = "{'menuId' : 1, 'programId': 1, 'siteId': 1}", unique = true)
+})
 public class SiteMenuProgram {
-  @Id
+  @MongoId
   private String id;
   private String menuId;
   private String programId;
