@@ -65,8 +65,7 @@ public class ProgramDomainService {
   @Transactional
   public Mono<List<SiteMenuProgram>> saveSiteMenuProgram(String siteId, String menuId,
       List<String> programIds, String accountId) {
-    return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId)
-        .then(siteMenuProgramRepository.saveAll(programIds
+    return siteMenuProgramRepository.saveAll(programIds
             .stream()
             .map(programId -> SiteMenuProgram.builder()
                 .menuId(menuId)
@@ -75,6 +74,15 @@ public class ProgramDomainService {
                 .createAdminAccountId(accountId)
                 .programId(programId)
                 .build()
-            ).collect(Collectors.toList())).collectList());
+            ).collect(Collectors.toList())).collectList();
   }
+
+  public Mono<Void> deleteSiteMenuProgram(String siteId, String menuId,
+      List<String> programIds) {
+    return siteMenuProgramRepository.deleteBySiteIdAndMenuIdAndProgramIdIn(siteId, menuId, programIds);
+  }
+  public Mono<Void> deleteSiteMenuProgram(String siteId, String menuId) {
+    return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId);
+  }
+
 }

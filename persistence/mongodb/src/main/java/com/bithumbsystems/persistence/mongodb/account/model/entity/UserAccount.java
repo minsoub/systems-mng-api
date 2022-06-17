@@ -5,16 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "user_account")
 @AllArgsConstructor
 @Getter
 @Setter
 public class UserAccount {
-  @Id
+  @MongoId
   private String id;
   private String name;
   private String phone;

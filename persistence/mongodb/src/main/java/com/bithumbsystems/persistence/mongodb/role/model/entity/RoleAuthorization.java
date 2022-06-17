@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "role_authorization")
 @AllArgsConstructor
@@ -15,8 +16,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Builder
 public class RoleAuthorization {
-  @Id
+  @MongoId
   private String id;
+  @Indexed
   private String roleManagementId;
   private List<AuthorizationResource> authorizationResources;
   private LocalDateTime createDate;

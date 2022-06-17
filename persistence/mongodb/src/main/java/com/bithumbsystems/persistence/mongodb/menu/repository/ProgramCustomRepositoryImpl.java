@@ -4,6 +4,7 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Program;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -21,20 +22,23 @@ public class ProgramCustomRepositoryImpl implements ProgramCustomRepository {
   @Override
   public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse) {
     var reg = ".*" + searchText + ".*";
+    var condition = new ArrayList<Criteria>();
+    condition.add(new Criteria().andOperator(where("site_id").is(siteId)));
+    if(isUse == null) {
+      condition.add(new Criteria().orOperator(
+          where("name").regex(reg),
+          where("id").regex(reg)));
+    }  else {
+      condition.add(new Criteria().orOperator(
+          where("name").regex(reg),
+          where("id").regex(reg)));
+      condition.add(where("is_use").is(isUse));
+    }
 
-    var criteria = isUse == null ? new Criteria().orOperator(
-        where("name").regex(reg),
-        where("id").regex(reg)) : new Criteria().orOperator(
-        where("name").regex(reg),
-        where("id").regex(reg),
-        where("is_use").is(isUse));
-
-    var condition = query(
-        criteria.andOperator(where("site_id").is(siteId))
-    );
+    var where = query(new Criteria().andOperator(condition));
 
     return reactiveMongoTemplate
-        .find(condition, Program.class);
+        .find(where, Program.class);
   }
 
 }

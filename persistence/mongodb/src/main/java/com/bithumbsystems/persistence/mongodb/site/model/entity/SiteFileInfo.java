@@ -7,17 +7,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "site_file_info")
 @AllArgsConstructor
 @Getter
 @Setter
 public class SiteFileInfo {
-  @Id
+  @MongoId
   private String id;
   @Indexed
   private String siteId;

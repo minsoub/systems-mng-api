@@ -2,15 +2,15 @@ package com.bithumbsystems.persistence.mongodb.audit.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "audit_log")
 @AllArgsConstructor
 @Getter
 public class AuditLog {
 
-  @Id
+  @MongoId
   private Long seq;
   private String adminAccountId;
   private String adminAccountName;

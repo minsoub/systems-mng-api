@@ -4,18 +4,19 @@ import com.bithumbsystems.persistence.mongodb.menu.model.enums.MenuType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "menu")
 @AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 public class Menu {
-  @Id
+  @MongoId
   private String id;
   private String name;
   private Boolean isUse;
@@ -27,14 +28,10 @@ public class Menu {
   private Integer order;
   private String parentsMenuId;
   private String description;
+  @Indexed
   private String siteId;
-  @CreatedDate
   private LocalDateTime createDate;
   private String createAdminAccountId;
-  @LastModifiedDate
   private LocalDateTime updateDate;
   private String updateAdminAccountId;
-
-//  @Transient
-//  private List<SiteMenuProgram> siteMenuProgram;
 }

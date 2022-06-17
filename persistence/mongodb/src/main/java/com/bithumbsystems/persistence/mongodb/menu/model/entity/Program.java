@@ -7,8 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "program")
 @AllArgsConstructor
@@ -16,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @NoArgsConstructor
 public class Program {
-  @Id
+  @MongoId
   private String id;
   private String name;
   private RoleType type;
@@ -25,6 +26,7 @@ public class Program {
   private String actionUrl;
   private Boolean isUse;
   private String description;
+  @Indexed
   private String siteId;
   private LocalDateTime createDate;
   private String createAdminAccountId;
