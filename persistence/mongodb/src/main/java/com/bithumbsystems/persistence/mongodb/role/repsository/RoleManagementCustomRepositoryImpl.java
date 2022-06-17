@@ -30,9 +30,7 @@ public class RoleManagementCustomRepositoryImpl implements RoleManagementCustomR
         } else {
             condition = query(new Criteria()
                     .andOperator(
-                            where("is_use").is(isUse)
-                    )
-                    .orOperator(
+                            where("is_use").is(isUse),
                             where("site_id").is(siteId),
                             where("type").is(type)));
         }
