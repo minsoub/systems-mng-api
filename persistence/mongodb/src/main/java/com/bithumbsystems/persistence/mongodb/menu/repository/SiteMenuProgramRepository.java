@@ -12,4 +12,6 @@ public interface SiteMenuProgramRepository extends ReactiveMongoRepository<SiteM
   Mono<Void> deleteBySiteIdAndMenuIdAndProgramIdIn(String siteId, String menuId, List<String> programIds);
 
   Flux<SiteMenuProgram> findByMenuId(String menuId);
+
+  Mono<Void> deleteBySiteIdAndMenuId(String siteId, String menuId);
 }

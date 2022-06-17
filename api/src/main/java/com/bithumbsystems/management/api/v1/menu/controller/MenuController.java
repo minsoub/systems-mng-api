@@ -3,6 +3,7 @@ package com.bithumbsystems.management.api.v1.menu.controller;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
+import com.bithumbsystems.management.api.v1.menu.model.request.MenuDeleteRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuMappingRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
@@ -84,6 +85,23 @@ public class MenuController {
   }
 
   /**
+   * Update response entity.
+   *
+   * @param siteId            the site id
+   * @param menuDeleteRequest the menu delete request
+   * @param account           the account
+   * @return the response entity
+   */
+  @DeleteMapping("/site/{siteId}/menu")
+  @Operation(summary = "메뉴 삭제", description = "사이트 관리> 메뉴관리: 메뉴 삭제")
+  public ResponseEntity<Mono<?>> delete(@PathVariable String siteId,
+      @RequestBody MenuDeleteRequest menuDeleteRequest,
+      @Parameter(hidden = true) @CurrentUser Account account) {
+    return ResponseEntity.ok().body(menuService.delete(siteId, menuDeleteRequest, account)
+        .map(SingleResponse::new));
+  }
+
+  /**
    * Gets menu list.
    *
    * @param siteId the site id
@@ -142,7 +160,7 @@ public class MenuController {
    * @return the programs
    */
   @DeleteMapping("/site/{siteId}/menu/{menuId}/programs")
-  @Operation(summary = "메뉴와 프로그램 삭제" , description = "사이트 관리> 메뉴관리: 메뉴에 속한 프로그램 연결 삭제")
+  @Operation(summary = "메뉴와 연결된 프로그램 삭제" , description = "사이트 관리> 메뉴관리: 메뉴에 속한 프로그램 연결 삭제")
   public ResponseEntity<Mono<?>> deleteMappingMenuPrograms(@PathVariable String siteId,
       @PathVariable String menuId,
       @RequestBody MenuMappingRequest menuMappingRequest) {

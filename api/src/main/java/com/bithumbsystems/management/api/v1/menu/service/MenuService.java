@@ -5,6 +5,7 @@ import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.v1.menu.exception.MenuException;
 import com.bithumbsystems.management.api.v1.menu.model.mapper.MenuMapper;
 import com.bithumbsystems.management.api.v1.menu.model.mapper.ProgramMapper;
+import com.bithumbsystems.management.api.v1.menu.model.request.MenuDeleteRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuMappingRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuRegisterRequest;
 import com.bithumbsystems.management.api.v1.menu.model.request.MenuUpdateRequest;
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -97,66 +99,66 @@ public class MenuService {
         }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.FAIL_SAVE_MENU)));
   }
 
-    public Mono<MenuDetailResponse> getOne(String siteId, String menuId) {
-        log.debug("search key => {}, {}", siteId, menuId);
-        return menuDomainService.findBySiteIdAndId(siteId, menuId)
-                .flatMap(menu -> {
-                    log.debug("search data => {}", menu);
-                    if (StringUtils.hasLength(menu.getParentsMenuId())) {
-                        return menuDomainService.findBySiteIdAndId(siteId, menu.getParentsMenuId())
-                                .flatMap(result -> Mono.just(MenuDetailResponse.builder()
-                                        .id(menu.getId())
-                                        .name(menu.getName())
-                                        .siteId(menu.getSiteId())
-                                        .parentsMenuId((menu.getParentsMenuId()))
-                                        .parentsMenuName(result.getName())
-                                        .order(menu.getOrder())
-                                        .isUse(menu.getIsUse())
-                                        .url(menu.getUrl())
-                                        .type(menu.getType())
-                                        .target(menu.getTarget())
-                                        .icon(menu.getIcon())
-                                        .externalLink(menu.getExternalLink())
-                                        .description(menu.getDescription())
-                                        .build()
-                                ))
-                                .switchIfEmpty(Mono.defer(() -> Mono.just(MenuDetailResponse.builder()
-                                        .id(menu.getId())
-                                        .name(menu.getName())
-                                        .siteId(menu.getSiteId())
-                                        .parentsMenuId((menu.getParentsMenuId()))
-                                        .parentsMenuName("")
-                                        .order(menu.getOrder())
-                                        .isUse(menu.getIsUse())
-                                        .url(menu.getUrl())
-                                        .type(menu.getType())
-                                        .target(menu.getTarget())
-                                        .icon(menu.getIcon())
-                                        .externalLink(menu.getExternalLink())
-                                        .description(menu.getDescription())
-                                        .build() )));
-                    } else {
-                        return Mono.just(MenuDetailResponse.builder()
-                                .id(menu.getId())
-                                .name(menu.getName())
-                                .siteId(menu.getSiteId())
-                                .parentsMenuId((menu.getParentsMenuId()))
-                                .parentsMenuName("")
-                                .order(menu.getOrder())
-                                .isUse(menu.getIsUse())
-                                .url(menu.getUrl())
-                                .type(menu.getType())
-                                .target(menu.getTarget())
-                                .icon(menu.getIcon())
-                                .externalLink(menu.getExternalLink())
-                                .description(menu.getDescription())
-                                .build());
-                    }
-                }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.INVALID_DATA)));
+  public Mono<MenuDetailResponse> getOne(String siteId, String menuId) {
+    log.debug("search key => {}, {}", siteId, menuId);
+    return menuDomainService.findBySiteIdAndId(siteId, menuId)
+        .flatMap(menu -> {
+          log.debug("search data => {}", menu);
+          if (StringUtils.hasLength(menu.getParentsMenuId())) {
+            return menuDomainService.findBySiteIdAndId(siteId, menu.getParentsMenuId())
+                .flatMap(result -> Mono.just(MenuDetailResponse.builder()
+                    .id(menu.getId())
+                    .name(menu.getName())
+                    .siteId(menu.getSiteId())
+                    .parentsMenuId((menu.getParentsMenuId()))
+                    .parentsMenuName(result.getName())
+                    .order(menu.getOrder())
+                    .isUse(menu.getIsUse())
+                    .url(menu.getUrl())
+                    .type(menu.getType())
+                    .target(menu.getTarget())
+                    .icon(menu.getIcon())
+                    .externalLink(menu.getExternalLink())
+                    .description(menu.getDescription())
+                    .build()
+                ))
+                .switchIfEmpty(Mono.defer(() -> Mono.just(MenuDetailResponse.builder()
+                    .id(menu.getId())
+                    .name(menu.getName())
+                    .siteId(menu.getSiteId())
+                    .parentsMenuId((menu.getParentsMenuId()))
+                    .parentsMenuName("")
+                    .order(menu.getOrder())
+                    .isUse(menu.getIsUse())
+                    .url(menu.getUrl())
+                    .type(menu.getType())
+                    .target(menu.getTarget())
+                    .icon(menu.getIcon())
+                    .externalLink(menu.getExternalLink())
+                    .description(menu.getDescription())
+                    .build())));
+          } else {
+            return Mono.just(MenuDetailResponse.builder()
+                .id(menu.getId())
+                .name(menu.getName())
+                .siteId(menu.getSiteId())
+                .parentsMenuId((menu.getParentsMenuId()))
+                .parentsMenuName("")
+                .order(menu.getOrder())
+                .isUse(menu.getIsUse())
+                .url(menu.getUrl())
+                .type(menu.getType())
+                .target(menu.getTarget())
+                .icon(menu.getIcon())
+                .externalLink(menu.getExternalLink())
+                .description(menu.getDescription())
+                .build());
+          }
+        }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.INVALID_DATA)));
 
-        //.flatMap(menu -> Mono.just(menu)
-        //    .map(MenuMapper.INSTANCE::menuToMenuResponse));
-    }
+    //.flatMap(menu -> Mono.just(menu)
+    //    .map(MenuMapper.INSTANCE::menuToMenuResponse));
+  }
 
   public Mono<MenuResponse> update(String siteId, String menuId,
       MenuUpdateRequest menuUpdateRequest, Account account) {
@@ -173,6 +175,22 @@ public class MenuService {
         }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.NOT_EXIST_MENU)));
   }
 
+
+  public Mono<List<MenuResponse>> delete(String siteId, MenuDeleteRequest menuDeleteRequest,
+      Account account) {
+    return siteDomainService.existsById(siteId)
+        .flatMap(isExist -> {
+          if (!isExist) {
+            return Mono.error(new MenuException(ErrorCode.NOT_EXIST_SITE));
+          }
+          return Flux.fromIterable(menuDeleteRequest.getMenuIds()).flatMap(menuId ->
+                programDomainService.deleteSiteMenuProgram(siteId, menuId)
+                    .then(menuDomainService.delete(menuId, account.getAccountId())
+                        .map(MenuMapper.INSTANCE::menuToMenuResponse))
+              ).collectList();
+        }).switchIfEmpty(Mono.error(new MenuException(ErrorCode.NOT_EXIST_MENU)));
+  }
+
   public Mono<List<ProgramResponse>> getPrograms(String siteId, String menuId) {
     return menuDomainService.findBySiteIdAndId(siteId, menuId)
         .flatMap(menu -> programDomainService.findMenuPrograms(siteId, menu.getId())
@@ -184,7 +202,8 @@ public class MenuService {
 
   public Mono<List<MenuProgramResponse>> mappingMenuPrograms(String siteId, String menuId,
       MenuMappingRequest menuMappingRequest, Account account) {
-    return programDomainService.saveSiteMenuProgram(siteId, menuId, menuMappingRequest.getProgramIds(),
+    return programDomainService.saveSiteMenuProgram(siteId, menuId,
+            menuMappingRequest.getProgramIds(),
             account.getAccountId())
         .map(siteMenuPrograms -> siteMenuPrograms.stream()
             .map(MenuMapper.INSTANCE::menuProgramToMenuProgramResponse)
@@ -192,8 +211,11 @@ public class MenuService {
                 Collectors.toList()));
   }
 
-  public Mono<List<ProgramResponse>> deleteMappingMenuPrograms(String siteId, String menuId, MenuMappingRequest menuMappingRequest) {
-    return programDomainService.deleteSiteMenuProgram(siteId, menuId, menuMappingRequest.getProgramIds())
+  public Mono<List<ProgramResponse>> deleteMappingMenuPrograms(String siteId, String menuId,
+      MenuMappingRequest menuMappingRequest) {
+    return programDomainService.deleteSiteMenuProgram(siteId, menuId,
+            menuMappingRequest.getProgramIds())
         .then(getPrograms(siteId, menuId));
   }
+
 }

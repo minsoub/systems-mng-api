@@ -81,4 +81,8 @@ public class ProgramDomainService {
       List<String> programIds) {
     return siteMenuProgramRepository.deleteBySiteIdAndMenuIdAndProgramIdIn(siteId, menuId, programIds);
   }
+  public Mono<Void> deleteSiteMenuProgram(String siteId, String menuId) {
+    return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId);
+  }
+
 }
