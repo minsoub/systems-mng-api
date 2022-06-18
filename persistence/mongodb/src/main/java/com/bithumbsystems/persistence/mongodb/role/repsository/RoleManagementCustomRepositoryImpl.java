@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -22,7 +23,7 @@ public class RoleManagementCustomRepositoryImpl implements RoleManagementCustomR
 
     public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
         var condition = new Query();
-        if(type == null) {
+        if(!StringUtils.hasLength(type)) {
             condition = query(new Criteria()
                     .andOperator(
                             where("site_id").is(siteId),
