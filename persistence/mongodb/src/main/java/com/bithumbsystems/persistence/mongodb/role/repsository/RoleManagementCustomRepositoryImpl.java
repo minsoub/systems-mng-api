@@ -21,6 +21,14 @@ public class RoleManagementCustomRepositoryImpl implements RoleManagementCustomR
 
     private final ReactiveMongoTemplate reactiveMongoTemplate;
 
+    /**
+     * 사이트/사용여부/타입에 의한 조회
+     *
+     * @param siteId
+     * @param isUse
+     * @param type
+     * @return
+     */
     public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
         var condition = new Query();
         if(!StringUtils.hasLength(type)) {
