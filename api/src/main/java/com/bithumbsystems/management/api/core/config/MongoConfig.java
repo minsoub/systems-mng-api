@@ -122,11 +122,10 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
     public TransactionalOperator transactionOperator(ReactiveTransactionManager manager) {
         return TransactionalOperator.create(manager);
     }
-
     @Bean
     @Primary
     public MappingMongoConverter mappingMongoConverter(ReactiveMongoDatabaseFactory databaseFactory,
-        MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
+                                                       MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
         mappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
 
         MappingMongoConverter converter = new MappingMongoConverter(NoOpDbRefResolver.INSTANCE, mappingContext);

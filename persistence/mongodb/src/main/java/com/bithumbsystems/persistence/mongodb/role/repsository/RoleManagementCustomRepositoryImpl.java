@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -20,9 +21,17 @@ public class RoleManagementCustomRepositoryImpl implements RoleManagementCustomR
 
     private final ReactiveMongoTemplate reactiveMongoTemplate;
 
+    /**
+     * 사이트/사용여부/타입에 의한 조회
+     *
+     * @param siteId
+     * @param isUse
+     * @param type
+     * @return
+     */
     public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
         var condition = new Query();
-        if(type == null) {
+        if(!StringUtils.hasLength(type)) {
             condition = query(new Criteria()
                     .andOperator(
                             where("site_id").is(siteId),
@@ -30,9 +39,7 @@ public class RoleManagementCustomRepositoryImpl implements RoleManagementCustomR
         } else {
             condition = query(new Criteria()
                     .andOperator(
-                            where("is_use").is(isUse)
-                    )
-                    .orOperator(
+                            where("is_use").is(isUse),
                             where("site_id").is(siteId),
                             where("type").is(type)));
         }

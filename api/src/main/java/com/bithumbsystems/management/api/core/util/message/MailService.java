@@ -19,6 +19,8 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
@@ -32,7 +34,9 @@ import software.amazon.awssdk.services.ses.model.SesException;
 @Slf4j
 public class MailService implements MessageService {
 
-  private final CredentialsProvider credentialsProvider;
+  //private final CredentialsProvider credentialsProvider;
+  @Value("${spring.profiles.active:}")
+  private String activeProfiles;
   private final AwsProperties awsProperties;
 
   @Override
@@ -129,11 +133,20 @@ public class MailService implements MessageService {
       log.debug("Attempting to send an email through Amazon SES " + "using the AWS SDK for Java...");
 
       Region region = Region.of(awsProperties.getRegion());
-      SesClient client = SesClient.builder()
-          .credentialsProvider(credentialsProvider.getProvider())
-          .region(region)
-          .build();
+      SesClient client = null;
 
+
+      if (activeProfiles.equals("local")) {
+        CredentialsProvider credentialsProvider = new CredentialsProvider();
+        client = SesClient.builder()
+                .credentialsProvider(credentialsProvider.getProvider())
+                .region(region)
+                .build();
+      }else {
+        client = SesClient.builder()
+                .region(region)
+                .build();
+      }
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       message.writeTo(outputStream);
 
