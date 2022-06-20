@@ -4,10 +4,7 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
-import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.*;
 import com.bithumbsystems.management.api.v1.account.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -114,6 +111,25 @@ public class AccountController {
   }
 
   /**
+   * 통합 시스템 관리자가 계정 정보를 Role을 수정한다.
+   *
+   * @param adminAccountId         the admin account id
+   * @param accountRoleRequest     the account Role register request
+   * @param account                the account
+   * @return response entity
+   */
+  @PutMapping("/account/{adminAccountId}/role")
+  @Operation(summary = "통합 시스템 관리자가 계정 Role을 수정", description = "통합 시스템 관리자가 계정 Role을 수정")
+  public ResponseEntity<Mono<?>> adminAccountRoleUpdate(@PathVariable String adminAccountId,
+                                                    @RequestBody AccountRoleRequest accountRoleRequest,
+                                                    @Parameter(hidden = true) @CurrentUser Account account) {
+
+    return ResponseEntity.ok()
+            .body(accountService.updateAccountRole(accountRoleRequest, adminAccountId, account)
+                    .map(SingleResponse::new));
+  }
+
+  /**
    * Delete access response entity.
    *
    * @param adminAccountId the admin account id
@@ -133,10 +149,22 @@ public class AccountController {
    * @return response entity
    */
   @GetMapping("/account/{adminAccountId}")
-  @Operation(summary = "계정조회", description = "통합시스템 > 계정관리 : 계정조회")
+  @Operation(summary = "계정상세조회", description = "통합시스템 > 계정관리 : 계정상에조회")
   public ResponseEntity<Mono<?>> accountDetail(@PathVariable String adminAccountId) {
     return ResponseEntity.ok().body(accountService.detailData(adminAccountId)
         .map(SingleResponse::new));
+  }
+  /**
+   * 통합시스템 관리 - 계정관리 상세 조회 - Role List 조회
+   *
+   * @param adminAccountId the admin account id
+   * @return response entity
+   */
+  @GetMapping("/account/{adminAccountId}/roles")
+  @Operation(summary = "계정상세조회(Role List 조회)", description = "통합시스템 > 계정관리 : 계정상제조회(Role List조회)")
+  public ResponseEntity<Mono<?>> accountDetailRoles(@PathVariable String adminAccountId) {
+    return ResponseEntity.ok().body(accountService.detailDataRoleList(adminAccountId)
+            .map(SingleResponse::new));
   }
 
   /**
@@ -169,7 +197,21 @@ public class AccountController {
     return ResponseEntity.ok().body(accountService.createMngAccount(accountRegisterRequest, account)
         .map(SingleResponse::new));
   }
-
+  /**
+   * 통합관리 - Accounts search response entity.
+   *
+   * @param searchText the search text
+   * @param isUse      the is use
+   * @return the response entity
+   */
+  @GetMapping("/accountmng")
+  @Operation(summary = "계정 검색", description = "계정 검색")
+  public ResponseEntity<Mono<?>> accountsMngSearch(
+          @RequestParam(required = false, defaultValue = "") String searchText,
+          @RequestParam(required = false) Boolean isUse) {
+    return ResponseEntity.ok().body(accountService.searchMngAccount(searchText, isUse)
+            .map(MultiResponse::new));
+  }
   /**
    * 통합관리 - 계정정보 상세조회
    *

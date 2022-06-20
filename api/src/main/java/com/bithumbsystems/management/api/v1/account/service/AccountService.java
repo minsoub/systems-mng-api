@@ -12,14 +12,8 @@ import com.bithumbsystems.management.api.core.util.FileUtil;
 import com.bithumbsystems.management.api.core.util.message.MailSenderInfo;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
-import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountSearchResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.DeleteResponse;
+import com.bithumbsystems.management.api.v1.account.model.request.*;
+import com.bithumbsystems.management.api.v1.account.model.response.*;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
@@ -33,7 +27,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import javax.mail.MessagingException;
+
+import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
@@ -56,6 +54,8 @@ public class AccountService {
   private final AdminAccessDomainService adminAccessDomainService;
 
   private final RoleManagementDomainService roleManagementDomainService;
+
+  private final SiteDomainService siteDomainService;
 
   private final MessageService messageService;
 
@@ -141,7 +141,36 @@ public class AccountService {
           throw new AccountException(NOT_EXIST_ACCOUNT);
         });
   }
-
+    /**
+     * 통합시스템 관리 - 계정관리 상세 조회 (Role List 조회)
+     *
+     * @param accountId the account id
+     * @return mono
+     */
+    public Mono<List<AccountDetailRoleResponse>> detailDataRoleList(String accountId) {
+        log.debug("detailData => {}", accountId);
+        return adminAccessDomainService.findByAdminAccountId(accountId)
+                .flatMap(adminAccess -> {
+                    log.info("adminAccess => {}", adminAccess);
+                    return roleManagementDomainService.findByRoleInIds(adminAccess.getRoles())
+                            .flatMap(roleManagement -> {
+                                log.info("Role data => {}", roleManagement);
+                                return siteDomainService.findById(roleManagement.getSiteId())
+                                        .flatMap(siteInfo -> {
+                                            return Mono.just(new AccountDetailRoleResponse(
+                                                    roleManagement.getSiteId(),
+                                                    siteInfo.getName(),
+                                                    roleManagement.getId(),
+                                                    roleManagement.getName()
+                                            ));
+                                        });
+                            }).collectList();
+                })
+                .onErrorResume((error) -> {
+                    error.printStackTrace();
+                    throw new AccountException(NOT_EXIST_ACCOUNT);
+                });
+    }
   /**
    * Create access account mono.
    *
@@ -319,6 +348,33 @@ public class AccountService {
         }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
 
+    /**
+     * 통합 어드민 관리자가 계정 Role을 수정한다.
+     * TODO: 작업진행중
+     * @param accountRegisterRequest the account register request
+     * @param adminAccountId         the admin account id
+     * @param account                the account
+     * @return mono
+     */
+    @Transactional
+    public Mono<AccountResponse> updateAccountRole(AccountRoleRequest accountRegisterRequest,
+                                                         String adminAccountId, Account account) {
+        return adminAccessDomainService.findByAdminAccountId(adminAccountId)
+                .flatMap(adminAccess -> {  // 수정모드
+                     String[] roles = accountRegisterRequest.getRoleManagementId().split(",");
+                     log.debug("roles => {}", roles);
+                     adminAccess.clearRole();
+                     for (String role: roles) {
+                         adminAccess.addRole(role);
+                     }
+                     log.debug("adminAccess => {}", adminAccess);
+                     return adminAccessDomainService.update(adminAccess, account.getAccountId())
+                             .flatMap(result -> Mono.just(AccountResponse.builder()
+                                     .id(result.getId())
+                                     .build()));
+                });
+    }
+
   /**
    * Create admin access mono.
    *
@@ -418,6 +474,110 @@ public class AccountService {
     return adminAccessDomainService.delete(adminAccountId);
   }
 
+    /**
+     * 통합관리 > Search mono.
+     * 접근관리 테이블에 등록이 안될 수도 있고 롤이 없을 수도 있다.
+     *
+     * @param searchText the search text
+     * @param isUse      the is use
+     * @return the mono
+     */
+    public Mono<List<AccountSearchResponse>> searchMngNotDupAccount(String searchText, Boolean isUse) {
+        log.debug("searchMngAccount called");
+        return adminAccountDomainService.findBySearchText(searchText, isUse)
+                .flatMap(adminAccount -> {
+                                return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                        .switchIfEmpty(Mono.defer(() -> {
+                                                    AdminAccess access = AdminAccess.builder().build();
+                                                    return Mono.just(access);
+                                                })
+                                        )
+                                        .map(adminAccess -> {
+                                            log.debug("adminAccess search => {}", adminAccess);
+                                            return Pair.of(new AccountSearchResponse(
+                                                    adminAccount.getId(),
+                                                    adminAccount.getName(),
+                                                    adminAccount.getEmail(),
+                                                    adminAccount.getLastLoginDate(),
+                                                    adminAccount.getStatus(),
+                                                    adminAccess.getCreateDate() != null ? adminAccess.getCreateDate() :adminAccount.getCreateDate()
+                                            ), adminAccess.getRoles() == null ? "" : adminAccess.getRoles());
+                                    });
+                        }
+                )
+                .flatMap(accountSearchResponseMap -> {
+                            if (!accountSearchResponseMap.getSecond().equals("")) {
+                                return roleManagementDomainService.findByRoleInIds((Set<String>) accountSearchResponseMap.getSecond())
+                                        .flatMap(roleManagement -> {
+                                            accountSearchResponseMap.getFirst().setRoleManagementName(roleManagement.getName());
+                                            accountSearchResponseMap.getFirst().setValidStartDate(roleManagement.getValidStartDate());
+                                            accountSearchResponseMap.getFirst().setValidEndDate(roleManagement.getValidEndDate());
+
+                                            return Mono.just(accountSearchResponseMap.getFirst());
+                                        });
+                            } else {
+                                log.debug("accountSearchResponseMap second is null");
+                                return Mono.just(accountSearchResponseMap.getFirst());
+                            }
+                        }
+                )
+                .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+    }
+
+    /**
+     * 통합관리 > Search mono.
+     * 접근관리 테이블에 등록이 안될 수도 있고 롤이 없을 수도 있다.
+     * Role은 여러개 이므로 ,로 구분해서 보낸다.
+     *
+     * @param searchText the search text
+     * @param isUse      the is use
+     * @return the mono
+     */
+    public Mono<List<AccountSearchResponse>> searchMngAccount(String searchText, Boolean isUse) {
+        log.debug("searchMngAccount called");
+        return adminAccountDomainService.findBySearchText(searchText, isUse)
+                .flatMap(adminAccount -> {
+                            return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                    .switchIfEmpty(Mono.defer(() -> {
+                                                AdminAccess access = AdminAccess.builder().build();
+                                                return Mono.just(access);
+                                            })
+                                    )
+                                    .map(adminAccess -> {
+                                        log.debug("adminAccess search => {}", adminAccess);
+                                        return Pair.of(new AccountSearchResponse(
+                                                adminAccount.getId(),
+                                                adminAccount.getName(),
+                                                adminAccount.getEmail(),
+                                                adminAccount.getLastLoginDate(),
+                                                adminAccount.getStatus(),
+                                                adminAccess.getCreateDate() != null ? adminAccess.getCreateDate() :adminAccount.getCreateDate()
+                                        ), adminAccess.getRoles() == null ? "" : adminAccess.getRoles());
+                                    });
+                        }
+                )
+                .flatMap(accountSearchResponseMap -> {
+                            if (!accountSearchResponseMap.getSecond().equals("")) {
+                                Mono<AccountSearchResponse> res = Mono.just(accountSearchResponseMap.getFirst());
+
+                                var roleList = roleManagementDomainService.findByRoleInIds((Set<String>) accountSearchResponseMap.getSecond())
+                                        .map(roleManagement -> {
+                                            return roleManagement.getName();
+                                        }).collectList();
+
+                                return res.zipWith(roleList)
+                                        .map(tuple -> {
+                                            tuple.getT1().setRoleManagementName(tuple.getT2().stream().map(n->String.valueOf(n)).collect(Collectors.joining(",")));
+                                            return tuple.getT1();
+                                        });
+                            } else {
+                                log.debug("accountSearchResponseMap second is null");
+                                return Mono.just(accountSearchResponseMap.getFirst());
+                            }
+                        }
+                )
+                .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+    }
   /**
    * 통합관리 > 계정관리 : 사용자 등록 (암호화 처리를 해야 된다)
    *

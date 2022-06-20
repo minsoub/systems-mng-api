@@ -33,4 +33,7 @@ public class AdminAccess {
     public void addRole(String roleManagementId) {
         this.roles.add(roleManagementId);
     }
+    public void clearRole() {
+        this.roles.clear();
+    }
 }
