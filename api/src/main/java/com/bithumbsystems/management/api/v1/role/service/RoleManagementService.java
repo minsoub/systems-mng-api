@@ -148,7 +148,7 @@ public class RoleManagementService {
     var getAccountEmails = adminAccessDomainService.findByAdminAccountIds(accounts)
         .flatMap(adminAccess -> {
           log.info(adminAccess.getEmail());
-          adminAccess.setRoleManagementId(roleManagementId);
+          adminAccess.getRoles().add(roleManagementId);
           return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
               AdminAccess::getEmail);
         })

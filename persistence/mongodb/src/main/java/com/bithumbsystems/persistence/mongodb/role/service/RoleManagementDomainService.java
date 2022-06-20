@@ -4,6 +4,7 @@ import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementCustomRepository;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementRepository;
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -47,6 +48,10 @@ public class RoleManagementDomainService {
 
   public Mono<RoleManagement> findById(String roleManagementId) {
     return roleManagementRepository.findById(roleManagementId);
+  }
+
+  public Flux<RoleManagement> findByRoleInIds(Set<String> roleManagementIds) {
+    return roleManagementRepository.findByIdIn(roleManagementIds);
   }
 
   public Mono<Boolean> existsById(String roleManagementId) {

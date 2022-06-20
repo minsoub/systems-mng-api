@@ -2,7 +2,9 @@ package com.bithumbsystems.management.api.core.config.resolver;
 
 import com.bithumbsystems.management.api.core.exception.InvalidTokenException;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
+import com.nimbusds.jose.shaded.json.JSONArray;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -43,10 +45,10 @@ public class CustomArgumentResolver implements HandlerMethodArgumentResolver {
           if(StringUtils.isAnyEmpty(jwt.getSubject(), jwt.getClaimAsString("account_id"), jwt.getClaimAsString("ROLE"))) {
             return Mono.error(new InvalidTokenException(ErrorCode.INVALID_TOKEN));
           }
-          var siteId = jwt.getSubject();
-          var accountId = jwt.getClaimAsString("account_id");
-          var role = jwt.getClaimAsString("ROLE");
-          return Mono.just(new Account(siteId, accountId, role));
+          final var siteId = jwt.getSubject();
+          final var accountId = jwt.getClaimAsString("account_id");
+          final var roles = (JSONArray)jwt.getClaim("ROLE");
+          return Mono.just(new Account(siteId, accountId, roles.stream().map(Object::toString).collect(Collectors.toSet())));
         });
   }
 }

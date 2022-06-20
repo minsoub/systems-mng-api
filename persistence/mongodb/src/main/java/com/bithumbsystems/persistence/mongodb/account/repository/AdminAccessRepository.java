@@ -10,7 +10,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAccess, String>, AdminAccessCustomRepository {
 
-    Flux<AdminAccess> findBySiteId(String siteId);
 
     Mono<AdminAccess> findByAdminAccountId(String adminAccountId);
 
@@ -18,7 +17,7 @@ public interface AdminAccessRepository extends ReactiveMongoRepository<AdminAcce
 
     Flux<AdminAccess> findByAdminAccountIdIn(List<String> adminAccountId);
 
-    Mono<AdminAccess> findByAdminAccountIdAndRoleManagementIdAndSiteId(String adminAccountId, String roleManagementId, String siteId);
+    Mono<AdminAccess> findByAdminAccountIdAndRolesContaining(String adminAccountId, String roleManagementId);
 
-    Flux<AdminAccess> findByRoleManagementId(String roleManagementId);
+    Flux<AdminAccess> findByRolesContains(String roleManagementId);
 }

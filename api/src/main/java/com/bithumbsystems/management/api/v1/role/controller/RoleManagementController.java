@@ -61,9 +61,9 @@ public class RoleManagementController {
   @GetMapping("/roles")
   @Operation(summary = "ROLE 리스트 검색", description = "Role 관리 : 리스트 검색 조회")
   public ResponseEntity<Mono<?>> getRoleManagements(
-      @RequestParam(required = false, defaultValue = "") String siteId,
+      @RequestParam String siteId,
       @RequestParam(required = false, defaultValue = "true") Boolean isUse,
-      @RequestParam(required = false, defaultValue = "") String type) {
+      @RequestParam(required = false) String type) {
     return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse, type)
         .map(MultiResponse::new));
   }

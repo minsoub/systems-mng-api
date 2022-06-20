@@ -1,7 +1,6 @@
 package com.bithumbsystems.management.api.v1.account.model.response;
 
 import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -20,13 +19,16 @@ public class AccountSearchResponse {
   private Status status;
   private String roleManagementName;
   private LocalDate validStartDate;
+  private LocalDate validEndDate;
+  private LocalDateTime createDate;
 
   public AccountSearchResponse(String id, String name, String email, LocalDateTime lastLoginDate,
-      Status status) {
+      Status status, LocalDateTime createDate) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.lastLoginDate = lastLoginDate;
     this.status = status;
+    this.createDate = createDate;
   }
 }
