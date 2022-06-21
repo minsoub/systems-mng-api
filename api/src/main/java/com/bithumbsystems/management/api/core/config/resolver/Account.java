@@ -7,9 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class Account {
-
-  private final String siteId;
-
   private final String accountId;
 
   private final Set<String> roles;
