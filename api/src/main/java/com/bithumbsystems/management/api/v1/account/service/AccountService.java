@@ -191,7 +191,7 @@ public class AccountService {
               adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
               adminAccount.setStatusByIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setOldPassword(adminAccount.getPassword().trim());
-              adminAccount.setPassword(accountRegisterRequest.getPassword().trim());
+              adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword().trim()));
               return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
                   adminAccessDomainService.save(AdminAccess.builder()
                       .adminAccountId(adminAccount.getId())
@@ -300,7 +300,6 @@ public class AccountService {
               adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
               //adminAccount.setStatusByIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setOldPassword(adminAccount.getPassword().trim());
-              adminAccount.setPassword(accountRegisterRequest.getPassword().trim());
 
               return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
                   // admin_account_id, role_management_id, site_id로 찾는다.
