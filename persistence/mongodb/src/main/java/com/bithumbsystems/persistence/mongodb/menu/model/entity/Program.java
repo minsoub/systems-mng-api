@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "program")
@@ -17,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Setter
 @NoArgsConstructor
 public class Program {
-  @MongoId
+  @MongoId(targetType = FieldType.STRING)
   private String id;
   private String name;
   private RoleType type;

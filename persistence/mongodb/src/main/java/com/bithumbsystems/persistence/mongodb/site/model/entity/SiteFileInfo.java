@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "site_file_info")
@@ -17,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Getter
 @Setter
 public class SiteFileInfo {
-  @MongoId
+  @MongoId(targetType = FieldType.STRING)
   private String id;
   @Indexed
   private String siteId;

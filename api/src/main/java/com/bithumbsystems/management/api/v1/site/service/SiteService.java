@@ -58,8 +58,6 @@ public class SiteService {
   public Mono<SiteResponse> create(SiteRegisterRequest siteRegisterRequest, Account account) {
     Site site = SiteMapper.INSTANCE.siteRegisterRequestToSite(siteRegisterRequest);
     site.setCreateAdminAccountId(account.getAccountId());
-    site.setUpdateAdminAccountId(account.getAccountId());
-
     return siteDomainService.save(site).map(SiteMapper.INSTANCE::siteToSiteResponse);
   }
 

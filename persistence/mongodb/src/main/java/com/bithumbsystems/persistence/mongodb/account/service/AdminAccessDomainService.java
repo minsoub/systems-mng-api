@@ -2,6 +2,7 @@ package com.bithumbsystems.persistence.mongodb.account.service;
 
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.repository.AdminAccessRepository;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import reactor.core.publisher.Mono;
 public class AdminAccessDomainService {
 
     private final AdminAccessRepository adminAccessRepository;
+
+    private static final String PREFIX = "ACCESS_";
 
     /**
      * Find by admin account id mono.
@@ -80,6 +83,7 @@ public class AdminAccessDomainService {
     public Mono<AdminAccess> save(AdminAccess adminAccess, String adminAccountId) {
         adminAccess.setCreateAdminAccountId(adminAccountId);
         adminAccess.setCreateDate(LocalDateTime.now());
+        adminAccess.setId(PREFIX + Instant.now().toEpochMilli());
         return adminAccessRepository.insert(adminAccess);
     }
 

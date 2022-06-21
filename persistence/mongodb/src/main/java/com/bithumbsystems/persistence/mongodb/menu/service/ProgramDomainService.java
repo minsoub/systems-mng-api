@@ -4,6 +4,7 @@ import com.bithumbsystems.persistence.mongodb.menu.model.entity.Program;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.SiteMenuProgram;
 import com.bithumbsystems.persistence.mongodb.menu.repository.ProgramRepository;
 import com.bithumbsystems.persistence.mongodb.menu.repository.SiteMenuProgramRepository;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,10 +20,13 @@ public class ProgramDomainService {
 
   private final ProgramRepository programRepository;
   private final SiteMenuProgramRepository siteMenuProgramRepository;
+  private static final String PROGRAM_PREFIX = "PROGRAM_";
+  private static final String PROGRAM_MENU_PREFIX = "PROGRAM_MENU_";
 
   public Mono<Program> save(Program program, String accountId) {
     program.setCreateDate(LocalDateTime.now());
     program.setCreateAdminAccountId(accountId);
+    program.setId(PROGRAM_PREFIX + Instant.now().toEpochMilli());
     return programRepository.insert(program);
   }
 
@@ -68,6 +72,7 @@ public class ProgramDomainService {
     return siteMenuProgramRepository.saveAll(programIds
             .stream()
             .map(programId -> SiteMenuProgram.builder()
+                .id(PROGRAM_MENU_PREFIX + Instant.now().toEpochMilli())
                 .menuId(menuId)
                 .siteId(siteId)
                 .createDate(LocalDateTime.now())

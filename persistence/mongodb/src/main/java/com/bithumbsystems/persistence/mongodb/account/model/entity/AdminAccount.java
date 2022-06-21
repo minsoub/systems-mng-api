@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "admin_account")
 @NoArgsConstructor
 @Data
 public class AdminAccount {
-    @MongoId
+    @MongoId(value = FieldType.STRING, targetType = FieldType.STRING)
     private String id;
     private String name;
     @Indexed(unique = true)

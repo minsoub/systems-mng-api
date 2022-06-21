@@ -3,6 +3,10 @@ package com.bithumbsystems.management.api.core.util.message;
 import com.amazonaws.util.IOUtils;
 import com.bithumbsystems.management.api.core.config.local.CredentialsProvider;
 import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.exception.MailException;
+import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
+import com.bithumbsystems.management.api.core.model.enums.MailForm;
+import com.bithumbsystems.management.api.core.util.FileUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,7 +24,6 @@ import javax.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
@@ -39,6 +42,8 @@ public class MailService implements MessageService {
   private String activeProfiles;
   private final AwsProperties awsProperties;
 
+  private final CredentialsProvider credentialsProvider;
+
   @Override
   public void sendWithFile(MailSenderInfo mailSenderInfo) throws IOException {
 
@@ -51,6 +56,25 @@ public class MailService implements MessageService {
       e.getStackTrace();
     }
   }
+
+  @Override
+  public void sendMail(String emailAddress, MailForm mailForm) {
+    try {
+      String html = FileUtil.readResourceFile(mailForm.getPath());
+      log.info("send mail: " + html);
+
+      send(
+          MailSenderInfo.builder()
+              .bodyHTML(html)
+              .subject(mailForm.getSubject())
+              .emailAddress(emailAddress)
+              .build()
+      );
+    } catch (MessagingException | IOException e) {
+      throw new MailException(ErrorCode.FAIL_SEND_MAIL);
+    }
+  }
+
   private void send(byte[] attachment, MailSenderInfo mailSenderInfo) throws MessagingException, IOException {
     MimeMessage message = getMimeMessage(mailSenderInfo.getEmailAddress(), mailSenderInfo.getSubject());
 
@@ -133,11 +157,10 @@ public class MailService implements MessageService {
       log.debug("Attempting to send an email through Amazon SES " + "using the AWS SDK for Java...");
 
       Region region = Region.of(awsProperties.getRegion());
-      SesClient client = null;
+      SesClient client;
 
 
       if (activeProfiles.equals("local")) {
-        CredentialsProvider credentialsProvider = new CredentialsProvider();
         client = SesClient.builder()
                 .credentialsProvider(credentialsProvider.getProvider())
                 .region(region)
@@ -173,7 +196,7 @@ public class MailService implements MessageService {
   }
 
   private MimeMessage getMimeMessage(String emailAddress, String subject) throws MessagingException {
-    MimeMessage message = null;
+    MimeMessage message;
     Session session = Session.getDefaultInstance(new Properties());
 
     // Create a new MimeMessage object.

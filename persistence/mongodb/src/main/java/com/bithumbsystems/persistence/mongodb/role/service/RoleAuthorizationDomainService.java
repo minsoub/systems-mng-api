@@ -2,6 +2,7 @@ package com.bithumbsystems.persistence.mongodb.role.service;
 
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleAuthorization;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleAuthorizationRepository;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono;
 public class RoleAuthorizationDomainService {
 
   private final RoleAuthorizationRepository roleAuthorizationRepository;
+  private static final String PREFIX = "ROLE_AUTH_";
 
   public Mono<RoleAuthorization> findByRoleManagementId(String roleManagementId) {
     return roleAuthorizationRepository.findByRoleManagementId(roleManagementId);
@@ -24,6 +26,7 @@ public class RoleAuthorizationDomainService {
   public Mono<RoleAuthorization> save(RoleAuthorization roleAuthorization, String accountId) {
     roleAuthorization.setCreateDate(LocalDateTime.now());
     roleAuthorization.setCreateAdminAccountId(accountId);
+    roleAuthorization.setId(PREFIX + Instant.now().toEpochMilli());
     return roleAuthorizationRepository.insert(roleAuthorization);
   }
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "admin_access")
@@ -14,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Setter
 @Builder
 public class AdminAccess {
-    @MongoId
+    @MongoId(value = FieldType.STRING, targetType = FieldType.STRING)
     private String id;
     @Indexed(unique = true)
     private String adminAccountId;

@@ -5,15 +5,19 @@ import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_E
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
 
 import com.bithumbsystems.management.api.core.config.resolver.Account;
-import com.bithumbsystems.management.api.core.exception.MailException;
-import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
-import com.bithumbsystems.management.api.core.util.FileUtil;
-import com.bithumbsystems.management.api.core.util.message.MailSenderInfo;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
-import com.bithumbsystems.management.api.v1.account.model.request.*;
-import com.bithumbsystems.management.api.v1.account.model.response.*;
+import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountRoleRequest;
+import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailResponse;
+import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailRoleResponse;
+import com.bithumbsystems.management.api.v1.account.model.response.AccountResponse;
+import com.bithumbsystems.management.api.v1.account.model.response.AccountSearchResponse;
+import com.bithumbsystems.management.api.v1.account.model.response.DeleteResponse;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
@@ -21,17 +25,13 @@ import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
-import java.io.IOException;
+import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import javax.mail.MessagingException;
-
-import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
@@ -192,13 +192,12 @@ public class AccountService {
               adminAccount.setStatusByIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setOldPassword(adminAccount.getPassword().trim());
               adminAccount.setPassword(accountRegisterRequest.getPassword().trim());
-              Set<String> roles = Set.of(accountRegisterRequest.getRoleManagementId());
               return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
                   adminAccessDomainService.save(AdminAccess.builder()
                       .adminAccountId(adminAccount.getId())
                       .name(adminAccount.getName().trim())
                       .email(adminAccount.getEmail().trim())
-                      .roles(roles)
+                      .roles(accountRegisterRequest.getRoles())
                       .createDate(LocalDateTime.now())
                       .isUse(accountRegisterRequest.getIsUse())
                       .createAdminAccountId(account.getAccountId())
@@ -207,7 +206,7 @@ public class AccountService {
             }
         ).doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
-            sendMail(a.getT2().getEmail());
+            messageService.sendMail(a.getT2().getEmail(), MailForm.DEFAULT);
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();
@@ -253,22 +252,23 @@ public class AccountService {
               adminAccount.getEmail());
         })
         .flatMap(adminAccess -> {
-          return roleManagementDomainService.findById(accountRegisterRequest.getRoleManagementId())
-              .map(roleManagement -> AccountResponse.builder()
+          return roleManagementDomainService.findByRoleInIds(accountRegisterRequest.getRoles())
+              .flatMap(roleManagement -> Mono.just(roleManagement.getName())).collectList()
+              .flatMap(roleNames -> Mono.just(AccountResponse.builder()
                   .id(adminAccess.getAdminAccountId())
                   .name(adminAccount.getName())
                   .email(adminAccount.getEmail())
-                  .roleManagementName(roleManagement.getName())
+                  .roleManagementName(roleNames.toString())
                   .status(adminAccount.getStatus())
                   .createDate(adminAccount.getCreateDate())
                   //.lastLoginDate(adminAccount.getLastLoginDate())
                   .build()
-              );
+              ));
         })
         .doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
             log.info("send mail");
-            sendMail(adminAccount.getEmail());
+            messageService.sendMail(adminAccount.getEmail(), MailForm.DEFAULT);
           }
         }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
@@ -304,15 +304,14 @@ public class AccountService {
 
               return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
                   // admin_account_id, role_management_id, site_id로 찾는다.
-                  adminAccessDomainService.findByAdminAccountIdAndRoleManagementId(
-                          adminAccount.getId(), accountRegisterRequest.getRoleManagementId()
-                      ).flatMap(adminAccess -> {  // 수정모드
+                  adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                      .flatMap(adminAccess -> {  // 수정모드
                         return adminAccessDomainService.update(AdminAccess.builder()
                             .id(adminAccess.getId())
                             .adminAccountId(adminAccount.getId())
                             .name(adminAccount.getName().trim())
                             .email(adminAccount.getEmail().trim())
-                            .roles(adminAccess.getRoles())
+                            .roles(accountRegisterRequest.getRoles())
                             .isUse(accountRegisterRequest.getIsUse())
                             .createAdminAccountId(account.getAccountId())
                             .build(), account.getAccountId());
@@ -329,7 +328,7 @@ public class AccountService {
         ).doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
             log.info("send mail");
-            sendMail(a.getT1().getEmail());
+            messageService.sendMail(a.getT1().getEmail(), MailForm.DEFAULT);
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();
@@ -388,12 +387,11 @@ public class AccountService {
   public Mono<? extends AdminAccess> createAdminAccess(
       AccountRegisterRequest accountRegisterRequest, Account account, AdminAccount adminAccount,
       String name, String email) {
-    Set<String> roles = Set.of(accountRegisterRequest.getRoleManagementId());
     return adminAccessDomainService.save(AdminAccess.builder()
         .adminAccountId(adminAccount.getId())
         .name(name.trim())
         .email(email.trim())
-        .roles(roles)
+        .roles(accountRegisterRequest.getRoles())
         .createDate(LocalDateTime.now())
         .isUse(accountRegisterRequest.getIsUse())
         .createAdminAccountId(account.getAccountId())
@@ -665,22 +663,5 @@ public class AccountService {
               .count(Integer.parseInt(String.valueOf(count.get()))).build();
           return Mono.just(res);
         }));
-  }
-
-  private void sendMail(String emailAddress) {
-    try {
-      String html = FileUtil.readResourceFile(MailForm.DEFAULT.getPath());
-      log.info("send mail: " + html);
-
-      messageService.send(
-          MailSenderInfo.builder()
-              .bodyHTML(html)
-              .subject(MailForm.DEFAULT.getSubject())
-              .emailAddress(emailAddress)
-              .build()
-      );
-    } catch (MessagingException | IOException e) {
-      throw new MailException(ErrorCode.FAIL_SEND_MAIL);
-    }
   }
 }

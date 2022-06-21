@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "site_menu_program")
@@ -21,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
     @CompoundIndex(name = "menu_program_site", def = "{'menuId' : 1, 'programId': 1, 'siteId': 1}", unique = true)
 })
 public class SiteMenuProgram {
-  @MongoId
+  @MongoId(targetType = FieldType.STRING)
   private String id;
   private String menuId;
   private String programId;

@@ -3,6 +3,7 @@ package com.bithumbsystems.persistence.mongodb.audit.model.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "audit_log")
@@ -10,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Getter
 public class AuditLog {
 
-  @MongoId
+  @MongoId(targetType = FieldType.STRING)
   private Long seq;
   private String adminAccountId;
   private String adminAccountName;

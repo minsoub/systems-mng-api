@@ -3,6 +3,7 @@ package com.bithumbsystems.persistence.mongodb.role.service;
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementCustomRepository;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementRepository;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,12 @@ public class RoleManagementDomainService {
 
   private final RoleManagementRepository roleManagementRepository;
   private final RoleManagementCustomRepository roleRepository;
+  private static final String PREFIX = "ROLE_";
 
   public Mono<RoleManagement> save(RoleManagement roleManagement, String accountId) {
     roleManagement.setCreateAdminAccountId(accountId);
     roleManagement.setCreateDate(LocalDateTime.now());
+    roleManagement.setId(PREFIX + Instant.now().toEpochMilli());
     return roleManagementRepository.insert(roleManagement);
   }
 

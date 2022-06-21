@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "role_authorization")
@@ -16,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Setter
 @Builder
 public class RoleAuthorization {
-  @MongoId
+  @MongoId(targetType = FieldType.STRING)
   private String id;
   @Indexed
   private String roleManagementId;
