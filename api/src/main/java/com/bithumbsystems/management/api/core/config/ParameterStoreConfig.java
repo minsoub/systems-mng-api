@@ -32,7 +32,6 @@ public class ParameterStoreConfig {
 
     private final AwsProperties awsProperties;
 
-    private final AwsConfig awsConfig;
     @Value("${cloud.aws.credentials.profile-name}")
     private String profileName;
 

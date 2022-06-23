@@ -42,11 +42,10 @@ public class CustomArgumentResolver implements HandlerMethodArgumentResolver {
     log.debug(token);
     return reactiveJwtDecoder.decode(token)
         .flatMap((jwt) -> {
-            log.debug("Roel => {}", jwt.getClaimAsString("ROLE"));
-            // TODO: getSubject 없음, isAnyEmpty는 jsonArray 처리 못함.
-          if(StringUtils.isAnyEmpty(jwt.getClaimAsString("account_id") )) { // , jwt.getClaim("ROLE"))) {  // jwt.getSubject(), jwt.getClaimAsString("account_id"), jwt.getClaim("ROLE"))) {
+          if(StringUtils.isAnyEmpty(jwt.getClaimAsString("account_id")) || jwt.getClaim("ROLE") == null) {
             return Mono.error(new InvalidTokenException(ErrorCode.INVALID_TOKEN));
           }
+          log.debug("Role => {}", jwt.getClaimAsString("ROLE"));
           final var accountId = jwt.getClaimAsString("account_id");
           final var roles = (JSONArray)jwt.getClaim("ROLE");
           return Mono.just(new Account(accountId, roles.stream().map(Object::toString).collect(Collectors.toSet())));

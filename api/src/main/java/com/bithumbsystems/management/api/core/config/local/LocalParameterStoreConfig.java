@@ -31,7 +31,6 @@ public class LocalParameterStoreConfig {
     private MongoProperties mongoProperties;
     private final AwsProperties awsProperties;
     private final CredentialsProvider credentialsProvider;
-    private final LocalAwsConfig awsConfig;
 
     @Value("${spring.profiles.active:}")
     private String profileName;
