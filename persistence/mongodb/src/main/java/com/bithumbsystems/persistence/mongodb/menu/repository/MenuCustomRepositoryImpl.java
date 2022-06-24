@@ -42,8 +42,8 @@ public class MenuCustomRepositoryImpl implements MenuCustomRepository {
     var condition = new ArrayList<Criteria>();
     condition.add(where("site_id").is(siteId));
     if(isUse != null) condition.add(where("is_use").is(isUse));
-    if(parentMenuId == null) {
-      condition.add(where("parents_menu_id").isNull());
+    if(parentMenuId == null || "".equals(parentMenuId)) {
+      condition.add(where("parents_menu_id").is(""));  // .isNull());
     } else if (parentMenuId.isEmpty()) {
       condition.add(where("parents_menu_id").regex(".*" + parentMenuId + ".*"));
     } else {
