@@ -92,6 +92,23 @@ public class AccountController {
   }
 
   /**
+   * 관리자 패스워드 수정
+   *
+   * @param accountUpdatePasswordRequest the account password update request
+   * @param account                the account
+   * @return response entity
+   */
+  @PutMapping("/account")
+  @Operation(summary = "관리자 패스워드 수정", description = "관리자 패스워드 수정")
+  public ResponseEntity<Mono<?>> adminAccountUpdate(@RequestBody AccountUpdatePasswordRequest accountUpdatePasswordRequest,
+                                                    @Parameter(hidden = true) @CurrentUser Account account) {
+
+    return ResponseEntity.ok()
+            .body(accountService.updateAccountPassword(accountUpdatePasswordRequest, account)
+                    .map(SingleResponse::new));
+  }
+
+  /**
    * 통합 시스템 관리자가 계정 정보를 수정한다.
    *
    * @param adminAccountId         the admin account id
