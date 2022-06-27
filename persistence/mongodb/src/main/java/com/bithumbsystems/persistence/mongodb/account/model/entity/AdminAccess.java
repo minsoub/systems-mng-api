@@ -32,9 +32,12 @@ public class AdminAccess {
     private String updateAdminAccountId;
 
     public void addRole(String roleManagementId) {
-        this.roles.add(roleManagementId);
+        if (roles == null) this.roles = Set.of(roleManagementId);
+        else
+            this.roles.add(roleManagementId);
     }
     public void clearRole() {
-        this.roles.clear();
+        if (roles != null)
+            this.roles.clear();
     }
 }

@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -148,7 +149,7 @@ public class AccountService {
      * @return mono
      */
     public Mono<List<AccountDetailRoleResponse>> detailDataRoleList(String accountId) {
-        log.debug("detailData => {}", accountId);
+        log.debug("detailRoleData => {}", accountId);
         return adminAccessDomainService.findByAdminAccountId(accountId)
                 .flatMap(adminAccess -> {
                     log.info("adminAccess => {}", adminAccess);
@@ -235,6 +236,7 @@ public class AccountService {
   public Mono<AccountResponse> createAccount(AccountRegisterRequest accountRegisterRequest,
       Account account) {
     AdminAccount adminAccount = new AdminAccount();
+    adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
     adminAccount.setPassword(
         passwordEncoder.encode(accountRegisterRequest.getPassword()));     // 패스워드 encode
@@ -305,6 +307,7 @@ public class AccountService {
                   // admin_account_id, role_management_id, site_id로 찾는다.
                   adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
                       .flatMap(adminAccess -> {  // 수정모드
+
                         return adminAccessDomainService.update(AdminAccess.builder()
                             .id(adminAccess.getId())
                             .adminAccountId(adminAccount.getId())
@@ -587,6 +590,7 @@ public class AccountService {
       Account account) {
 
     AdminAccount adminAccount = new AdminAccount();
+    adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
     adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));
     adminAccount.setEmail(accountRegisterRequest.getEmail());
