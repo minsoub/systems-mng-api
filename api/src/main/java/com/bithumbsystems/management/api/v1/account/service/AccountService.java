@@ -1,18 +1,11 @@
 package com.bithumbsystems.management.api.v1.account.service;
 
-import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_ACCOUNT_REGISTER;
-import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
-import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
-
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
+import com.bithumbsystems.management.api.core.util.AES256Util;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
-import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRoleRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.*;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailResponse;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailRoleResponse;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountResponse;
@@ -30,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.*;
 
 /**
  * The type Account service.
@@ -148,7 +144,7 @@ public class AccountService {
      * @return mono
      */
     public Mono<List<AccountDetailRoleResponse>> detailDataRoleList(String accountId) {
-        log.debug("detailData => {}", accountId);
+        log.debug("detailRoleData => {}", accountId);
         return adminAccessDomainService.findByAdminAccountId(accountId)
                 .flatMap(adminAccess -> {
                     log.info("adminAccess => {}", adminAccess);
@@ -235,6 +231,7 @@ public class AccountService {
   public Mono<AccountResponse> createAccount(AccountRegisterRequest accountRegisterRequest,
       Account account) {
     AdminAccount adminAccount = new AdminAccount();
+    adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
     adminAccount.setPassword(
         passwordEncoder.encode(accountRegisterRequest.getPassword()));     // 패스워드 encode
@@ -273,6 +270,34 @@ public class AccountService {
         }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
 
+    /**
+     * 패스워드를 수정한다.
+     *
+     * @param accountUpdatePasswordRequest
+     * @param account
+     * @return
+     */
+  public Mono<AccountResponse> updateAccountPassword(AccountUpdatePasswordRequest accountUpdatePasswordRequest, Account account) {
+      return adminAccountDomainService.findByEmail(accountUpdatePasswordRequest.getEmail())
+              .flatMap(result -> {
+                  if (!passwordEncoder.matches(AES256Util.decryptAES( AES256Util.CLIENT_AES_KEY_ADM, accountUpdatePasswordRequest.getCurrentPassword()),
+                          result.getPassword())) {
+                      return Mono.error(new AccountException(FAIL_PASSWORD_UPDATE));
+                  }
+                  result.setPassword(passwordEncoder.encode(AES256Util.decryptAES( AES256Util.CLIENT_AES_KEY_ADM, accountUpdatePasswordRequest.getNewPassword())));
+                  result.setOldPassword(passwordEncoder.encode(AES256Util.decryptAES( AES256Util.CLIENT_AES_KEY_ADM, accountUpdatePasswordRequest.getCurrentPassword())));
+                  result.setUpdateDate(LocalDateTime.now());
+                  result.setUpdateAdminAccountId(account.getAccountId());
+                  return adminAccountDomainService.update(result, account.getAccountId())
+                          .flatMap(r -> {
+                              return Mono.just(AccountResponse.builder()
+                                      .id(result.getId())
+                                      .name(result.getName())
+                                      .email(result.getEmail())
+                                      .build());
+                          });
+              });
+  }
   /**
    * 통합 어드민 관리자가 계정을 수정한다.
    *
@@ -305,6 +330,7 @@ public class AccountService {
                   // admin_account_id, role_management_id, site_id로 찾는다.
                   adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
                       .flatMap(adminAccess -> {  // 수정모드
+
                         return adminAccessDomainService.update(AdminAccess.builder()
                             .id(adminAccess.getId())
                             .adminAccountId(adminAccount.getId())
@@ -587,6 +613,7 @@ public class AccountService {
       Account account) {
 
     AdminAccount adminAccount = new AdminAccount();
+    adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
     adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));
     adminAccount.setEmail(accountRegisterRequest.getEmail());

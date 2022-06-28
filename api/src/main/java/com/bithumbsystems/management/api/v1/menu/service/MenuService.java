@@ -42,7 +42,7 @@ public class MenuService {
   public Mono<List<MenuListResponse>> getMenuList(String siteId, Boolean isUse) {
     log.info("Main: " + Thread.currentThread().getName());
 
-    return menuDomainService.findList(siteId, isUse, null)
+    return menuDomainService.findList(siteId, isUse, "")
         .flatMap(menu -> Mono.just(MenuListResponse.builder()
             .name(menu.getName())
             .id(menu.getId())
