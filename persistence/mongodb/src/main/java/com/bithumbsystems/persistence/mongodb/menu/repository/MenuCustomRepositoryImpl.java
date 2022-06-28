@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
@@ -38,6 +39,13 @@ public class MenuCustomRepositoryImpl implements MenuCustomRepository {
 //  }
 
   @Override
+  public Flux<Menu> findAllUrls() {
+    Query query = new Query();
+    query.fields().include("url").include("_id").include("name");
+    return reactiveMongoTemplate.find(query, Menu.class);
+  }
+
+  @Override
   public Flux<Menu> findMenuListBySiteId(String siteId, Boolean isUse, String parentMenuId) {
     var condition = new ArrayList<Criteria>();
     condition.add(where("site_id").is(siteId));
@@ -54,5 +62,4 @@ public class MenuCustomRepositoryImpl implements MenuCustomRepository {
     return reactiveMongoTemplate
         .find(where, Menu.class);
   }
-
 }

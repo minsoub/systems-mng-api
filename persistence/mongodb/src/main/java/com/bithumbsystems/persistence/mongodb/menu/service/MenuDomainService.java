@@ -46,6 +46,10 @@ public class MenuDomainService {
     return menuRepository.findMenuListBySiteId(siteId, isUse, parentsMenuId);
   }
 
+  public Flux<Menu> findAllUrls() {
+    return menuRepository.findAllUrls();
+  }
+
   public Flux<Menu> findAll() {
     return menuRepository.findByIsUseIsTrue();
   }

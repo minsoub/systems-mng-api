@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 
 public interface MenuCustomRepository {
 
-//  Flux<?> findMenuListBySiteId(String siteId, Boolean isUse, Class<?> outputType);
+  Flux<Menu> findAllUrls();
 
   Flux<Menu> findMenuListBySiteId(String siteId, Boolean isUse, String parentMenuId);
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
@@ -41,4 +42,10 @@ public class ProgramCustomRepositoryImpl implements ProgramCustomRepository {
         .find(where, Program.class);
   }
 
+  public Flux<Program> findAllUrls(String method) {
+    Query query = new Query();
+    query.fields().include("action_url").include("_id").include("name");
+    query.addCriteria(new Criteria().andOperator(where("action_method").is(method)));
+    return reactiveMongoTemplate.find(query, Program.class);
+  }
 }

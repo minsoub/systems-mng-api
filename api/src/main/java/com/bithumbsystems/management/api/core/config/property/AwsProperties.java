@@ -30,4 +30,5 @@ public class AwsProperties {
 
   private String kmsKey;
   private String emailSender;
+  private String sqlUrl;
 }

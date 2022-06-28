@@ -22,4 +22,8 @@ public class AuditLogDomainService {
   public Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate) {
     return auditLogRepository.countBySearchText(searchText, startDate, endDate);
   }
+
+  public Mono<AuditLog> save(AuditLog auditLog) {
+    return auditLogRepository.save(auditLog);
+  }
 }

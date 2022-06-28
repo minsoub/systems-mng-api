@@ -7,6 +7,7 @@ import static com.bithumbsystems.management.api.core.config.constant.ParameterSt
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_USER;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SQS_URL;
 
 import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.config.property.MongoProperties;
@@ -58,6 +59,7 @@ public class LocalParameterStoreConfig {
         // KMS Parameter Key
         this.awsProperties.setKmsKey(getParameterValue(awsProperties.getParamStoreKmsName(), KMS_ALIAS_NAME));
         this.awsProperties.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
+        this.awsProperties.setSqlUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_URL));
     }
 
     protected String getParameterValue(String storeName, String type) {

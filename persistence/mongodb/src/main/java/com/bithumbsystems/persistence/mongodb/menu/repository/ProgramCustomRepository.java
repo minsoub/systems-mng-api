@@ -6,4 +6,7 @@ import reactor.core.publisher.Flux;
 public interface ProgramCustomRepository {
 
   Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse);
+
+  Flux<Program> findAllUrls(String method);
+
 }

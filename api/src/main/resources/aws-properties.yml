@@ -16,3 +16,5 @@ cloud:
       doc-name: docdb
       kms-name: kms
       message-name: message
+    sqs:
+      queue-name: AuditLogQueue.fifo

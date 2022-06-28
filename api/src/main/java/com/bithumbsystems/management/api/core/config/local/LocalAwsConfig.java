@@ -1,5 +1,7 @@
 package com.bithumbsystems.management.api.core.config.local;
 
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
@@ -46,6 +48,14 @@ public class LocalAwsConfig {
     return SesClient.builder()
         .region(Region.of(awsProperties.getRegion()))
         .credentialsProvider(ProfileCredentialsProvider.create(profileName))
+        .build();
+  }
+
+  @Bean
+  public AmazonSQSAsync amazonSQS() {
+    return AmazonSQSAsyncClientBuilder.standard()
+        .withCredentials(provider)
+        .withRegion(awsProperties.getRegion())
         .build();
   }
 

@@ -27,10 +27,10 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
     return reactiveMongoTemplate
         .find(query(new Criteria()
             .orOperator(
-                where("admin_account_name").regex(reg),
-                where("admin_account_id").regex(reg),
+                where("email").regex(reg),
                 where("ip").regex(reg),
                 where("menu_name").regex(reg),
+                where("program_name").regex(reg),
                 where("url").regex(reg),
                 where("parameter").regex(reg))
             .andOperator(
@@ -46,10 +46,10 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
     return reactiveMongoTemplate
         .count(query(new Criteria()
             .orOperator(
-                where("admin_account_name").regex(reg),
-                where("admin_account_id").regex(reg),
+                where("email").regex(reg),
                 where("ip").regex(reg),
                 where("menu_name").regex(reg),
+                where("program_name").regex(reg),
                 where("url").regex(reg),
                 where("parameter").regex(reg))
         .andOperator(

@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Builder
 @NoArgsConstructor
 @CompoundIndexes({
-    @CompoundIndex(name = "menu_program_site", def = "{'menuId' : 1, 'programId': 1, 'siteId': 1}", unique = true)
+    @CompoundIndex(name = "menu_program_site", def = "{'menu_id' : 1, 'program_id': 1, 'site_id': 1}", unique = true)
 })
 public class SiteMenuProgram {
   @MongoId(targetType = FieldType.STRING)

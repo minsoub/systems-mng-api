@@ -90,4 +90,7 @@ public class ProgramDomainService {
     return siteMenuProgramRepository.deleteBySiteIdAndMenuId(siteId, menuId);
   }
 
+  public Flux<Program> findAllUrls(String method) {
+    return programRepository.findAllUrls(method);
+  }
 }
