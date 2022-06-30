@@ -4,9 +4,11 @@ import com.bithumbsystems.persistence.mongodb.menu.model.enums.ActionMethod;
 import com.bithumbsystems.persistence.mongodb.role.model.enums.RoleType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -16,6 +18,8 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
+@ToString
 @NoArgsConstructor
 public class Program {
   @MongoId(targetType = FieldType.STRING)

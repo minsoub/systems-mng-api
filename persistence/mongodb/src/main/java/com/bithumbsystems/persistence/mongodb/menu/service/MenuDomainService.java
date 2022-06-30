@@ -1,8 +1,9 @@
 package com.bithumbsystems.persistence.mongodb.menu.service;
 
+import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
+
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.repository.MenuRepository;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class MenuDomainService {
   public Mono<Menu> save(Menu menu, String accountId) {
     menu.setCreateDate(LocalDateTime.now());
     menu.setCreateAdminAccountId(accountId);
-    menu.setId(PREFIX + Instant.now().toEpochMilli());
+    menu.setId(PREFIX + generateUUIDWithOutDash());
     return menuRepository.insert(menu);
   }
 

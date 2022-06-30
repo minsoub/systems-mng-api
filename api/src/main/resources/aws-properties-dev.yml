@@ -17,3 +17,5 @@ cloud:
       doc-name: docdb
       kms-name: kms
       message-name: message
+    sqs:
+      queue-name: audit_log_queue_dev.fifo

@@ -29,11 +29,12 @@ public class ProgramCustomRepositoryImpl implements ProgramCustomRepository {
       condition.add(new Criteria().orOperator(
           where("name").regex(reg),
           where("id").regex(reg)));
-    }  else {
+    } else {
       condition.add(new Criteria().orOperator(
           where("name").regex(reg),
-          where("id").regex(reg)));
-      condition.add(where("is_use").is(isUse));
+          where("id").regex(reg),
+          where("is_use").is(isUse)
+      ));
     }
 
     var where = query(new Criteria().andOperator(condition));

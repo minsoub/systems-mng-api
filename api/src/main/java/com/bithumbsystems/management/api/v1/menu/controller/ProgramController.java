@@ -42,7 +42,7 @@ public class ProgramController {
    * @return the list
    */
   @GetMapping("/site/{siteId}/programs")
-  @Operation(summary = "프로그램 목록" , description = "통합 시스템 관리> 프로그램 관리: 목록")
+  @Operation(summary = "프로그램 목록" , description = "통합 시스템 관리> 프로그램 관리: 목록", tags = "통합 시스템 관리> 프로그램 관리")
   public ResponseEntity<Mono<?>> getList(@PathVariable String siteId,
       @RequestParam(required = false, defaultValue = "") String searchText,
       @RequestParam(required = false) Boolean isUse) {
@@ -59,7 +59,7 @@ public class ProgramController {
    * @return the response entity
    */
   @PostMapping("/site/{siteId}/program")
-  @Operation(summary = "프로그램 생성" , description = "통합 시스템 관리> 프로그램 관리: 생성")
+  @Operation(summary = "프로그램 생성" , description = "통합 시스템 관리> 프로그램 관리: 생성", tags = "통합 시스템 관리> 프로그램 관리")
   public ResponseEntity<Mono<?>> create(@PathVariable String siteId,
       @RequestBody ProgramRegisterRequest programRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -75,7 +75,7 @@ public class ProgramController {
    * @return the one
    */
   @GetMapping("/site/{siteId}/program/{programId}")
-  @Operation(summary = "프로그램 조회" , description = "통합 시스템 관리> 프로그램 관리: 조회")
+  @Operation(summary = "프로그램 조회" , description = "통합 시스템 관리> 프로그램 관리: 조회", tags = "통합 시스템 관리> 프로그램 관리")
   public ResponseEntity<Mono<?>> getOne(@PathVariable String siteId,
       @PathVariable String programId) {
     return ResponseEntity.ok().body(programService.getOne(siteId, programId)
@@ -92,7 +92,7 @@ public class ProgramController {
    * @return the response entity
    */
   @PutMapping("/site/{siteId}/program/{programId}")
-  @Operation(summary = "프로그램 수정" , description = "통합 시스템 관리> 프로그램 관리: 수정")
+  @Operation(summary = "프로그램 수정" , description = "통합 시스템 관리> 프로그램 관리: 수정", tags = "통합 시스템 관리> 프로그램 관리")
   public ResponseEntity<Mono<?>> update(@PathVariable String siteId, @PathVariable String programId,
       @RequestBody ProgramUpdateRequest programUpdateRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -109,7 +109,7 @@ public class ProgramController {
    * @return the response entity
    */
   @DeleteMapping("/site/{siteId}/program/{programId}")
-  @Operation(summary = "프로그램 삭제" , description = "통합 시스템 관리> 프로그램 관리: 삭제")
+  @Operation(summary = "프로그램 삭제" , description = "통합 시스템 관리> 프로그램 관리: 삭제", tags = "통합 시스템 관리> 프로그램 관리")
   public ResponseEntity<Mono<?>> delete(@PathVariable String siteId,
       @PathVariable String programId) {
     return ResponseEntity.ok().body(programService.delete(siteId, programId)

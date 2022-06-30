@@ -1,8 +1,9 @@
 package com.bithumbsystems.persistence.mongodb.account.service;
 
+import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
+
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
 import com.bithumbsystems.persistence.mongodb.account.repository.AdminAccountRepository;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class AdminAccountDomainService {
     public Mono<AdminAccount> save(AdminAccount adminAccount, String adminAccountId) {
         adminAccount.setUpdateAdminAccountId(adminAccountId);
         adminAccount.setUpdateDate(LocalDateTime.now());
-        adminAccount.setId(PREFIX + Instant.now().toEpochMilli());
+        adminAccount.setId(PREFIX + generateUUIDWithOutDash());
         return adminAccountRepository.insert(adminAccount);
     }
 }

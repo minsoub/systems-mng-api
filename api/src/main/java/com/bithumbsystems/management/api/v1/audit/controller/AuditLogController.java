@@ -31,9 +31,10 @@ public class AuditLogController {
    * @return the one
    */
   @GetMapping("/audit/logs")
-  @Operation(summary = "감사로그 조회" , description = "운영 관리> 감사로그 조회")
+  @Operation(summary = "감사로그 조회" , description = "운영 관리> 감사로그 조회", tags = "운영 관리> 감사로그 조회")
   public ResponseEntity<Mono<?>> getPage(@RequestBody AuditLogSearchRequest auditLogSearchRequest) {
     return ResponseEntity.ok().body(auditLogService.getPage(auditLogSearchRequest)
         .map(SingleResponse::new));
   }
+
 }

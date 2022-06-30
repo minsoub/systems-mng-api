@@ -1,10 +1,11 @@
 package com.bithumbsystems.persistence.mongodb.site.service;
 
+import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
+
 import com.bithumbsystems.persistence.mongodb.site.model.entity.Site;
 import com.bithumbsystems.persistence.mongodb.site.model.entity.SiteFileInfo;
 import com.bithumbsystems.persistence.mongodb.site.repository.SiteFileInfoRepository;
 import com.bithumbsystems.persistence.mongodb.site.repository.SiteRepository;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,7 @@ public class SiteDomainService {
 
   public Mono<Site> save(Site site) {
     site.setCreateDate(LocalDateTime.now());
-    site.setId(SITE_PREFIX + Instant.now().toEpochMilli());
+    site.setId(SITE_PREFIX + generateUUIDWithOutDash());
     return siteRepository.insert(site);
   }
 
@@ -60,7 +61,7 @@ public class SiteDomainService {
     siteFileInfo.setSiteId(siteId);
     siteFileInfo.setCreateDate(LocalDateTime.now());
     siteFileInfo.setCreateAdminAccountId(accountId);
-    siteFileInfo.setId(SITE_FILE_PREFIX + Instant.now().toEpochMilli());
+    siteFileInfo.setId(SITE_FILE_PREFIX + generateUUIDWithOutDash());
     return siteFileInfoRepository.insert(siteFileInfo);
   }
 
