@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class AuditLogRequest {
 
   private String userIp;
+  private String mySiteId;
   private String siteId;
   private String token;
   private String uri;

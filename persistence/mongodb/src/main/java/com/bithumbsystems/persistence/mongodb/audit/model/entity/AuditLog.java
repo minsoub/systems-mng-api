@@ -35,6 +35,7 @@ public class AuditLog {
   private String path;
   private String queryParams;
   private String parameter;
+  private String mySiteId;
   private String siteId;
   private String siteName;
   private RoleType roleType;

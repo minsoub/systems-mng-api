@@ -49,6 +49,7 @@ public class AwsAuditLogListener {
 
     var auditLog = AuditLog.builder()
         .ip(auditLogRequest.getUserIp())
+        .mySiteId(auditLogRequest.getMySiteId())
         .siteId(auditLogRequest.getSiteId())
         .method(auditLogRequest.getMethod())
         .crud(Crud.valueOf(auditLogRequest.getMethod()).getCrud())
@@ -80,7 +81,7 @@ public class AwsAuditLogListener {
     if (auditLogRequest.getToken() == null) { // 비로그인
       auditLog.setRoleType(RoleType.ANONYMOUS);
     } else {
-      reactiveJwtDecoder.decode(auditLogRequest.getToken()).doOnNext(jwt -> {
+      reactiveJwtDecoder.decode(auditLogRequest.getToken()).flatMap(jwt -> {
         final var email = jwt.getClaim("iss").toString();
         final var roles = (JSONArray) jwt.getClaim("ROLE");
 
@@ -90,6 +91,7 @@ public class AwsAuditLogListener {
             else auditLog.setRoleType(RoleType.ADMIN);
             return role.toString();
         }).collect(Collectors.toSet()));
+        return Mono.just(jwt);
       }).subscribe();
     }
   }
