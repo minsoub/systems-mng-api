@@ -53,6 +53,9 @@ spring:
       host: localhost
       port: 27017
       database: test
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
 
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
@@ -67,6 +70,9 @@ spring:
       host: localhost
       port: 27017
       database: test
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
 logging:
   config: classpath:logback-spring-local.xml
 ---
@@ -75,6 +81,9 @@ spring:
     import: classpath:aws-properties-dev.yml, classpath:springdoc.yml
     activate:
       on-profile: dev
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---
@@ -83,6 +92,9 @@ spring:
     import: classpath:aws-properties-eks-dev.yml, classpath:springdoc.yml
     activate:
       on-profile: eks-dev
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
 logging:
   config: classpath:logback-spring-dev.xml
 ---
@@ -91,6 +103,9 @@ spring:
     import: classpath:aws-properties.yml
     activate:
       on-profile: prod
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
 springdoc:
   api-docs:
     enabled: false

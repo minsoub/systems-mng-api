@@ -2,6 +2,7 @@ package com.bithumbsystems.management.api.core.config;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+import com.bithumbsystems.management.api.core.config.property.ApplicationProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -37,8 +38,8 @@ public class AutoGeneratorProgramConfig {
 
   private final RequestMappingHandlerMapping requestMappingHandlerMapping;
   private final ReactiveMongoTemplate reactiveMongoTemplate;
-  private static final String SITE_ID = "62a15f4ae4129b518b133129";
-  private static final RoleType ROLE_TYPE = RoleType.ADMIN;
+
+  private final ApplicationProperties applicationProperties;
   private static final String ACCOUNT_ID = "autoAccountId";
   private static final String PROGRAM_PREFIX = "PROGRAM_";
 
@@ -64,7 +65,7 @@ public class AutoGeneratorProgramConfig {
           var operation = e.getValue().getMethodAnnotation(Operation.class);
           return Program.builder()
               .name(Objects.requireNonNull(operation).summary())
-              .type(ROLE_TYPE)
+              .type(RoleType.valueOf(applicationProperties.getRoleType()))
               .kindName(operation.tags() != null ? operation.tags()[0] : null)
               .actionMethod(ActionMethod.valueOf(
                   e.getKey().getMethodsCondition().getMethods().iterator().next().name()))
@@ -79,7 +80,7 @@ public class AutoGeneratorProgramConfig {
                     program.getActionUrl())
                 .filter(exists -> !exists)
                 .map(exist -> {
-                  program.setSiteId(SITE_ID);
+                  program.setSiteId(applicationProperties.getSiteId());
                   program.setCreateDate(LocalDateTime.now());
                   program.setCreateAdminAccountId(ACCOUNT_ID);
                   program.setId(PROGRAM_PREFIX + generateUUIDWithOutDash());

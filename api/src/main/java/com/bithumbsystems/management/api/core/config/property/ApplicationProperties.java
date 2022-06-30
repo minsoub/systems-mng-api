@@ -14,4 +14,6 @@ public class ApplicationProperties {
   private String version;
   private String prefix;
   private String[] excludePrefixPath;
+  private String siteId;
+  private String roleType;
 }
