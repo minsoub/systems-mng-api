@@ -26,6 +26,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -78,10 +79,12 @@ public class AwsAuditLogListener {
   }
 
   private void userMappingJob(AuditLogRequest auditLogRequest, AuditLog auditLog) {
-    if (auditLogRequest.getToken() == null) { // 비로그인
+    if (!StringUtils.hasLength(auditLogRequest.getToken())) { // 비로그인
       auditLog.setRoleType(RoleType.ANONYMOUS);
     } else {
-      reactiveJwtDecoder.decode(auditLogRequest.getToken()).flatMap(jwt -> {
+      final String BEARER_TYPE = "Bearer";
+      final var token = auditLogRequest.getToken().substring(BEARER_TYPE.length()).trim();
+      reactiveJwtDecoder.decode(token).flatMap(jwt -> {
         final var email = jwt.getClaim("iss").toString();
         final var roles = (JSONArray) jwt.getClaim("ROLE");
 
