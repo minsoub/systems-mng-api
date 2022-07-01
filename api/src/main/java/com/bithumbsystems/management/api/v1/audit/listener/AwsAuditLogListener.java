@@ -61,14 +61,14 @@ public class AwsAuditLogListener {
         .createDate(LocalDateTime.now())
         .device(checkDevice(auditLogRequest.getUserAgent()).name())
         .referer(auditLogRequest.getReferer())
-        .message(auditLogRequest.getMessage())
+        .message(auditLogRequest.getToken() == null ? auditLogRequest.getMessage() : auditLogRequest.getToken())
         .build();
 
     siteDomainService.findById(auditLog.getSiteId())
         .doOnNext(site -> auditLog.setSiteName(site.getName()))
         .publishOn(Schedulers.boundedElastic())
             .mergeWith( t -> urlMappingJob(auditLog)
-                .doOnNext(v -> userMappingJob(auditLogRequest, auditLog))
+                .doOnSubscribe(v -> userMappingJob(auditLogRequest, auditLog))
                 .doOnComplete(() -> {
                   log.info(auditLog.toString());
                   auditLogDomainService.save(auditLog)
