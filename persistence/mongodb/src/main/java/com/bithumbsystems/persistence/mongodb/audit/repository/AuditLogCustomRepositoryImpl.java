@@ -5,7 +5,6 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 import com.bithumbsystems.persistence.mongodb.audit.model.entity.AuditLog;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -34,8 +33,9 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("url").regex(reg),
                 where("parameter").regex(reg))
             .andOperator(
-                where("create_date").gte(startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))),
-                where("create_date").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
+                where("create_date").gte(startDate)
+                    .lte(endDate)
+            ))
             .with(pageable)
             , AuditLog.class);
   }
@@ -52,9 +52,10 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("program_name").regex(reg),
                 where("url").regex(reg),
                 where("parameter").regex(reg))
-        .andOperator(
-            where("create_date").gte(startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))),
-            where("create_date").lte(endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))),
+                .andOperator(
+                    where("create_date").gte(startDate)
+                        .lte(endDate)
+                )),
             AuditLog.class);
   }
 }

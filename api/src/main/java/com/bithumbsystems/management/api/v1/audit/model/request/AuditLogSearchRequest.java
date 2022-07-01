@@ -8,9 +8,9 @@ import lombok.Data;
 @Data
 public class AuditLogSearchRequest {
 
-  private final String searchText;
-  private final LocalDateTime startDate;
-  private final LocalDateTime endDate;
-  private final Integer page;
-  private final Integer size;
+  private final String searchText = "";
+  private final LocalDateTime startDate = LocalDateTime.now().minusMonths(3);
+  private final LocalDateTime endDate = LocalDateTime.now();
+  private final Integer page = 0;
+  private final Integer size = 10;
 }

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Document(collection = "audit_log")
@@ -20,7 +19,7 @@ public class AuditLog {
   @Transient
   public static final String SEQUENCE_NAME = "audit_log_sequence";
 
-  @MongoId(targetType = FieldType.STRING)
+  @MongoId
   private Long seq;
 
   private String email;

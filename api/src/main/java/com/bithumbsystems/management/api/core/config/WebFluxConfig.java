@@ -1,7 +1,10 @@
 package com.bithumbsystems.management.api.core.config;
 
+import static com.bithumbsystems.persistence.mongodb.common.model.constant.CommonConstant.DATE_TIME_PATTERN;
+
 import com.bithumbsystems.management.api.core.config.property.ApplicationProperties;
 import com.bithumbsystems.management.api.core.config.resolver.CustomArgumentResolver;
+import com.bithumbsystems.management.api.core.config.resolver.QueryParamArgumentResolver;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -38,7 +41,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
     configurer.addPathPrefix( applicationProperties.getPrefix() + applicationProperties.getVersion()
         , (path) -> Arrays
             .stream(applicationProperties.getExcludePrefixPath())
-            .anyMatch(p -> !(path.getName().indexOf(p) > 0))
+            .anyMatch(p -> path.getName().indexOf(p) <= 0)
     );
   }
 
@@ -53,8 +56,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
   public ObjectMapper objectMapper() {
     JavaTimeModule module = new JavaTimeModule();
     LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+    LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
     module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
     module.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
 
@@ -81,6 +84,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
   public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
     WebFluxConfigurer.super.configureArgumentResolvers(configurer);
     CustomArgumentResolver customArgumentResolver = new CustomArgumentResolver(reactiveJwtDecoder);
+    QueryParamArgumentResolver queryParamArgumentResolver = new QueryParamArgumentResolver();
     configurer.addCustomResolver(customArgumentResolver);
+    configurer.addCustomResolver(queryParamArgumentResolver);
   }
 }
