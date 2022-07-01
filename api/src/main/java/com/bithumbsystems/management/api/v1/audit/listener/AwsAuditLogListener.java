@@ -29,7 +29,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Component
 @Slf4j
@@ -66,7 +65,7 @@ public class AwsAuditLogListener {
 
     siteDomainService.findById(auditLog.getSiteId())
         .doOnNext(site -> auditLog.setSiteName(site.getName()))
-        .publishOn(Schedulers.boundedElastic())
+//        .publishOn(Schedulers.boundedElastic())
             .mergeWith( t -> urlMappingJob(auditLog)
                 .doOnSubscribe(v -> userMappingJob(auditLogRequest, auditLog))
                 .doOnComplete(() -> {
