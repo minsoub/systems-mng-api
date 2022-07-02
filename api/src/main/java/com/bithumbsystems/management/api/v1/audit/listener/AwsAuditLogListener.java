@@ -41,41 +41,42 @@ public class AwsAuditLogListener {
 
   private final AuditLogDomainService auditLogDomainService;
 
-  @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.NEVER)
-  private void auditLogMessage(@Headers Map<String, String> header, @Payload String message,
-      Acknowledgment ack) {
-    log.debug("header: {} message: {}", header, message);
-    AuditLogRequest auditLogRequest = new Gson().fromJson(message, AuditLogRequest.class);
-
-    var auditLog = AuditLog.builder()
-        .ip(auditLogRequest.getUserIp())
-        .mySiteId(auditLogRequest.getMySiteId())
-        .siteId(auditLogRequest.getSiteId())
-        .method(auditLogRequest.getMethod())
-        .crud(Crud.valueOf(auditLogRequest.getMethod()).getCrud())
-        .uri(URLDecoder.decode(auditLogRequest.getUri(), StandardCharsets.UTF_8))
-        .path(auditLogRequest.getPath())
-        .parameter(auditLogRequest.getRequestBody())
-        .queryParams(URLDecoder.decode(auditLogRequest.getQueryParams(), StandardCharsets.UTF_8))
-        .createDate(LocalDateTime.now())
-        .device(checkDevice(auditLogRequest.getUserAgent()).name())
-        .referer(auditLogRequest.getReferer())
-        .message(auditLogRequest.getToken() == null ? auditLogRequest.getMessage() : auditLogRequest.getToken())
-        .build();
-
-    siteDomainService.findById(auditLog.getSiteId())
-        .doOnNext(site -> auditLog.setSiteName(site.getName()))
-//        .publishOn(Schedulers.boundedElastic())
-            .mergeWith( t -> urlMappingJob(auditLog)
-                .doOnSubscribe(v -> userMappingJob(auditLogRequest, auditLog))
-                .doOnComplete(() -> {
-                  log.info(auditLog.toString());
-                  auditLogDomainService.save(auditLog)
-                      .doFinally(v -> ack.acknowledge())
-                      .subscribe();
-                }).subscribe()
-            ).subscribe();
-  }
+  // TODO: 임시 막아 놓는다.
+//  @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.NEVER)
+//  private void auditLogMessage(@Headers Map<String, String> header, @Payload String message,
+//      Acknowledgment ack) {
+//    log.debug("header: {} message: {}", header, message);
+//    AuditLogRequest auditLogRequest = new Gson().fromJson(message, AuditLogRequest.class);
+//
+//    var auditLog = AuditLog.builder()
+//        .ip(auditLogRequest.getUserIp())
+//        .mySiteId(auditLogRequest.getMySiteId())
+//        .siteId(auditLogRequest.getSiteId())
+//        .method(auditLogRequest.getMethod())
+//        .crud(Crud.valueOf(auditLogRequest.getMethod()).getCrud())
+//        .uri(URLDecoder.decode(auditLogRequest.getUri(), StandardCharsets.UTF_8))
+//        .path(auditLogRequest.getPath())
+//        .parameter(auditLogRequest.getRequestBody())
+//        .queryParams(URLDecoder.decode(auditLogRequest.getQueryParams(), StandardCharsets.UTF_8))
+//        .createDate(LocalDateTime.now())
+//        .device(checkDevice(auditLogRequest.getUserAgent()).name())
+//        .referer(auditLogRequest.getReferer())
+//        .message(auditLogRequest.getToken() == null ? auditLogRequest.getMessage() : auditLogRequest.getToken())
+//        .build();
+//
+//    siteDomainService.findById(auditLog.getSiteId())
+//        .doOnNext(site -> auditLog.setSiteName(site.getName()))
+////        .publishOn(Schedulers.boundedElastic())
+//            .mergeWith( t -> urlMappingJob(auditLog)
+//                .doOnSubscribe(v -> userMappingJob(auditLogRequest, auditLog))
+//                .doOnComplete(() -> {
+//                  log.info(auditLog.toString());
+//                  auditLogDomainService.save(auditLog)
+//                      .doFinally(v -> ack.acknowledge())
+//                      .subscribe();
+//                }).subscribe()
+//            ).subscribe();
+//  }
 
   private void userMappingJob(AuditLogRequest auditLogRequest, AuditLog auditLog) {
     if (!StringUtils.hasLength(auditLogRequest.getToken())) { // 비로그인
