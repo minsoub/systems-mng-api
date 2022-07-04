@@ -18,6 +18,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +75,7 @@ public class AwsAuditLogListener {
           return urlMappingJob(audit)
               .flatMap(t -> {
                 log.info("save {}", Thread.currentThread().getName());
+                t.setId(UUID.randomUUID().toString().replace("-",""));
                 return auditLogDomainService.save(t);
               })
               .collectList();
