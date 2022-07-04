@@ -17,6 +17,7 @@ import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -93,14 +94,21 @@ public class AwsAuditLogListener {
       return reactiveJwtDecoder.decode(token).flatMap(jwt -> {
         log.info("reactiveJwtDecoder.decode {}", Thread.currentThread().getName());
         final var email = jwt.getClaim("iss").toString();
-        final var roles = (JSONArray) jwt.getClaim("ROLE");
+        final var roleObject = jwt.getClaims().get("ROLE");
+        var role = RoleType.ADMIN;
+
+        if (roleObject instanceof String) {
+          role = RoleType.valueOf((String) jwt.getClaims().get("ROLE"));
+          if(role == RoleType.USER) auditLog.setRoleType(RoleType.USER);
+        } else if(roleObject instanceof JSONArray)  {
+          final var roleList = ((JSONArray) roleObject).stream().map(Object::toString).collect(Collectors.toList());
+          if(roleList.contains(RoleType.USER.name())) {
+            auditLog.setRoleType(RoleType.USER);
+          }
+          auditLog.setRoles(new HashSet<>(roleList));
+        }
 
         auditLog.setEmail(email);
-        auditLog.setRoles(roles.stream().map(role -> {
-            if(role == RoleType.USER) auditLog.setRoleType(RoleType.USER);
-            else auditLog.setRoleType(RoleType.ADMIN);
-            return role.toString();
-        }).collect(Collectors.toSet()));
         return Mono.just(auditLog);
       });
     }
