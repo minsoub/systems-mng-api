@@ -64,26 +64,32 @@ public class AwsAuditLogListener {
         .build();
 
     siteDomainService.findById(auditLog.getSiteId())
-        .doOnNext(site -> auditLog.setSiteName(site.getName()))
-//        .publishOn(Schedulers.boundedElastic())
-            .mergeWith( t -> urlMappingJob(auditLog)
-                .doOnSubscribe(v -> userMappingJob(auditLogRequest, auditLog))
-                .doOnComplete(() -> {
-                  log.info(auditLog.toString());
-                  auditLogDomainService.save(auditLog)
-                      .doFinally(v -> ack.acknowledge())
-                      .subscribe();
-                }).subscribe()
-            ).subscribe();
+        .flatMap(site -> {
+          log.info("site {}", Thread.currentThread().getName());
+          auditLog.setSiteName(site.getName());
+          return userMappingJob(auditLogRequest, auditLog);
+        })
+        .flatMap(audit -> {
+          log.info("audit {}", Thread.currentThread().getName());
+          return urlMappingJob(audit)
+              .flatMap(t -> {
+                log.info("save {}", Thread.currentThread().getName());
+                return auditLogDomainService.save(t);
+              })
+              .collectList();
+        }).subscribe();
   }
 
-  private void userMappingJob(AuditLogRequest auditLogRequest, AuditLog auditLog) {
+  private Mono<AuditLog> userMappingJob(AuditLogRequest auditLogRequest, AuditLog auditLog) {
+    log.info("userMappingJob1 {}", Thread.currentThread().getName());
     if (!StringUtils.hasLength(auditLogRequest.getToken())) { // 비로그인
       auditLog.setRoleType(RoleType.ANONYMOUS);
+      return Mono.just(auditLog);
     } else {
       final String BEARER_TYPE = "Bearer";
       final var token = auditLogRequest.getToken().substring(BEARER_TYPE.length()).trim();
-      reactiveJwtDecoder.decode(token).flatMap(jwt -> {
+      return reactiveJwtDecoder.decode(token).flatMap(jwt -> {
+        log.info("reactiveJwtDecoder.decode {}", Thread.currentThread().getName());
         final var email = jwt.getClaim("iss").toString();
         final var roles = (JSONArray) jwt.getClaim("ROLE");
 
@@ -93,29 +99,32 @@ public class AwsAuditLogListener {
             else auditLog.setRoleType(RoleType.ADMIN);
             return role.toString();
         }).collect(Collectors.toSet()));
-        return Mono.just(jwt);
-      }).subscribe();
+        return Mono.just(auditLog);
+      });
     }
   }
 
-  private Flux<Object> urlMappingJob(AuditLog auditLog) {
+  private Flux<AuditLog> urlMappingJob(AuditLog auditLog) {
+    log.info("urlMappingJob {}", Thread.currentThread().getName());
     AntPathMatcher pathMatcher = new AntPathMatcher();
-    var findMenu = menuDomainService.findAllUrls()
+    return menuDomainService.findAllUrls()
         .filter(menu -> pathMatcher.match(menu.getUrl(), auditLog.getPath()))
         .flatMap(m -> {
+          log.info("urlMappingJob menu {}", Thread.currentThread().getName());
           auditLog.setMenuId(m.getId());
           auditLog.setMenuName(m.getName());
-          return Mono.empty();
-        });
-
-    var findProgram = programDomainService.findAllUrls(auditLog.getMethod())
-        .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog.getPath()))
-        .flatMap(p -> {
-          auditLog.setProgramId(p.getId());
-          auditLog.setProgramName(p.getName());
-          return Mono.empty();
-        });
-    return findMenu.mergeWith(findProgram);
+          return Mono.just(auditLog);
+        })
+        .flatMap(auditLog1 -> {
+          log.info("urlMappingJob program {}", Thread.currentThread().getName());
+          return programDomainService.findAllUrls(auditLog1.getMethod())
+              .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog1.getPath()))
+              .flatMap(p -> {
+                auditLog1.setProgramId(p.getId());
+                auditLog1.setProgramName(p.getName());
+                return Mono.just(auditLog1);
+              });
+        }).defaultIfEmpty(auditLog);
   }
 
   private Device checkDevice(String userAgent) {
