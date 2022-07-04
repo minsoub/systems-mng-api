@@ -65,15 +65,15 @@ public class AwsAuditLogListener {
 
     siteDomainService.findById(auditLog.getSiteId())
         .flatMap(site -> {
-          log.info("site {}", Thread.currentThread().getName());
+          log.debug("site {}", Thread.currentThread().getName());
           auditLog.setSiteName(site.getName());
           return userMappingJob(auditLogRequest, auditLog);
         })
         .flatMap(audit -> {
-          log.info("audit {}", Thread.currentThread().getName());
+          log.debug("audit {}", Thread.currentThread().getName());
           return urlMappingJob(audit)
               .flatMap(t -> {
-                log.info("save {}", Thread.currentThread().getName());
+                log.debug("save {}", Thread.currentThread().getName());
                 t.setId(UUID.randomUUID().toString().replace("-",""));
                 return auditLogDomainService.save(t);
               })
@@ -82,7 +82,7 @@ public class AwsAuditLogListener {
   }
 
   private Mono<AuditLog> userMappingJob(AuditLogRequest auditLogRequest, AuditLog auditLog) {
-    log.info("userMappingJob1 {}", Thread.currentThread().getName());
+    log.debug("userMappingJob1 {}", Thread.currentThread().getName());
     if (!StringUtils.hasLength(auditLogRequest.getToken())) { // 비로그인
       auditLog.setRoleType(RoleType.ANONYMOUS);
       return Mono.just(auditLog);
@@ -90,7 +90,7 @@ public class AwsAuditLogListener {
       final String BEARER_TYPE = "Bearer";
       final var token = auditLogRequest.getToken().substring(BEARER_TYPE.length()).trim();
       return reactiveJwtDecoder.decode(token).flatMap(jwt -> {
-        log.info("reactiveJwtDecoder.decode {}", Thread.currentThread().getName());
+        log.debug("reactiveJwtDecoder.decode {}", Thread.currentThread().getName());
         final var email = jwt.getClaim("iss").toString();
         final var roleObject = jwt.getClaims().get("ROLE");
         var role = RoleType.ADMIN;
@@ -113,18 +113,18 @@ public class AwsAuditLogListener {
   }
 
   private Flux<AuditLog> urlMappingJob(AuditLog auditLog) {
-    log.info("urlMappingJob {}", Thread.currentThread().getName());
+    log.debug("urlMappingJob {}", Thread.currentThread().getName());
     AntPathMatcher pathMatcher = new AntPathMatcher();
     return menuDomainService.findAllUrls()
         .filter(menu -> pathMatcher.match(menu.getUrl(), auditLog.getPath()))
         .flatMap(m -> {
-          log.info("urlMappingJob menu {}", Thread.currentThread().getName());
+          log.debug("urlMappingJob menu {}", Thread.currentThread().getName());
           auditLog.setMenuId(m.getId());
           auditLog.setMenuName(m.getName());
           return Mono.just(auditLog);
         })
         .flatMap(auditLog1 -> {
-          log.info("urlMappingJob program {}", Thread.currentThread().getName());
+          log.debug("urlMappingJob program {}", Thread.currentThread().getName());
           return programDomainService.findAllUrls(auditLog1.getMethod())
               .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog1.getPath()))
               .flatMap(p -> {
