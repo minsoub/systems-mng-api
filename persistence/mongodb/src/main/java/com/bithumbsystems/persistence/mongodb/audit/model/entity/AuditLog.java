@@ -15,9 +15,6 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Builder
 public class AuditLog {
 
-//  @Transient
-//  public static final String SEQUENCE_NAME = "audit_log_sequence";
-
   @MongoId
   private String id;
 

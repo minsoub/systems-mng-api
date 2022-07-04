@@ -11,7 +11,6 @@ import com.bithumbsystems.persistence.mongodb.role.model.enums.RoleType;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import com.google.gson.Gson;
 import com.nimbusds.jose.shaded.json.JSONArray;
-import io.awspring.cloud.messaging.listener.Acknowledgment;
 import io.awspring.cloud.messaging.listener.SqsMessageDeletionPolicy;
 import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import java.net.URLDecoder;
@@ -43,9 +42,8 @@ public class AwsAuditLogListener {
 
   private final AuditLogDomainService auditLogDomainService;
 
-  @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.NEVER)
-  private void auditLogMessage(@Headers Map<String, String> header, @Payload String message,
-      Acknowledgment ack) {
+  @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+  private void auditLogMessage(@Headers Map<String, String> header, @Payload String message) {
     log.debug("header: {} message: {}", header, message);
     AuditLogRequest auditLogRequest = new Gson().fromJson(message, AuditLogRequest.class);
 
