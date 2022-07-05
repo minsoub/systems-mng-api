@@ -48,6 +48,7 @@ public class AwsAuditLogListener {
     AuditLogRequest auditLogRequest = new Gson().fromJson(message, AuditLogRequest.class);
 
     var auditLog = AuditLog.builder()
+        .id(UUID.randomUUID().toString())
         .ip(auditLogRequest.getUserIp())
         .mySiteId(auditLogRequest.getMySiteId())
         .siteId(auditLogRequest.getSiteId())
