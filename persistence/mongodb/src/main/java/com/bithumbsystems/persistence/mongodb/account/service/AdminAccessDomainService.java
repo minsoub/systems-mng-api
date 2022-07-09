@@ -35,6 +35,16 @@ public class AdminAccessDomainService {
     }
 
     /**
+     * Access id를 통해서 데이터를 조회한다.
+     *
+     * @param id
+     * @return
+     */
+    public Mono<AdminAccess> findById(String id) {
+        return adminAccessRepository.findById(id);
+    }
+
+    /**
      * Find by admin account ids flux.
      *
      * @param adminAccountIds the admin account ids

@@ -23,7 +23,7 @@ public class RoleManagementDomainService {
   public Mono<RoleManagement> save(RoleManagement roleManagement, String accountId) {
     roleManagement.setCreateAdminAccountId(accountId);
     roleManagement.setCreateDate(LocalDateTime.now());
-    roleManagement.setId(PREFIX + generateUUIDWithOutDash());
+    //roleManagement.setId(PREFIX + generateUUIDWithOutDash());
     return roleManagementRepository.insert(roleManagement);
   }
 
