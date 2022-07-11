@@ -45,7 +45,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @GetMapping("/role/{roleId}/check")
-  @Operation(summary = "ROLE 중복체크", description = "Role 관리 : 등록시 중복체크", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 중복체크", description = "Role 관리 : 등록시 중복체크", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> checkDuplicate(@PathVariable String roleId) {
     return ResponseEntity.ok().body(roleManagementService.checkDuplicate(roleId)
         .map(SingleResponse::new));
@@ -60,7 +60,7 @@ public class RoleManagementController {
    * @return role managements
    */
   @GetMapping("/roles")
-  @Operation(summary = "ROLE 리스트 검색", description = "Role 관리 : 리스트 검색 조회", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 리스트 검색", description = "Role 관리 : 리스트 검색 조회", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> getRoleManagements(
       @RequestParam String siteId,
       @RequestParam(required = false, defaultValue = "true") Boolean isUse,
@@ -77,7 +77,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PostMapping("/role")
-  @Operation(summary = "ROLE 등록", description = "Role 관리 : 등록", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 등록", description = "Role 관리 : 등록", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> create(
       @RequestBody Mono<RoleManagementRegisterRequest> registerRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -96,7 +96,7 @@ public class RoleManagementController {
    * @return the role management
    */
   @GetMapping("/role/{roleManagementId}")
-  @Operation(summary = "ROLE 조회", description = "Role 관리 : ROLE 단건 조회", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 조회", description = "Role 관리 : ROLE 단건 조회", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> getRoleManagement(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getOne(roleManagementId)
@@ -115,7 +115,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PutMapping("/role/{roleManagementId}")
-  @Operation(summary = "ROLE 수정", description = "Role 관리 : ROLE 단건 수정", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 수정", description = "Role 관리 : ROLE 단건 수정", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> updateRoleManagement(
       @RequestBody Mono<RoleManagementUpdateRequest> updateRequest,
       @PathVariable String roleManagementId,
@@ -135,14 +135,14 @@ public class RoleManagementController {
    * @return account in role management
    */
   @GetMapping("/role/{roleManagementId}/accounts")
-  @Operation(summary = "ROLE 사용자 매핑 조회", description = "Role 관리 : 사용자 매핑 조회", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 사용자 매핑 조회", description = "Role 관리 : 사용자 매핑 조회", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> getAccountInRoleManagement(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getAccessUserList(roleManagementId)  // getOne(roleManagementId)
             .map(MultiResponse::new));
   }
   @DeleteMapping("/role/{roleManagementId}/accounts/{accountId}")
-  @Operation(summary = "ROLE 사용자 매핑 삭제", description = "Role 관리 : 사용자 매핑 삭제", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 사용자 매핑 삭제", description = "Role 관리 : 사용자 매핑 삭제", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> deleteRoleManagementAccount(@PathVariable String roleManagementId,
                                                              @PathVariable String accountId, @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(
@@ -159,7 +159,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PutMapping("/role/{roleManagementId}/accounts")
-  @Operation(summary = "ROLE 사용자 매핑", description = "Role 관리 : 사용자 매핑", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "ROLE 사용자 매핑", description = "Role 관리 : 사용자 매핑", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> mappingAccounts(@RequestBody RoleAccountsRequest accounts,
       @PathVariable String roleManagementId,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -208,7 +208,7 @@ public class RoleManagementController {
    * @return the response entity
    */
   @PostMapping("/role/{roleManagementId}/resources")
-  @Operation(summary = "Role 메뉴 프로그램 매핑", description = "권한 관리: 메뉴 프로그램 매핑", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "Role 메뉴 프로그램 매핑", description = "권한 관리: 메뉴 프로그램 매핑", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> mappingMenu(
       @RequestBody Flux<RoleResourceRequest> roleResourceRequests,
       @PathVariable String roleManagementId,
