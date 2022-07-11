@@ -26,6 +26,7 @@ import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainS
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,6 +116,34 @@ public class RoleManagementService {
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
         .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate));
+  }
+
+    /**
+     * 사용자 Role을 삭제한다.
+     *
+     * @param roleManagementId
+     * @param accountId
+     * @param account
+     * @return
+     */
+  public Mono<RoleAccessResponse> deleteAccessUserRole(String roleManagementId, String accountId, Account account) {
+      return adminAccessDomainService.findById(accountId)
+              .flatMap(roleAcceess -> {
+                  Set<String> roleList = roleAcceess.getRoles();
+                  log.debug("{}", roleList);
+                  roleList.remove(roleManagementId);
+                  roleAcceess.setRoles(roleList);
+                  log.debug("admin => {}", roleAcceess);
+                  return adminAccessDomainService.update(roleAcceess, account.getAccountId())
+                          .flatMap(result -> {
+                             return Mono.just(RoleAccessResponse.builder()
+                                     .id(accountId)
+                                     .name(result.getName())
+                                     .email(result.getEmail())
+                                     .createDate(result.getCreateDate())
+                                     .build());
+                          });
+              });
   }
 
   /**

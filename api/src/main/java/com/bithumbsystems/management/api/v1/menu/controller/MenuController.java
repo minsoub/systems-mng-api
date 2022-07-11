@@ -92,7 +92,7 @@ public class MenuController {
    * @param account           the account
    * @return the response entity
    */
-  @DeleteMapping("/site/{siteId}/menu")
+  @PutMapping("/site/{siteId}/menu")
   @Operation(summary = "메뉴 삭제", description = "사이트 관리> 메뉴관리: 메뉴 삭제", tags = "사이트 관리> 메뉴관리")
   public ResponseEntity<Mono<?>> delete(@PathVariable String siteId,
       @RequestBody MenuDeleteRequest menuDeleteRequest,

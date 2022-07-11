@@ -1,6 +1,8 @@
 package com.bithumbsystems.management.api.v1.menu.model.response;
 
 import java.util.List;
+
+import com.bithumbsystems.persistence.mongodb.menu.model.enums.MenuType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +18,9 @@ public class MenuListResponse {
   private String siteId;
   private Integer order;
   private String parentMenuId;
+  private MenuType type;
+  private String url;
+  private boolean target;
+  private boolean externalLink;
   private List<MenuListResponse> childMenu;
 }

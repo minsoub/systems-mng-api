@@ -83,6 +83,7 @@ public class AccountService {
 
                         return Mono.just(accountSearchResponseMap.getFirst());
                       })
+                 .switchIfEmpty(Mono.just(accountSearchResponseMap.getFirst()))
          ).collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
   }
 
