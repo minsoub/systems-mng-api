@@ -14,5 +14,6 @@ public class MenuResourceResponse {
   private String name;
   private Boolean visible;
   private LocalDateTime createDate;
+  private List<MenuResourceResponse> childMenuResources;
   private List<ProgramResourceResponse> programList;
 }

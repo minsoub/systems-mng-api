@@ -15,7 +15,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -168,13 +176,28 @@ public class RoleManagementController {
    * @param roleManagementId the role management id
    * @return the response entity
    */
+  @GetMapping("/role/{roleManagementId}/sites/{siteId}")
+  @Operation(summary = "Role 메뉴 프로그램 조회", description = "권한 관리: 메뉴 프로그램 조회", tags = "통합 시스템 관리> 권한 관리")
+  public ResponseEntity<Mono<?>> getResources(@PathVariable String roleManagementId, @PathVariable String siteId) {
+    return ResponseEntity.ok().body(
+        roleManagementService.getResources(roleManagementId, siteId)
+            .map(SingleResponse::new));
+  }
+
+  /**
+   * Role에 해당되는 메뉴를 불러 온다
+   *
+   * @param roleManagementId the role management id
+   * @return the response entity
+   */
   @GetMapping("/role/{roleManagementId}/resources")
-  @Operation(summary = "Role 메뉴 프로그램 조회", description = "권한 관리: 메뉴 프로그램 조회", tags = "통합 시스템 관리> Role 관리")
+  @Operation(summary = "Role 메뉴 프로그램 조회", description = "권한 관리: 메뉴 프로그램 조회", tags = "사이트 관리> 권한 관리")
   public ResponseEntity<Mono<?>> getResources(@PathVariable String roleManagementId) {
     return ResponseEntity.ok().body(
         roleManagementService.getResources(roleManagementId)
             .map(SingleResponse::new));
   }
+
 
   /**
    * Mapping accounts response entity.

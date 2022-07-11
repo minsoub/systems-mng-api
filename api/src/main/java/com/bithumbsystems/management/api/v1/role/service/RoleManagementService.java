@@ -16,6 +16,7 @@ import com.bithumbsystems.management.api.v1.role.model.response.RoleMappingResou
 import com.bithumbsystems.management.api.v1.role.model.response.RoleResourceResponse;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
+import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.service.MenuDomainService;
 import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
 import com.bithumbsystems.persistence.mongodb.role.model.entity.AuthorizationResource;
@@ -118,32 +119,31 @@ public class RoleManagementService {
         .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate));
   }
 
-    /**
-     * 사용자 Role을 삭제한다.
-     *
-     * @param roleManagementId
-     * @param accountId
-     * @param account
-     * @return
-     */
-  public Mono<RoleAccessResponse> deleteAccessUserRole(String roleManagementId, String accountId, Account account) {
-      return adminAccessDomainService.findById(accountId)
-              .flatMap(roleAcceess -> {
-                  Set<String> roleList = roleAcceess.getRoles();
-                  log.debug("{}", roleList);
-                  roleList.remove(roleManagementId);
-                  roleAcceess.setRoles(roleList);
-                  log.debug("admin => {}", roleAcceess);
-                  return adminAccessDomainService.update(roleAcceess, account.getAccountId())
-                          .flatMap(result -> {
-                             return Mono.just(RoleAccessResponse.builder()
-                                     .id(accountId)
-                                     .name(result.getName())
-                                     .email(result.getEmail())
-                                     .createDate(result.getCreateDate())
-                                     .build());
-                          });
-              });
+  /**
+   * 사용자 Role을 삭제한다.
+   *
+   * @param roleManagementId the role management id
+   * @param accountId        the account id
+   * @param account          the account
+   * @return mono
+   */
+  public Mono<RoleAccessResponse> deleteAccessUserRole(String roleManagementId, String accountId,
+      Account account) {
+    return adminAccessDomainService.findById(accountId)
+        .flatMap(roleAcceess -> {
+          Set<String> roleList = roleAcceess.getRoles();
+          log.debug("{}", roleList);
+          roleList.remove(roleManagementId);
+          roleAcceess.setRoles(roleList);
+          log.debug("admin => {}", roleAcceess);
+          return adminAccessDomainService.update(roleAcceess, account.getAccountId())
+              .flatMap(result -> Mono.just(RoleAccessResponse.builder()
+                  .id(accountId)
+                  .name(result.getName())
+                  .email(result.getEmail())
+                  .createDate(result.getCreateDate())
+                  .build()));
+        });
   }
 
   /**
@@ -202,42 +202,7 @@ public class RoleManagementService {
         .roleManagementId(roleManagementId)
         .build();
     var roleAuthorization = roleAuthorizationDomainService.findByRoleManagementId(roleManagementId);
-    var allMenuList =
-        menuDomainService.findAll()
-            .flatMap(menu -> Mono.just(MenuResourceResponse.builder()
-                .id(menu.getId())
-                .name(menu.getName())
-                .createDate(menu.getCreateDate())
-                .build()))
-            .flatMap(menu -> roleAuthorization.flatMap(r -> {
-              var visible = r.getAuthorizationResources().stream()
-                  .anyMatch(a -> a.getMenuId().equals(menu.getId()));
-              log.info("v {}", visible);
-              menu.setVisible(visible);
-              return Mono.just(menu);
-            }))
-            .flatMap(menuResource -> programDomainService.findMenuPrograms(menuResource.getId())
-                .flatMap(program -> Mono.just(ProgramResourceResponse.builder()
-                    .id(program.getId())
-                    .name(program.getName())
-                    .type(program.getType())
-                    .kindName(program.getKindName())
-                    .actionMethod(program.getActionMethod())
-                    .actionUrl(program.getActionUrl())
-                    .description(program.getDescription())
-                    .build()))
-                .flatMap(program -> roleAuthorization.flatMap(r -> {
-                  var isCheck = r.getAuthorizationResources().stream()
-                      .anyMatch(a -> a.getProgramId().contains(program.getId()));
-                  log.info("isCheck {}", isCheck);
-                  program.setIsCheck(isCheck);
-                  return Mono.just(program);
-                }))
-                .collectSortedList(Comparator.comparing(ProgramResourceResponse::getCreateDate))
-                .flatMap(c -> {
-                  menuResource.setProgramList(c);
-                  return Mono.just(menuResource);
-                }))
+    var allMenuList = getMenuResourceFlux(menuDomainService.findAll(), roleAuthorization)
             .collectSortedList(Comparator.comparing(MenuResourceResponse::getCreateDate))
             .flatMap(Mono::just);
 
@@ -245,6 +210,86 @@ public class RoleManagementService {
       roleMappingResourceResponse.setMenuList(list);
       return Mono.just(roleMappingResourceResponse);
     });
+  }
+
+  /**
+   * Gets resources.
+   *
+   * @param roleManagementId the role management id
+   * @param siteId           the site id
+   * @return the resources
+   */
+  public Mono<RoleMappingResourceResponse> getResources(String roleManagementId, String siteId) {
+    var roleMappingResourceResponse = RoleMappingResourceResponse.builder()
+        .menuList(new ArrayList<>())
+        .roleManagementId(roleManagementId)
+        .build();
+    var roleAuthorization = roleAuthorizationDomainService.findByRoleManagementId(roleManagementId);
+    var allMenuList = getMenuResourceFlux(menuDomainService.findList(siteId, true, ""), roleAuthorization)
+        .flatMap(topMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, topMenu.getId()), roleAuthorization)
+                .flatMap(middleMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, middleMenu.getId()), roleAuthorization)
+                    .collectList()
+                    .flatMap(childResource -> {
+                      middleMenu.setChildMenuResources(childResource);
+                      return Mono.just(middleMenu);
+                    })).collectList()
+            .flatMap(middleResource -> {
+              topMenu.setChildMenuResources(middleResource);
+              return Mono.just(topMenu);
+            })).collectList();
+
+    return allMenuList.flatMap(list -> {
+      roleMappingResourceResponse.setMenuList(list);
+      return Mono.just(roleMappingResourceResponse);
+    });
+  }
+
+  /**
+   * Gets menu resource flux.
+   *
+   * @param menuFlux              the menu flux
+   * @param roleAuthorizationMono the role authorization mono
+   * @return the menu resource flux
+   */
+  private Flux<MenuResourceResponse> getMenuResourceFlux(Flux<Menu> menuFlux, Mono<RoleAuthorization> roleAuthorizationMono) {
+    return menuFlux.flatMap(menu -> Mono.just(MenuResourceResponse.builder()
+        .id(menu.getId())
+        .name(menu.getName())
+        .visible(false)
+        .createDate(menu.getCreateDate())
+        .build())
+    ).flatMap(menu -> roleAuthorizationMono.flatMap(r -> {
+          var visible = r.getAuthorizationResources().stream()
+              .anyMatch(a -> a.getMenuId().equals(menu.getId()));
+          log.info("v {}", visible);
+          menu.setVisible(visible);
+          return Mono.just(menu);
+        }).switchIfEmpty(Mono.just(menu))
+    ).flatMap(menuResource -> programDomainService.findMenuPrograms(menuResource.getId())
+        .flatMap(program -> Mono.just(ProgramResourceResponse.builder()
+            .id(program.getId())
+            .name(program.getName())
+            .type(program.getType())
+            .kindName(program.getKindName())
+            .actionMethod(program.getActionMethod())
+            .actionUrl(program.getActionUrl())
+            .description(program.getDescription())
+            .createDate(program.getCreateDate())
+            .isCheck(false)
+            .build()))
+        .flatMap(program -> roleAuthorizationMono.flatMap(r -> {
+              var isCheck = r.getAuthorizationResources().stream()
+                  .anyMatch(a -> a.getProgramId().contains(program.getId()));
+              log.info("isCheck {}", isCheck);
+              program.setIsCheck(isCheck);
+              return Mono.just(program);
+            }).switchIfEmpty(Mono.just(program))
+        )
+        .collectList()
+        .flatMap(c -> {
+          menuResource.setProgramList(c);
+          return Mono.just(menuResource);
+        }));
   }
 
   /**
