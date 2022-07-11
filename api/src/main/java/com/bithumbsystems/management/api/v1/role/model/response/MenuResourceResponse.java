@@ -13,6 +13,7 @@ public class MenuResourceResponse {
   private String id;
   private String name;
   private Boolean visible;
+  private Integer order;
   private LocalDateTime createDate;
   private List<MenuResourceResponse> childMenuResources;
   private List<ProgramResourceResponse> programList;

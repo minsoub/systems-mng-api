@@ -130,13 +130,13 @@ public class RoleManagementService {
   public Mono<RoleAccessResponse> deleteAccessUserRole(String roleManagementId, String accountId,
       Account account) {
     return adminAccessDomainService.findById(accountId)
-        .flatMap(roleAcceess -> {
-          Set<String> roleList = roleAcceess.getRoles();
+        .flatMap(roleAccess -> {
+          Set<String> roleList = roleAccess.getRoles();
           log.debug("{}", roleList);
           roleList.remove(roleManagementId);
-          roleAcceess.setRoles(roleList);
-          log.debug("admin => {}", roleAcceess);
-          return adminAccessDomainService.update(roleAcceess, account.getAccountId())
+          roleAccess.setRoles(roleList);
+          log.debug("admin => {}", roleAccess);
+          return adminAccessDomainService.update(roleAccess, account.getAccountId())
               .flatMap(result -> Mono.just(RoleAccessResponse.builder()
                   .id(accountId)
                   .name(result.getName())
@@ -203,7 +203,7 @@ public class RoleManagementService {
         .build();
     var roleAuthorization = roleAuthorizationDomainService.findByRoleManagementId(roleManagementId);
     var allMenuList = getMenuResourceFlux(menuDomainService.findAll(), roleAuthorization)
-            .collectSortedList(Comparator.comparing(MenuResourceResponse::getCreateDate))
+            .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
             .flatMap(Mono::just);
 
     return allMenuList.flatMap(list -> {
@@ -228,15 +228,15 @@ public class RoleManagementService {
     var allMenuList = getMenuResourceFlux(menuDomainService.findList(siteId, true, ""), roleAuthorization)
         .flatMap(topMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, topMenu.getId()), roleAuthorization)
                 .flatMap(middleMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, middleMenu.getId()), roleAuthorization)
-                    .collectList()
+                    .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
                     .flatMap(childResource -> {
                       middleMenu.setChildMenuResources(childResource);
                       return Mono.just(middleMenu);
-                    })).collectList()
+                    })).collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
             .flatMap(middleResource -> {
               topMenu.setChildMenuResources(middleResource);
               return Mono.just(topMenu);
-            })).collectList();
+            })).collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder));
 
     return allMenuList.flatMap(list -> {
       roleMappingResourceResponse.setMenuList(list);
@@ -255,6 +255,7 @@ public class RoleManagementService {
     return menuFlux.flatMap(menu -> Mono.just(MenuResourceResponse.builder()
         .id(menu.getId())
         .name(menu.getName())
+        .order(menu.getOrder())
         .visible(false)
         .createDate(menu.getCreateDate())
         .build())
@@ -285,7 +286,7 @@ public class RoleManagementService {
               return Mono.just(program);
             }).switchIfEmpty(Mono.just(program))
         )
-        .collectList()
+        .collectSortedList(Comparator.comparing(ProgramResourceResponse::getCreateDate).reversed())
         .flatMap(c -> {
           menuResource.setProgramList(c);
           return Mono.just(menuResource);
