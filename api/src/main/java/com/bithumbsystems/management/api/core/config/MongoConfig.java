@@ -96,7 +96,7 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
     }
 
     private ConnectionString getConnectionString() {
-        String str = String.format("mongodb://%s:%s@%s:%s?ssl=true&ssl_ca_certs=cert",
+        String str = String.format("mongodb://%s:%s@%s:%s",
             config.getMongoProperties().getMongodbUser(),
             config.getMongoProperties().getMongodbPassword(),
             config.getMongoProperties().getMongodbUrl(),
