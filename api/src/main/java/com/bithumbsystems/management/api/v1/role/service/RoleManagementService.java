@@ -256,6 +256,7 @@ public class RoleManagementService {
         .id(menu.getId())
         .name(menu.getName())
         .order(menu.getOrder())
+        .parentsMenuId((menu.getParentsMenuId()))
         .visible(false)
         .createDate(menu.getCreateDate())
         .build())
@@ -302,26 +303,46 @@ public class RoleManagementService {
    * @return the mono
    */
   public Mono<List<RoleResourceResponse>> mappingResources(
-      Flux<RoleResourceRequest> roleResourceRequests,
+      RoleResourceRequest roleResourceRequests,
       String roleManagementId,
       Account account) {
     final var roleAuthorization = RoleAuthorization.builder()
         .roleManagementId(roleManagementId)
         .build();
-    return roleAuthorizationDomainService.deleteByRoleManagementId(roleManagementId)
-        .then(roleResourceRequests.flatMap(
-                roleResourceRequest -> Mono.just(AuthorizationResource.builder()
-                    .menuId(roleResourceRequest.getMenuId())
-                    .visible(true)
-                    .programId(roleResourceRequest.getProgramId())
-                    .build()))
-            .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
-            .flatMap(authorizationResources -> {
-              roleAuthorization.setAuthorizationResources(authorizationResources);
-              return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());
-            }).flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
-                .stream()
-                .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
-                .collect(Collectors.toList()))));
+      return roleAuthorizationDomainService.deleteByRoleManagementId(roleManagementId)
+              .then(
+                      Flux.fromIterable(roleResourceRequests.getResources())
+                                      .flatMap(roleResourceListRequest -> {
+                                          return Mono.just(AuthorizationResource.builder()
+                                                  .menuId(roleResourceListRequest.getMenuId())
+                                                  .visible(true)
+                                                  .programId(roleResourceListRequest.getProgramId())
+                                                  .build());
+                                      })
+                                     .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
+                                             .flatMap(authorizationResources -> {
+                                                 roleAuthorization.setAuthorizationResources(authorizationResources);
+                                                 return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());
+                                             })
+                                                     .flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
+                                                             .stream()
+                                                             .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
+                                                             .collect(Collectors.toList()))));
+
+
+//                      roleResourceRequests.flatMap(
+//                              roleResourceRequest -> Mono.just(AuthorizationResource.builder()
+//                                      .menuId(roleResourceRequest.getMenuId())
+//                                      .visible(true)
+//                                      .programId(roleResourceRequest.getProgramId())
+//                                      .build()))
+//                      .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
+//                      .flatMap(authorizationResources -> {
+//                          roleAuthorization.setAuthorizationResources(authorizationResources);
+//                          return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());
+//                      }).flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
+//                              .stream()
+//                              .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
+//                              .collect(Collectors.toList()))));
   }
 }

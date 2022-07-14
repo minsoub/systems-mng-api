@@ -10,10 +10,10 @@ import lombok.Getter;
 public class ErrorResponse {
 
   private final ReturnCode result;
-  private final ErrorData data;
+  private final ErrorData error;
 
   public ErrorResponse(ErrorData data) {
     this.result = ReturnCode.FAIL;
-    this.data = data;
+    this.error = data;
   }
 }

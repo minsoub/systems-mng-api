@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 /**
  * The type Role management controller.
  */
@@ -210,7 +212,7 @@ public class RoleManagementController {
   @PostMapping("/role/{roleManagementId}/resources")
   @Operation(summary = "Role 메뉴 프로그램 매핑", description = "권한 관리: 메뉴 프로그램 매핑", tags = "통합 시스템 관리> 권한 관리")
   public ResponseEntity<Mono<?>> mappingMenu(
-      @RequestBody Flux<RoleResourceRequest> roleResourceRequests,
+      @RequestBody RoleResourceRequest roleResourceRequests,
       @PathVariable String roleManagementId,
       @Parameter(hidden = true) @CurrentUser Account account) {
     return ResponseEntity.ok().body(
