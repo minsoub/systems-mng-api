@@ -117,7 +117,10 @@ public class AwsAuditLogListener {
     log.debug("urlMappingJob {}", Thread.currentThread().getName());
     AntPathMatcher pathMatcher = new AntPathMatcher();
     return menuDomainService.findAllUrls()
-        .filter(menu -> pathMatcher.match(menu.getUrl(), auditLog.getPath()))
+        .filter(menu -> {
+          log.debug("menu URL {}, auditLog path {}", menu.getUrl(), auditLog.getPath());
+          return pathMatcher.match(menu.getUrl(), auditLog.getPath());
+        })
         .flatMap(m -> {
           log.debug("urlMappingJob menu {}", Thread.currentThread().getName());
           auditLog.setMenuId(m.getId());
