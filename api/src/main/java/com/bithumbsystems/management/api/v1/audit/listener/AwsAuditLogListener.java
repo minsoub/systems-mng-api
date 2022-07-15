@@ -39,7 +39,6 @@ public class AwsAuditLogListener {
   private final SiteDomainService siteDomainService;
   private final MenuDomainService menuDomainService;
   private final ProgramDomainService programDomainService;
-
   private final AuditLogDomainService auditLogDomainService;
 
   @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
@@ -116,27 +115,40 @@ public class AwsAuditLogListener {
   private Flux<AuditLog> urlMappingJob(AuditLog auditLog) {
     log.debug("urlMappingJob {}", Thread.currentThread().getName());
     AntPathMatcher pathMatcher = new AntPathMatcher();
-    return menuDomainService.findAllUrls()
-        .filter(menu -> {
-          log.debug("menu URL {}, auditLog path {}", menu.getUrl(), auditLog.getPath());
-          return pathMatcher.match(menu.getUrl(), auditLog.getPath());
-        })
-        .flatMap(m -> {
-          log.debug("urlMappingJob menu {}", Thread.currentThread().getName());
-          auditLog.setMenuId(m.getId());
-          auditLog.setMenuName(m.getName());
+    return programDomainService.findAllUrls(auditLog.getMethod())
+        .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog.getPath()))
+        .flatMap(p -> {
+          auditLog.setProgramId(p.getId());
+          auditLog.setProgramName(p.getName());
           return Mono.just(auditLog);
-        })
-        .flatMap(auditLog1 -> {
-          log.debug("urlMappingJob program {}", Thread.currentThread().getName());
-          return programDomainService.findAllUrls(auditLog1.getMethod())
-              .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog1.getPath()))
-              .flatMap(p -> {
-                auditLog1.setProgramId(p.getId());
-                auditLog1.setProgramName(p.getName());
-                return Mono.just(auditLog1);
-              });
-        }).defaultIfEmpty(auditLog);
+        }).flatMap(audit -> menuDomainService.findMenuByProgramId(audit.getProgramId())
+            .flatMap(m -> {
+              audit.setId(m.getId());
+              audit.setMenuName(m.getName());
+              return Mono.just(audit);
+            })).defaultIfEmpty(auditLog);
+
+//    return menuDomainService.findAllUrls()
+//        .filter(menu -> {
+//          log.debug("menu URL {}, auditLog path {}", menu.getUrl(), auditLog.getPath());
+//          return pathMatcher.match(menu.getUrl(), auditLog.getPath());
+//        })
+//        .flatMap(m -> {
+//          log.debug("urlMappingJob menu {}", Thread.currentThread().getName());
+//          auditLog.setMenuId(m.getId());
+//          auditLog.setMenuName(m.getName());
+//          return Mono.just(auditLog);
+//        })
+//        .flatMap(auditLog1 -> {
+//          log.debug("urlMappingJob program {}", Thread.currentThread().getName());
+//          return programDomainService.findAllUrls(auditLog1.getMethod())
+//              .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog1.getPath()))
+//              .flatMap(p -> {
+//                auditLog1.setProgramId(p.getId());
+//                auditLog1.setProgramName(p.getName());
+//                return Mono.just(auditLog1);
+//              });
+//        }).defaultIfEmpty(auditLog);
   }
 
   private Device checkDevice(String userAgent) {

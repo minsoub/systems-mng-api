@@ -4,6 +4,7 @@ import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.gene
 
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.repository.MenuRepository;
+import com.bithumbsystems.persistence.mongodb.menu.repository.SiteMenuProgramRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Mono;
 public class MenuDomainService {
 
   private final MenuRepository menuRepository;
+
+  private final SiteMenuProgramRepository siteMenuProgramRepository;
   private static final String PREFIX = "MENU_";
 
   public Mono<Menu> save(Menu menu, String accountId) {
@@ -58,4 +61,10 @@ public class MenuDomainService {
   public Mono<Menu> findBySiteIdAndId(String siteId, String menuId) {
     return menuRepository.findBySiteIdAndId(siteId, menuId).log();
   }
+
+  public Flux<Menu> findMenuByProgramId(String programId) {
+    return siteMenuProgramRepository.findByProgramId(programId)
+        .flatMap(siteMenuProgram -> menuRepository.findById(siteMenuProgram.getMenuId()));
+  }
+
 }
