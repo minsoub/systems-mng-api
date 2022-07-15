@@ -117,6 +117,7 @@ public class MongoConfig extends AbstractReactiveMongoConfiguration {
     }
     @Bean
     @Primary
+    @Override
     public MappingMongoConverter mappingMongoConverter(ReactiveMongoDatabaseFactory databaseFactory,
         MongoCustomConversions customConversions, MongoMappingContext mappingContext) {
         mappingContext.setFieldNamingStrategy(new SnakeCaseFieldNamingStrategy());
