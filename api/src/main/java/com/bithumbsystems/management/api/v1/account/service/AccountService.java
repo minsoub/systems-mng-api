@@ -86,7 +86,28 @@ public class AccountService {
                  .switchIfEmpty(Mono.just(accountSearchResponseMap.getFirst()))
          ).collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
   }
-
+    /**
+     * Search mono.
+     *
+     * @param searchText the search text
+     * @param isUse      the is use
+     * @return the mono
+     */
+    public Mono<List<AccountSearchResponse>> userSearch(String searchText, Boolean isUse) {
+        return adminAccountDomainService.findBySearchText(searchText, isUse)
+                .flatMap(adminAccount -> {
+                    return Mono.just(
+                            new AccountSearchResponse(
+                            adminAccount.getId(),
+                            adminAccount.getName(),
+                            adminAccount.getEmail(),
+                            adminAccount.getLastLoginDate(),
+                            adminAccount.getStatus(),
+                            adminAccount.getCreateDate())
+                    );
+                })
+                .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+    }
   /**
    * 통합시스템 관리 - 계정관리 상세 조회
    *

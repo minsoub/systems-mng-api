@@ -44,7 +44,21 @@ public class AccountController {
     return ResponseEntity.ok().body(accountService.search(searchText, isUse)
         .map(MultiResponse::new));
   }
-
+  /**
+   * Accounts search response entity.
+   *
+   * @param searchText the search text
+   * @param isUse      the is use
+   * @return the response entity
+   */
+  @GetMapping("/accounts/user")
+  @Operation(summary = "계정 검색", description = "계정 검색", tags = "통합 시스템 관리 > 계정관리")
+  public ResponseEntity<Mono<?>> accountsUserSearch(
+          @RequestParam(required = false, defaultValue = "") String searchText,
+          @RequestParam(required = false) Boolean isUse) {
+    return ResponseEntity.ok().body(accountService.userSearch(searchText, isUse)
+            .map(MultiResponse::new));
+  }
   /**
    * Create response entity.
    *

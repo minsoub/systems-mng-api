@@ -24,7 +24,7 @@ public class ProgramCustomRepositoryImpl implements ProgramCustomRepository {
   public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse) {
     var reg = ".*" + searchText + ".*";
     var condition = new ArrayList<Criteria>();
-    condition.add(new Criteria().andOperator(where("site_id").is(siteId)));
+    //condition.add(new Criteria().andOperator(where("site_id").is(siteId)));
     if(isUse == null) {
       condition.add(new Criteria().orOperator(
           where("name").regex(reg),
