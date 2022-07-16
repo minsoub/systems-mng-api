@@ -73,7 +73,24 @@ public class MailService implements MessageService {
       throw new MailException(ErrorCode.FAIL_SEND_MAIL);
     }
   }
+  @Override
+  public void sendMail(String emailAddress, String tempPassword, MailForm mailForm) {
+    try {
+      String html = FileUtil.readResourceFile(mailForm.getPath());
+      log.info("send mail: " + html);
+      html = html.replace("[PASSWORD]", "["+tempPassword+"]");
 
+      send(
+              MailSenderInfo.builder()
+                      .bodyHTML(html)
+                      .subject(mailForm.getSubject())
+                      .emailAddress(emailAddress)
+                      .build()
+      );
+    } catch (MessagingException | IOException e) {
+      throw new MailException(ErrorCode.FAIL_SEND_MAIL);
+    }
+  }
   private void send(byte[] attachment, MailSenderInfo mailSenderInfo) throws MessagingException, IOException {
     MimeMessage message = getMimeMessage(mailSenderInfo.getEmailAddress(), mailSenderInfo.getSubject());
 

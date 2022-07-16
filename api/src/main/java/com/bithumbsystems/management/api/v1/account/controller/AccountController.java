@@ -90,14 +90,14 @@ public class AccountController {
 
 
   /**
-   * 통합 시스템 관리자가 계정을 등록
+   * 관리자가 계정을 등록
    *
    * @param accountRegisterRequest the account register request
    * @param account                the account
    * @return the response entity
    */
   @PostMapping("/account")
-  @Operation(summary = "통합 시스템 관리자가 계정을 등록", description = "통합 시스템 관리자가 계정을 등록", tags = "통합 시스템 관리 > 계정관리")
+  @Operation(summary = "관리자가 계정을 등록", description = "관리자가 계정을 등록", tags = "사용자 접근관리 > 계정관리")
   public ResponseEntity<Mono<?>> adminAccountCreate(
       @RequestBody AccountRegisterRequest accountRegisterRequest,
       @Parameter(hidden = true) @CurrentUser Account account) {
@@ -157,6 +157,25 @@ public class AccountController {
 
     return ResponseEntity.ok()
             .body(accountService.updateAccountRole(accountRoleRequest, adminAccountId, account)
+                    .map(SingleResponse::new));
+  }
+
+  /**
+   * 통합 시스템 관리자가 계정 정보를 Role 리스트 정보를 저장한다.
+   *
+   * @param adminAccountId         the admin account id
+   * @param accountRolesRequest     the account Role List register request
+   * @param account                the account
+   * @return response entity
+   */
+  @PutMapping("/account/{adminAccountId}/roles")
+  @Operation(summary = "통합 시스템 관리자가 계정 Role 리스트 등록", description = "통합 시스템 관리자가 계정 Role 리스트 등록", tags = "사이트 관리 > 사용자 접근관리 > 계정등록")
+  public ResponseEntity<Mono<?>> adminAccountRolesUpdates(@PathVariable String adminAccountId,
+                                                        @RequestBody AccountRolesRequest accountRolesRequest,
+                                                        @Parameter(hidden = true) @CurrentUser Account account) {
+
+    return ResponseEntity.ok()
+            .body(accountService.updateAccountRoles(accountRolesRequest, adminAccountId, account)
                     .map(SingleResponse::new));
   }
 

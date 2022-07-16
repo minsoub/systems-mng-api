@@ -287,7 +287,7 @@ public class AccountService {
         .doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
             log.info("send mail");
-            messageService.sendMail(adminAccount.getEmail(), MailForm.DEFAULT);
+            messageService.sendMail(adminAccount.getEmail(), accountRegisterRequest.getPassword(), MailForm.DEFAULT);
           }
         }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
@@ -375,7 +375,8 @@ public class AccountService {
         ).doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
             log.info("send mail");
-            messageService.sendMail(a.getT1().getEmail(), MailForm.DEFAULT);
+            //messageService.sendMail(a.getT1().getEmail(), MailForm.DEFAULT);
+              messageService.sendMail(a.getT1().getEmail(), accountRegisterRequest.getPassword(), MailForm.DEFAULT);
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();
@@ -396,7 +397,6 @@ public class AccountService {
 
     /**
      * 통합 어드민 관리자가 계정 Role을 수정한다.
-     * TODO: 작업진행중
      * @param accountRegisterRequest the account register request
      * @param adminAccountId         the admin account id
      * @param account                the account
@@ -421,7 +421,33 @@ public class AccountService {
                 });
     }
 
-  /**
+    /**
+     * 통합 어드민 관리자가 계정 Role List를을 수정한다.
+     * @param accountRegisterRequest the account register request
+     * @param adminAccountId         the admin account id
+     * @param account                the account
+     * @return mono
+     */
+    @Transactional
+    public Mono<AccountResponse> updateAccountRoles(AccountRolesRequest accountRegisterRequest,
+                                                   String adminAccountId, Account account) {
+        return adminAccessDomainService.findByAdminAccountId(adminAccountId)
+                .flatMap(adminAccess -> {  // 수정모드
+                    List<String> roles = accountRegisterRequest.getRoleManagementId();
+                    log.debug("roles => {}", roles);
+                    adminAccess.clearRole();
+                    for (String role: roles) {
+                        adminAccess.addRole(role);
+                    }
+                    log.debug("adminAccess => {}", adminAccess);
+                    return adminAccessDomainService.update(adminAccess, account.getAccountId())
+                            .flatMap(result -> Mono.just(AccountResponse.builder()
+                                    .id(result.getId())
+                                    .build()));
+                });
+    }
+
+    /**
    * Create admin access mono.
    *
    * @param accountRegisterRequest the account register request
