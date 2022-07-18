@@ -444,7 +444,21 @@ public class AccountService {
                             .flatMap(result -> Mono.just(AccountResponse.builder()
                                     .id(result.getId())
                                     .build()));
-                });
+                })
+                .switchIfEmpty(adminAccountDomainService.findByAdminAccountId(adminAccountId)
+                        .flatMap(res -> {
+                            List<String> roleList = accountRegisterRequest.getRoleManagementId();
+                            Set<String> roles = Set.of(roleList.stream().collect(Collectors.joining()));
+                            return adminAccessDomainService.save(AdminAccess.builder()
+                                    .adminAccountId(res.getId())
+                                    .name(res.getName())
+                                    .email(res.getEmail())
+                                    .roles(roles)
+                                    .createDate(LocalDateTime.now())
+                                    .isUse(true)
+                                    .createAdminAccountId(account.getAccountId()).build(), account.getAccountId())
+                                    .flatMap(ress -> Mono.just(AccountResponse.builder().id(adminAccountId).build()));
+                        }));
     }
 
     /**
