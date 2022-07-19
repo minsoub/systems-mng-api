@@ -3,6 +3,7 @@ package com.bithumbsystems.management.api.v1.board.service;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.EnumMapperValue;
 import com.bithumbsystems.management.api.v1.board.mapper.BoardMasterMapper;
+import com.bithumbsystems.management.api.v1.board.model.enums.AuthType;
 import com.bithumbsystems.management.api.v1.board.model.enums.BoardType;
 import com.bithumbsystems.management.api.v1.board.model.enums.PaginationType;
 import com.bithumbsystems.management.api.v1.board.model.request.BoardMasterRequest;
@@ -41,6 +42,16 @@ public class BoardService {
    */
   public Flux<Object> getPaginationTypes() {
     return Flux.just(Stream.of(PaginationType.values())
+        .map(EnumMapperValue::new)
+        .collect(Collectors.toList()));
+  }
+
+  /**
+   * 권한 유형 조회
+   * @return
+   */
+  public Flux<Object> getAuthTypes() {
+    return Flux.just(Stream.of(AuthType.values())
         .map(EnumMapperValue::new)
         .collect(Collectors.toList()));
   }

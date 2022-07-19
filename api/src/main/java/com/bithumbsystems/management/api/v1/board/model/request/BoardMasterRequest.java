@@ -29,4 +29,5 @@ public class BoardMasterRequest {
   private List<String> tags;
   private Sns snsShare;
   private Auth auth;
+  private Boolean isUseSecret;
 }

@@ -24,9 +24,8 @@ public class BoardDomainService {
    * @return
    */
   public Mono<BoardMaster> createBoardMaster(BoardMaster boardMaster) {
-    boardMaster.setIsUse(true);
     boardMaster.setCreateDate(LocalDateTime.now());
-    return boardMasterRepository.insert(boardMaster);
+    return boardMasterRepository.save(boardMaster);
   }
 
   /**

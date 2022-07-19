@@ -54,6 +54,18 @@ public class BoardController {
   }
 
   /**
+   * 권한 유형 조회
+   * @return
+   */
+  @GetMapping(value = "/auth-types")
+  @Operation(summary = "권한 유형 조회", description = "통합 관리 > 통합 게시판 관리 > 게시판 생성: 권한 유형 조회", tags = "통합 관리 > 통합 게시판 관리")
+  public ResponseEntity<Mono<?>> getAuthTypes() {
+    return ResponseEntity.ok().body(boardService.getAuthTypes()
+        .collectList()
+        .map(MultiResponse::new));
+  }
+
+  /**
    * 게시판 마스터 등록
    * @return
    */
