@@ -31,10 +31,7 @@ import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomain
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -427,7 +424,21 @@ public class AccountService {
                              .flatMap(result -> Mono.just(AccountResponse.builder()
                                      .id(result.getId())
                                      .build()));
-                });
+                })
+                .switchIfEmpty(adminAccountDomainService.findByAdminAccountId(adminAccountId)
+                        .flatMap(res -> {
+                            String[] roleList = accountRegisterRequest.getRoleManagementId().split(",");
+                            Set<String> roles = Set.of(Arrays.stream(roleList).collect(Collectors.joining()));  //    roleList.stream().collect(Collectors.joining()));
+                            return adminAccessDomainService.save(AdminAccess.builder()
+                                            .adminAccountId(res.getId())
+                                            .name(res.getName())
+                                            .email(res.getEmail())
+                                            .roles(roles)
+                                            .createDate(LocalDateTime.now())
+                                            .isUse(true)
+                                            .createAdminAccountId(account.getAccountId()).build(), account.getAccountId())
+                                    .flatMap(ress -> Mono.just(AccountResponse.builder().id(adminAccountId).build()));
+                        }));
     }
 
     /**
