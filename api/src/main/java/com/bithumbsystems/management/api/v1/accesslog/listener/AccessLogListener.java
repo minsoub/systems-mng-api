@@ -20,15 +20,15 @@ public class AccessLogListener {
 
     @EventListener
     public void accessLog(AccessLogRequest accessLogRequest) {
-
         accessLogDomainService.insert(AccessLog.builder()
                 .id(UUID.randomUUID().toString())
-                .account_id(accessLogRequest.getAccountId())
+                .accountId(accessLogRequest.getAccountId())
                 .email(accessLogRequest.getEmail())
-                .action_type(accessLogRequest.getActionType())
+                .actionType(accessLogRequest.getActionType())
                 .reason(accessLogRequest.getReason())
                 .description(accessLogRequest.getDescription())
-                .create_date(LocalDateTime.now())
+                .siteId(accessLogRequest.getSiteId())
+                .createDate(LocalDateTime.now())
                 .build()).publishOn(Schedulers.boundedElastic()).subscribe();
     }
 }
