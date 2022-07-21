@@ -33,7 +33,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("url").regex(reg),
                 where("parameter").regex(reg))
             .andOperator(
-                where("my_iste_id").regex(mySiteId),
+                where("my_site_id").regex(mySiteId),
                 where("create_date").gte(startDate)
                     .lte(endDate)
             ))
@@ -54,7 +54,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("url").regex(reg),
                 where("parameter").regex(reg))
                 .andOperator(
-                    where("my_iste_id").regex(mySiteId),
+                    where("my_site_id").regex(mySiteId),
                     where("create_date").gte(startDate)
                         .lte(endDate)
                 )),
