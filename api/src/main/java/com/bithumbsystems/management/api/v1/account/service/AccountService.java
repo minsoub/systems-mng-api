@@ -1,11 +1,22 @@
 package com.bithumbsystems.management.api.v1.account.service;
 
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_ACCOUNT_REGISTER;
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_PASSWORD_UPDATE;
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
+
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
 import com.bithumbsystems.management.api.core.util.AES256Util;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
-import com.bithumbsystems.management.api.v1.account.model.request.*;
+import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountRoleRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountRolesRequest;
+import com.bithumbsystems.management.api.v1.account.model.request.AccountUpdatePasswordRequest;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailResponse;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailRoleResponse;
 import com.bithumbsystems.management.api.v1.account.model.response.AccountResponse;
@@ -31,8 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.*;
 
 /**
  * The type Account service.
@@ -221,7 +230,7 @@ public class AccountService {
             }
         ).doOnSuccess((a) -> {
           if (accountRegisterRequest.getIsSendMail()) {
-            messageService.sendMail(a.getT2().getEmail(), MailForm.DEFAULT);
+            messageService.sendMail(a.getT2().getEmail(), accountRegisterRequest.getPassword(), MailForm.DEFAULT);
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();
