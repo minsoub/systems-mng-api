@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface AuditLogCustomRepository {
-  Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+  Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId, Pageable pageable);
 
-  Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate);
+  Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId);
 }

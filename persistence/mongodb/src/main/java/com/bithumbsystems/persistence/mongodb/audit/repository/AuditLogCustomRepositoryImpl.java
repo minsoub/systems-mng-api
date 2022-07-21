@@ -21,7 +21,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
 
   @Override
   public Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate,
-      LocalDateTime endDate, Pageable pageable) {
+      LocalDateTime endDate, String mySiteId, Pageable pageable) {
     var reg = ".*" + searchText + ".*";
     return reactiveMongoTemplate
         .find(query(new Criteria()
@@ -33,6 +33,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("url").regex(reg),
                 where("parameter").regex(reg))
             .andOperator(
+                where("my_iste_id").regex(mySiteId),
                 where("create_date").gte(startDate)
                     .lte(endDate)
             ))
@@ -41,7 +42,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
   }
 
   @Override
-  public Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate) {
+  public Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId) {
     var reg = ".*" + searchText + ".*";
     return reactiveMongoTemplate
         .count(query(new Criteria()
@@ -53,6 +54,7 @@ public class AuditLogCustomRepositoryImpl implements AuditLogCustomRepository {
                 where("url").regex(reg),
                 where("parameter").regex(reg))
                 .andOperator(
+                    where("my_iste_id").regex(mySiteId),
                     where("create_date").gte(startDate)
                         .lte(endDate)
                 )),

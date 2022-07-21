@@ -23,12 +23,14 @@ public class AuditLogService {
     return auditLogDomainService.findPageBySearchText(auditLogSearchRequest.getSearchText(),
             auditLogSearchRequest.getStartDate(),
             auditLogSearchRequest.getEndDate(),
+            auditLogSearchRequest.getMySiteId(),
             PageRequest.of(auditLogSearchRequest.getPage(), auditLogSearchRequest.getSize()))
         .map(AuditLogMapper.INSTANCE::auditLogToResponse)
         .collectSortedList(Comparator.comparing(AuditLogSearchResponse::getCreateDate))
         .zipWith(auditLogDomainService.countBySearchText(auditLogSearchRequest.getSearchText(),
             auditLogSearchRequest.getStartDate(),
-            auditLogSearchRequest.getEndDate())
+            auditLogSearchRequest.getEndDate(),
+            auditLogSearchRequest.getMySiteId())
             .map(c -> c))
         .map(t -> new PageImpl<>(t.getT1(), pageRequest, t.getT2()));
   }

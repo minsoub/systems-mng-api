@@ -15,12 +15,12 @@ public class AuditLogDomainService {
 
   private final AuditLogRepository auditLogRepository;
 
-  public Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-    return auditLogRepository.findPageBySearchText(searchText, startDate, endDate, pageable);
+  public Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId, Pageable pageable) {
+    return auditLogRepository.findPageBySearchText(searchText, startDate, endDate, mySiteId, pageable);
   }
 
-  public Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate) {
-    return auditLogRepository.countBySearchText(searchText, startDate, endDate);
+  public Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId) {
+    return auditLogRepository.countBySearchText(searchText, startDate, endDate, mySiteId);
   }
 
   public Mono<AuditLog> save(AuditLog auditLog) {
