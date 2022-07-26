@@ -25,9 +25,9 @@ public class AccessLogCustomRepositoryImpl implements AccessLogCustomRepository 
         // TODO: my_site_id 고려
         query.addCriteria(Criteria.where("create_date").gte(fromDate.atTime(0, 0, 0)).lte(toDate.atTime(23, 59, 59)));
         //.addCriteria(Criteria.where("my_site_id").is(mySiteId));
-        query.addCriteria(new Criteria().andOperator(
-                Criteria.where("my_site_id").is(mySiteId)
-        ));
+//        query.addCriteria(new Criteria().andOperator(
+//                Criteria.where("site_id").is(mySiteId)
+//        ));
         if (StringUtils.hasLength(keyword)) {   //서비스 로그 관리 목록
             query.addCriteria(new Criteria().orOperator(
                     Criteria.where("email").regex(".*" + keyword + ".*", "i"),
