@@ -5,6 +5,8 @@ import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.gene
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
 import com.bithumbsystems.persistence.mongodb.account.repository.AdminAccountRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -39,6 +41,10 @@ public class AdminAccountDomainService {
      */
     public Mono<AdminAccount> findByAdminAccountId(String adminAccountId) {
         return adminAccountRepository.findById(adminAccountId);
+    }
+
+    public Flux<AdminAccount> findByAdminAccountIds(List<String> adminAccountIds) {
+        return adminAccountRepository.findByIdIn(adminAccountIds);
     }
 
     /**

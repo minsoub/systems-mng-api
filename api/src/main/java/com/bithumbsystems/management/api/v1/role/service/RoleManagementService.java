@@ -16,6 +16,7 @@ import com.bithumbsystems.management.api.v1.role.model.response.RoleMappingResou
 import com.bithumbsystems.management.api.v1.role.model.response.RoleResourceResponse;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
+import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomainService;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
 import com.bithumbsystems.persistence.mongodb.menu.service.MenuDomainService;
 import com.bithumbsystems.persistence.mongodb.menu.service.ProgramDomainService;
@@ -46,6 +47,7 @@ public class RoleManagementService {
 
   private final RoleManagementDomainService roleManagementDomainService;
   private final AdminAccessDomainService adminAccessDomainService;
+  private final AdminAccountDomainService adminAccountDomainService;
   private final MenuDomainService menuDomainService;
   private final ProgramDomainService programDomainService;
   private final RoleAuthorizationDomainService roleAuthorizationDomainService;
@@ -174,14 +176,31 @@ public class RoleManagementService {
             .name(roleManagement.getName())
             .build());
 
-    var getAccountEmails = adminAccessDomainService.findByAdminAccountIds(accounts)
-        .flatMap(adminAccess -> {
-          log.info(adminAccess.getEmail());
-          adminAccess.getRoles().add(roleManagementId);
-          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
-              AdminAccess::getEmail);
-        })
-        .collectList();
+    var getAccountEmails = adminAccountDomainService.findByAdminAccountIds(accounts)
+                    .flatMap(adminAccount -> {
+                        return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                .flatMap(adminAccess -> {
+                                    log.info(adminAccess.getEmail());
+                                    adminAccess.getRoles().add(roleManagementId);
+                                    return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
+                                })
+                                .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
+                                        .adminAccountId(adminAccount.getId())
+                                        .name(adminAccount.getName())
+                                        .email(adminAccount.getEmail())
+                                        .isUse(true)
+                                        .roles(Set.of(roleManagementId))
+                                        .build(), account.getAccountId()).map(AdminAccess::getEmail));
+                    })
+                   .collectList();
+//            adminAccessDomainService.findByAdminAccountIds(accounts)
+//        .flatMap(adminAccess -> {
+//          log.info(adminAccess.getEmail());
+//          adminAccess.getRoles().add(roleManagementId);
+//          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
+//              AdminAccess::getEmail);
+//        })
+//        .collectList();
 
     return roleManagementMappingResponse.zipWith(getAccountEmails)
         .map(tuple -> {
