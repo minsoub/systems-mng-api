@@ -341,8 +341,9 @@ public class AccountService {
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
             adminAccount -> {
-              adminAccount.setPassword(
-                  passwordEncoder.encode(accountRegisterRequest.getPassword()));
+              if(accountRegisterRequest.getPassword() != null) {
+                adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));
+              }
               adminAccount.setName(accountRegisterRequest.getName());
               adminAccount.setEmail(accountRegisterRequest.getEmail());
               adminAccount.setIsUse(accountRegisterRequest.getIsUse());
