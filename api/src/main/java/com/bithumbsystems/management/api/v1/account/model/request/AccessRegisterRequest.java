@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.account.model.request;
 
+import java.time.LocalDate;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,4 +15,6 @@ public class AccessRegisterRequest {
     private Set<String> roles;
     private Boolean isUse;
     private Boolean isSendMail;
+    private LocalDate validStartDate;
+    private LocalDate validEndDate;
 }

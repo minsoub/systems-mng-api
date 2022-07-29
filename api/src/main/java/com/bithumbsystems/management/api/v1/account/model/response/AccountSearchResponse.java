@@ -18,17 +18,21 @@ public class AccountSearchResponse {
   private LocalDateTime lastLoginDate;
   private Status status;
   private String roleManagementName;
+  private LocalDate roleValidStartDate;
+  private LocalDate roleValidEndDate;
   private LocalDate validStartDate;
   private LocalDate validEndDate;
   private LocalDateTime createDate;
 
   public AccountSearchResponse(String id, String name, String email, LocalDateTime lastLoginDate,
-      Status status, LocalDateTime createDate) {
+      Status status, LocalDateTime createDate, LocalDate validStartDate, LocalDate validEndDate) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.lastLoginDate = lastLoginDate;
     this.status = status;
     this.createDate = createDate;
+    this.validStartDate = validStartDate;
+    this.validEndDate = validEndDate;
   }
 }

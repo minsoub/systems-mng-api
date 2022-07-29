@@ -1,6 +1,7 @@
 package com.bithumbsystems.persistence.mongodb.account.model.entity;
 
 import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,8 @@ public class AdminAccount {
     private String createAdminAccountId;
     private LocalDateTime updateDate;
     private String updateAdminAccountId;
+    private LocalDate validStartDate;
+    private LocalDate validEndDate;
     public void setStatusByIsUse(Boolean isUse){
         if (isUse)
             this.status = Status.INIT_REQUEST;

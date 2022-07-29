@@ -5,7 +5,7 @@ import java.util.Set;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 
-public interface RoleManagementRepository extends ReactiveMongoRepository<RoleManagement, String> {
+public interface RoleManagementRepository extends ReactiveMongoRepository<RoleManagement, String>, RoleManagementCustomRepository {
 
   Flux<RoleManagement> findBySiteIdAndIsUse(String siteId, Boolean isUse);
 

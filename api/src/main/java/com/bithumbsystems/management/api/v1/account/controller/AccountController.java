@@ -199,7 +199,7 @@ public class AccountController {
    * @return response entity
    */
   @GetMapping("/account/{adminAccountId}")
-  @Operation(summary = "계정상세조회", description = "통합시스템 > 계정관리 : 계정상에조회", tags = "통합 시스템 관리 > 계정관리")
+  @Operation(summary = "계정상세조회", description = "통합시스템 > 계정관리 : 계정상세조회", tags = "통합 시스템 관리 > 계정관리")
   public ResponseEntity<Mono<?>> accountDetail(@PathVariable String adminAccountId) {
     return ResponseEntity.ok().body(accountService.detailData(adminAccountId)
         .map(SingleResponse::new));
@@ -211,7 +211,7 @@ public class AccountController {
    * @return response entity
    */
   @GetMapping("/account/{adminAccountId}/roles")
-  @Operation(summary = "계정상세조회(Role List 조회)", description = "통합시스템 > 계정관리 : 계정상제조회(Role List조회)", tags = "통합 관리 > 계정관리")
+  @Operation(summary = "계정상세조회(Role List 조회)", description = "통합시스템 > 계정관리 : 계정상세조회(Role List조회)", tags = "통합 관리 > 계정관리")
   public ResponseEntity<Mono<?>> accountDetailRoles(@PathVariable String adminAccountId) {
     return ResponseEntity.ok().body(accountService.detailDataRoleList(adminAccountId)
             .map(SingleResponse::new));

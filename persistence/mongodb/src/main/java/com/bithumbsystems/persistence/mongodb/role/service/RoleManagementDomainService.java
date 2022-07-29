@@ -1,9 +1,6 @@
 package com.bithumbsystems.persistence.mongodb.role.service;
 
-import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
-
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
-import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementCustomRepository;
 import com.bithumbsystems.persistence.mongodb.role.repsository.RoleManagementRepository;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -17,7 +14,6 @@ import reactor.core.publisher.Mono;
 public class RoleManagementDomainService {
 
   private final RoleManagementRepository roleManagementRepository;
-  private final RoleManagementCustomRepository roleRepository;
   private static final String PREFIX = "ROLE_";
 
   public Mono<RoleManagement> save(RoleManagement roleManagement, String accountId) {
@@ -46,8 +42,8 @@ public class RoleManagementDomainService {
     return roleManagementRepository.findBySiteIdAndIsUse(siteId, isUse);
   }
 
-  public Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type) {
-    return roleRepository.findBySiteIdAndIsUseAndType(siteId, isUse, type);
+  public Flux<RoleManagement> findBySiteIdSearchTextAndIsUseAndType(String siteId, String searchText, Boolean isUse, String type) {
+    return roleManagementRepository.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText, isUse, type);
   }
 
   public Mono<RoleManagement> findById(String roleManagementId) {

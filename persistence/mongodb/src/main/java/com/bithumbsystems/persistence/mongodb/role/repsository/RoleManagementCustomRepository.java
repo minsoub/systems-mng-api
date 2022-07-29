@@ -6,5 +6,5 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface RoleManagementCustomRepository {
-    Flux<RoleManagement> findBySiteIdAndIsUseAndType(String siteId, Boolean isUse, String type);
+    Flux<RoleManagement> findBySiteIdSearchTextAndIsUseAndType(String siteId, String searchText, Boolean isUse, String type);
 }

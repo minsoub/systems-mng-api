@@ -100,9 +100,9 @@ public class RoleManagementService {
    * @param type   the type
    * @return the role managements
    */
-  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, Boolean isUse,
+  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, String searchText, Boolean isUse,
       String type) {
-    return roleManagementDomainService.findBySiteIdAndIsUseAndType(siteId, isUse, type)
+    return roleManagementDomainService.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText, isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
         .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate));

@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 /**
  * The type Role management controller.
@@ -66,8 +63,9 @@ public class RoleManagementController {
   public ResponseEntity<Mono<?>> getRoleManagements(
       @RequestParam String siteId,
       @RequestParam(required = false, defaultValue = "true") Boolean isUse,
+      @RequestParam(required = false, defaultValue = "") String searchText,
       @RequestParam(required = false) String type) {
-    return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, isUse, type)
+    return ResponseEntity.ok().body(roleManagementService.getRoleManagements(siteId, searchText, isUse, type)
         .map(MultiResponse::new));
   }
 

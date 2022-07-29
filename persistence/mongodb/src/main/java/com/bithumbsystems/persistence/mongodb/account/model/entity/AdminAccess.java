@@ -24,13 +24,11 @@ public class AdminAccess {
     private String email;
     private boolean isUse;
     private Set<String> roles;
-//    private String siteId;
 
     private LocalDateTime createDate;
     private String createAdminAccountId;
     private LocalDateTime updateDate;
     private String updateAdminAccountId;
-
     public void addRole(String roleManagementId) {
         if (roles == null) this.roles = Set.of(roleManagementId);
         else
