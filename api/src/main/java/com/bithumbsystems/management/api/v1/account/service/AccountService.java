@@ -40,6 +40,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -367,7 +368,7 @@ public class AccountService {
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
             adminAccount -> {
-              if (accountRegisterRequest.getPassword() != null) {
+              if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
                 adminAccount.setPassword(
                     passwordEncoder.encode(accountRegisterRequest.getPassword()));
               }
@@ -777,7 +778,9 @@ public class AccountService {
       String adminAccountId, Account account) {
     return adminAccountDomainService.findByAdminAccountId(adminAccountId)
         .flatMap(result -> {
-          result.setPassword(passwordEncoder.encode(accountMngUpdateRequest.getPassword()));
+          if ((StringUtils.hasLength(accountMngUpdateRequest.getPassword()))) {
+            result.setPassword(passwordEncoder.encode(accountMngUpdateRequest.getPassword()));
+          }
           result.setName(accountMngUpdateRequest.getName());
           result.setIsUse(accountMngUpdateRequest.getIsUse());
           result.setLastPasswordUpdateDate(LocalDateTime.now());
