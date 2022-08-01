@@ -376,7 +376,9 @@ public class AccountService {
               adminAccount.setEmail(accountRegisterRequest.getEmail());
               adminAccount.setIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setStatus(accountRegisterRequest.getStatus());
-
+              if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                adminAccount.setOtpSecretKey("");
+              }
               adminAccount.setUpdateAdminAccountId(account.getAccountId());
               adminAccount.setUpdateDate(LocalDateTime.now());
               adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
