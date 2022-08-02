@@ -3,7 +3,7 @@ package com.bithumbsystems.management.api.v1.mail.service;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.v1.mail.exception.SiteMailException;
-import com.bithumbsystems.management.api.v1.mail.model.SiteMailMapper;
+import com.bithumbsystems.management.api.v1.mail.model.mapper.SiteMailMapper;
 import com.bithumbsystems.management.api.v1.mail.model.request.SiteMailRequest;
 import com.bithumbsystems.management.api.v1.mail.model.request.SiteMailListRequest;
 import com.bithumbsystems.management.api.v1.mail.model.response.SiteMailResponse;
@@ -12,6 +12,7 @@ import com.bithumbsystems.persistence.mongodb.mail.model.entity.SiteMail.SiteMai
 import com.bithumbsystems.persistence.mongodb.mail.service.SiteMailDomainService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,7 +42,7 @@ public class SiteMailService {
   }
 
   public Mono<SiteMailResponse> createSiteMail(SiteMailRequest request, Account account) {
-    SiteMail siteMail = makeMailBuilder(request).build();
+    SiteMail siteMail = makeMailBuilder(request).id(UUID.randomUUID().toString()).build();
 
     siteMail.setCreateDate(LocalDateTime.now());
     siteMail.setCreateAdminAccountId(account.getAccountId());
@@ -66,9 +67,13 @@ public class SiteMailService {
   }
 
   public SiteMailBuilder makeMailBuilder(SiteMailRequest request) {
-    return SiteMail.builder().siteId(request.getSiteId()).accountId(request.getAccountId())
-        .isUse(request.getIsUse()).siteName(request.getSiteName())
-        .serverInfo(request.getServerInfo()).adminUserEmail(request.getAdminUserEmail())
+    return SiteMail.builder()
+        .siteId(request.getSiteId())
+        .accountId(request.getAccountId())
+        .isUse(request.getIsUse())
+        .siteName(request.getSiteName())
+        .serverInfo(request.getServerInfo())
+        .adminUserEmail(request.getAdminUserEmail())
         .accountPassword(passwordEncoder.encode(request.getAccountPassword()));
   }
 

@@ -1,4 +1,4 @@
-package com.bithumbsystems.persistence.mongodb.mail.model.entity;
+package com.bithumbsystems.persistence.mongodb.util.base.entity;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

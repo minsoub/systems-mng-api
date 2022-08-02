@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.v1.mail.model;
+package com.bithumbsystems.management.api.v1.mail.model.mapper;
 
 import com.bithumbsystems.management.api.v1.mail.model.response.SiteMailResponse;
 import com.bithumbsystems.persistence.mongodb.mail.model.entity.SiteMail;

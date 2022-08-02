@@ -28,7 +28,6 @@ public class SiteMailDomainService {
 
   @Transactional
   public Mono<SiteMail> update(SiteMail siteMail) {
-
     return siteMailRepository.save(siteMail);
   }
 
