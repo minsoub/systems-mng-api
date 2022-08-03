@@ -371,6 +371,8 @@ public class AccountService {
               if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
                 adminAccount.setPassword(
                     passwordEncoder.encode(accountRegisterRequest.getPassword()));
+                adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
+                adminAccount.setOldPassword(adminAccount.getPassword().trim());
               }
               adminAccount.setName(accountRegisterRequest.getName());
               adminAccount.setEmail(accountRegisterRequest.getEmail());
@@ -381,9 +383,6 @@ public class AccountService {
               }
               adminAccount.setUpdateAdminAccountId(account.getAccountId());
               adminAccount.setUpdateDate(LocalDateTime.now());
-              adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
-              //adminAccount.setStatusByIsUse(accountRegisterRequest.getIsUse());
-              adminAccount.setOldPassword(adminAccount.getPassword().trim());
               adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
               adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
               return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
@@ -412,9 +411,8 @@ public class AccountService {
               );
             }
         ).doOnSuccess((a) -> {
-          if (accountRegisterRequest.getIsSendMail()) {
+          if (accountRegisterRequest.getIsSendMail() != null && accountRegisterRequest.getIsSendMail()) {
             log.info("send mail");
-            //messageService.sendMail(a.getT1().getEmail(), MailForm.DEFAULT);
             messageService.sendMail(a.getT1().getEmail(), accountRegisterRequest.getPassword(),
                 MailForm.DEFAULT);
           }
@@ -782,10 +780,10 @@ public class AccountService {
         .flatMap(result -> {
           if ((StringUtils.hasLength(accountMngUpdateRequest.getPassword()))) {
             result.setPassword(passwordEncoder.encode(accountMngUpdateRequest.getPassword()));
+            result.setLastPasswordUpdateDate(LocalDateTime.now());
           }
           result.setName(accountMngUpdateRequest.getName());
           result.setIsUse(accountMngUpdateRequest.getIsUse());
-          result.setLastPasswordUpdateDate(LocalDateTime.now());
           if (Boolean.TRUE.equals(accountMngUpdateRequest.getIsUse())) {
             result.setStatus(Status.NORMAL);
           }
