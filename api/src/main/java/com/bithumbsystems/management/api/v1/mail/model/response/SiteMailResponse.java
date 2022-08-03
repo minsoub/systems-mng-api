@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.mail.model.response;
 
+import com.bithumbsystems.management.api.core.util.AES256Util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,5 +22,9 @@ public class SiteMailResponse {
   private String adminUserEmail;
   private String accountId;
   private String accountPassword;
+
+  public void decryptPassword(String key) {
+    this.accountPassword = AES256Util.decryptAES(key, this.getAccountPassword());
+  }
 
 }

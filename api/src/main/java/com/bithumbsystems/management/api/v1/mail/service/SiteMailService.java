@@ -1,7 +1,9 @@
 package com.bithumbsystems.management.api.v1.mail.service;
 
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
+import com.bithumbsystems.management.api.core.util.AES256Util;
 import com.bithumbsystems.management.api.v1.mail.exception.SiteMailException;
 import com.bithumbsystems.management.api.v1.mail.model.mapper.SiteMailMapper;
 import com.bithumbsystems.management.api.v1.mail.model.request.SiteMailRequest;
@@ -30,6 +32,8 @@ public class SiteMailService {
 
   private final SiteMailMapper siteMailMapper;
 
+  private final AwsProperties awsProperties;
+
   public Mono<List<SiteMailResponse>> getSiteMailList(SiteMailListRequest request) {
     return siteMailDomainService.findMailBySiteIdAndIsUse(request.getSiteId(), request.getIsUse())
         .map(siteMailMapper::siteMailToSiteMailResponse).collectList();
@@ -38,7 +42,13 @@ public class SiteMailService {
   public Mono<SiteMailResponse> getSiteMail(String id) {
     return siteMailDomainService.findById(id)
         .switchIfEmpty(Mono.error(new SiteMailException(ErrorCode.INVALID_DATA)))
-        .map(siteMailMapper::siteMailToSiteMailResponse);
+        .map(
+            siteMail -> {
+              SiteMailResponse siteMailResponse = siteMailMapper.siteMailToSiteMailResponse(siteMail);
+              siteMailResponse.decryptPassword(awsProperties.getKmsKey());
+              return siteMailResponse;
+            }
+        );
   }
 
   public Mono<SiteMailResponse> createSiteMail(SiteMailRequest request, Account account) {
@@ -74,7 +84,9 @@ public class SiteMailService {
         .siteName(request.getSiteName())
         .serverInfo(request.getServerInfo())
         .adminUserEmail(request.getAdminUserEmail())
-        .accountPassword(passwordEncoder.encode(request.getAccountPassword()));
+        .accountPassword(
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getAccountPassword(), true)
+        );
   }
 
 }

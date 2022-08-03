@@ -1,6 +1,8 @@
 package com.bithumbsystems.management.api.v1.messenger.service;
 
+import com.bithumbsystems.management.api.core.config.property.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
+import com.bithumbsystems.management.api.core.util.AES256Util;
 import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerRequest;
 import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerResponse;
 import com.bithumbsystems.management.api.v1.messenger.model.mapper.MessengerMapper;
@@ -26,12 +28,21 @@ public class MessengerService {
   private final PasswordEncoder passwordEncoder;
   private final MessengerMapper messengerMapper;
 
+  private final AwsProperties awsProperties;
+
   public Mono<List<MessengerResponse>> getMessengerList() {
     return daouMessengerDomainService.findAll().map(messengerMapper::daouMessengerToResponse).collectList();
   }
 
   public Mono<MessengerResponse> getMessenger(String id) {
-    return daouMessengerDomainService.findById(id).map(messengerMapper::daouMessengerToResponse);
+    return daouMessengerDomainService.findById(id)
+        .map(
+            daouMessenger -> {
+              MessengerResponse messengerResponse = messengerMapper.daouMessengerToResponse(daouMessenger);
+              messengerResponse.decryptUserInfo(awsProperties.getKmsKey());
+              return messengerResponse;
+            }
+        );
   }
 
   public Mono<MessengerResponse> createMessenger(MessengerRequest request, Account account) {
@@ -44,7 +55,7 @@ public class MessengerService {
   }
 
   public Mono<MessengerResponse> updateMessenger(String id, MessengerRequest request, Account account) {
-    DaouMessenger daouMessenger = makeDaouMessengerBuilder(request).id(UUID.randomUUID().toString()).build();
+    DaouMessenger daouMessenger = makeDaouMessengerBuilder(request).id(id).build();
 
     return daouMessengerDomainService.findById(id)
         .flatMap(messenger -> {
@@ -64,9 +75,13 @@ public class MessengerService {
         .loginApi(request.getLoginApi())
         .pubsubApi(request.getPubsubApi())
         .sessionApi(request.getSessionApi())
-        .user(request.getUser())
         .isUse(request.getIsUse())
-        .pass(passwordEncoder.encode(request.getPass()));
+        .user(
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getUser(), true)
+        )
+        .pass(
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getPass(), true)
+        );
   }
 
 }
