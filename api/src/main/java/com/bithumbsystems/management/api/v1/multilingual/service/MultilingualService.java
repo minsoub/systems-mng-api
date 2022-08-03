@@ -92,7 +92,7 @@ public class MultilingualService {
         .eng(request.getEng())
         .kor(request.getKor())
         .isUse(request.getIsUse())
-        .provideLocation(request.getProvideLocation())
+        .type(request.getType())
         .siteId(request.getSiteId())
         .siteName(request.getSiteName());
   }

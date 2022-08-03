@@ -1,6 +1,6 @@
 package com.bithumbsystems.management.api.v1.multilingual.model.dto;
 
-import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.ProvideLocation;
+import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.MultilingualType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +21,7 @@ public class Multilingual {
     private Boolean isUse;
     private String kor;
     private String eng;
-    private ProvideLocation provideLocation;
+    private MultilingualType type;
   }
 
   @Getter
@@ -35,7 +35,7 @@ public class Multilingual {
     private Boolean isUse;
     private String kor;
     private String eng;
-    private ProvideLocation provideLocation;
+    private MultilingualType type;
   }
 
 }

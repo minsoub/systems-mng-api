@@ -6,7 +6,7 @@ import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.multilingual.model.dto.Multilingual.MultilingualRequest;
 import com.bithumbsystems.management.api.v1.multilingual.service.MultilingualService;
-import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.ProvideLocation;
+import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.MultilingualType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.Arrays;
@@ -77,6 +77,6 @@ public class MultilingualController {
   public ResponseEntity<?> getLocationList() {
     return ResponseEntity.ok().body(
         Mono.just(new MultiResponse<>(
-            Arrays.stream(ProvideLocation.values()).collect(Collectors.toList()))));
+            Arrays.stream(MultilingualType.values()).collect(Collectors.toList()))));
   }
 }

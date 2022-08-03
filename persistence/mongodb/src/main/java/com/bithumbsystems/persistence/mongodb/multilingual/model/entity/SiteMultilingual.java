@@ -1,6 +1,6 @@
 package com.bithumbsystems.persistence.mongodb.multilingual.model.entity;
 
-import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.ProvideLocation;
+import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.MultilingualType;
 import com.bithumbsystems.persistence.mongodb.util.base.entity.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +25,6 @@ public class SiteMultilingual extends Date {
   private Boolean isUse;
   private String kor;
   private String eng;
-  private ProvideLocation provideLocation;
+  private MultilingualType type;
 
 }
