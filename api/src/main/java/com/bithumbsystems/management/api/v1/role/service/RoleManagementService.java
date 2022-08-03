@@ -71,9 +71,11 @@ public class RoleManagementService {
    */
   public Mono<RoleManagement> create(Mono<RoleManagementRegisterRequest> registerRequest,
       Account account) {
-    return registerRequest.map(RoleMapper.INSTANCE::registerRequestToRoleManagement)
+    return registerRequest.filter(request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
+        .map(RoleMapper.INSTANCE::registerRequestToRoleManagement)
         .flatMap(roleManagement ->
-            roleManagementDomainService.save(roleManagement, account.getAccountId()));
+            roleManagementDomainService.save(roleManagement, account.getAccountId())
+        ).switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.INVALID_ROLE)));
   }
 
   /**
@@ -86,10 +88,12 @@ public class RoleManagementService {
    */
   public Mono<RoleManagement> update(Mono<RoleManagementUpdateRequest> updateRequest,
       Account account, String roleManagementId) {
-    return updateRequest.map(RoleMapper.INSTANCE::updateRequestToRoleManagement)
+    return updateRequest.filter(request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
+        .map(RoleMapper.INSTANCE::updateRequestToRoleManagement)
         .flatMap(roleManagement ->
             roleManagementDomainService.update(roleManagement, account.getAccountId(),
-                roleManagementId));
+                roleManagementId))
+        .switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.INVALID_ROLE)));
   }
 
   /**
