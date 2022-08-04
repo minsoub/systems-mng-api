@@ -5,7 +5,7 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
-import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerRequest;
+import com.bithumbsystems.management.api.v1.messenger.model.request.MessengerRequest;
 import com.bithumbsystems.management.api.v1.messenger.service.MessengerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
