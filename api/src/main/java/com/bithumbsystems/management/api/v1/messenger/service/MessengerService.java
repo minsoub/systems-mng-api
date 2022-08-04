@@ -3,9 +3,9 @@ package com.bithumbsystems.management.api.v1.messenger.service;
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.util.AES256Util;
-import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerRequest;
-import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerResponse;
 import com.bithumbsystems.management.api.v1.messenger.model.mapper.MessengerMapper;
+import com.bithumbsystems.management.api.v1.messenger.model.request.MessengerRequest;
+import com.bithumbsystems.management.api.v1.messenger.model.response.MessengerResponse;
 import com.bithumbsystems.persistence.mongodb.messenger.model.entity.DaouMessenger;
 import com.bithumbsystems.persistence.mongodb.messenger.model.entity.DaouMessenger.DaouMessengerBuilder;
 import com.bithumbsystems.persistence.mongodb.messenger.service.DaouMessengerDomainService;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +24,6 @@ public class MessengerService {
 
   private final DaouMessengerDomainService daouMessengerDomainService;
 
-  private final PasswordEncoder passwordEncoder;
   private final MessengerMapper messengerMapper;
 
   private final AwsProperties awsProperties;

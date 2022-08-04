@@ -1,9 +1,9 @@
 package com.bithumbsystems.management.api.v1.multilingual.service;
 
 import com.bithumbsystems.management.api.core.config.resolver.Account;
-import com.bithumbsystems.management.api.v1.multilingual.model.dto.Multilingual.MultilingualRequest;
-import com.bithumbsystems.management.api.v1.multilingual.model.dto.Multilingual.MultilingualResponse;
 import com.bithumbsystems.management.api.v1.multilingual.model.mapper.MultilingualMapper;
+import com.bithumbsystems.management.api.v1.multilingual.model.request.MultilingualRequest;
+import com.bithumbsystems.management.api.v1.multilingual.model.response.MultilingualResponse;
 import com.bithumbsystems.persistence.mongodb.multilingual.model.entity.SiteMultilingual;
 import com.bithumbsystems.persistence.mongodb.multilingual.service.SiteMultilingualDomainService;
 import java.time.LocalDateTime;

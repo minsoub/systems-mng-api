@@ -4,7 +4,7 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
-import com.bithumbsystems.management.api.v1.multilingual.model.dto.Multilingual.MultilingualRequest;
+import com.bithumbsystems.management.api.v1.multilingual.model.request.MultilingualRequest;
 import com.bithumbsystems.management.api.v1.multilingual.service.MultilingualService;
 import com.bithumbsystems.persistence.mongodb.multilingual.model.enums.MultilingualType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +32,11 @@ public class MultilingualController {
 
   private final MultilingualService multilingualService;
 
+  /**
+   * 다국어 연동 정보 조회
+   *
+   * @return response entity
+   */
   @GetMapping
   @Operation(summary = "다국어 연동 정보 조회", description = "다국어 연동 정보 조회", tags = "통합 관리 > 연동 관리 > 다국어 관리")
   public ResponseEntity<?> getMultilingualList() {
@@ -39,13 +44,26 @@ public class MultilingualController {
         .body(multilingualService.getMultilingualList().map(MultiResponse::new));
   }
 
+  /**
+   * 다국어 연동 정보 상세조회
+   *
+   * @param id the daou messenger id
+   * @return response entity
+   */
   @GetMapping("{multilingualId}")
   @Operation(summary = "다국어 연동 정보 상세조회", description = "다국어 연동 정보 상세조회", tags = "통합 관리 > 연동 관리 > 다국어 관리")
-  public ResponseEntity<?> getMultilingual(@PathVariable String multilingualId) {
+  public ResponseEntity<?> getMultilingual(@PathVariable("multilingualId") String id) {
     return ResponseEntity.ok()
-        .body(multilingualService.getMultilingual(multilingualId).map(SingleResponse::new));
+        .body(multilingualService.getMultilingual(id).map(SingleResponse::new));
   }
 
+  /**
+   * 다국어 연동 정보 등록
+   *
+   * @param request the multilingual request
+   * @param account the account
+   * @return response entity
+   */
   @PostMapping
   @Operation(summary = "다국어 연동 정보 등록", description = "다국어 연동 정보 등록", tags = "통합 관리 > 연동 관리 > 다국어 관리")
   public ResponseEntity<?> createMultilingual(@RequestBody MultilingualRequest request,
@@ -54,6 +72,13 @@ public class MultilingualController {
         .body(multilingualService.createMultilingual(request, account).map(SingleResponse::new));
   }
 
+  /**
+   * 다국어 연동 정보 리스트 등록
+   *
+   * @param requestList the multilingual request list
+   * @param account the account
+   * @return response entity
+   */
   @PostMapping("/list")
   @Operation(summary = "다국어 연동 정보 리스트 등록", description = "다국어 연동 정보 리스트 등록", tags = "통합 관리 > 연동 관리 > 다국어 관리")
   public ResponseEntity<?> createMultilingualList(
@@ -63,6 +88,14 @@ public class MultilingualController {
         multilingualService.createMultilingualList(requestList, account).map(MultiResponse::new));
   }
 
+  /**
+   * 다국어 연동 정보 수정
+   *
+   * @param id the daou messenger id
+   * @param request the multilingual request
+   * @param account the account
+   * @return response entity
+   */
   @PutMapping("/{multilingualId}")
   @Operation(summary = "다국어 연동 정보 수정", description = "다국어 연동 정보 수정", tags = "통합 관리 > 연동 관리 > 다국어 관리")
   public ResponseEntity<?> updateMultilingual(@PathVariable("multilingualId") String id,
@@ -72,8 +105,13 @@ public class MultilingualController {
         multilingualService.updateMultilingual(id, request, account).map(SingleResponse::new));
   }
 
+  /**
+   * 다국어 연동 타입 enum 조회
+   *
+   * @return response entity
+   */
   @GetMapping("/location/list")
-  @Operation(summary = "다국어 연동 제공 위치 조회", description = "다국어 연동 제공 위치 조회", tags = "통합 관리 > 연동 관리 > 다국어 관리")
+  @Operation(summary = "다국어 연동 타입 enum 조회", description = "다국어 연동 타입 enum 조회", tags = "통합 관리 > 연동 관리 > 다국어 관리")
   public ResponseEntity<?> getLocationList() {
     return ResponseEntity.ok().body(
         Mono.just(new MultiResponse<>(
