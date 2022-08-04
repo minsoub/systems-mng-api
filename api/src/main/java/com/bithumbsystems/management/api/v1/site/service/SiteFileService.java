@@ -39,7 +39,22 @@ public class SiteFileService {
   }
 
   public Mono<List<SiteFileInfoResponse>> getFileManagements(Boolean isUse) {
-    return siteDomainService.findFileInfoList(isUse).flatMap(siteFile ->
-        Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile))).collectList();
+    return siteDomainService.findFileInfoList(isUse).flatMap(siteFile -> {
+      return siteDomainService.findById(siteFile.getSiteId())
+              .flatMap(result ->  {
+                return Mono.just(
+                        SiteFileInfoResponse.builder()
+                                .id(siteFile.getId())
+                                .siteId(siteFile.getSiteId())
+                                .siteName(result.getName())
+                                .sizeLimit(siteFile.getSizeLimit())
+                                .extensionLimit(siteFile.getExtensionLimit())
+                                .isUse(siteFile.getIsUse())
+                                .createDate(siteFile.getCreateDate())
+                                .build()
+                );
+              });
+        //return Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile));
+    }).collectList();
   }
 }
