@@ -2,7 +2,7 @@ package com.bithumbsystems.management.api.core.config.local;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

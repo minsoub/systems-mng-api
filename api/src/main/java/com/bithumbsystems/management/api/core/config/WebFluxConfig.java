@@ -2,7 +2,7 @@ package com.bithumbsystems.management.api.core.config;
 
 import static com.bithumbsystems.persistence.mongodb.common.model.constant.CommonConstant.DATE_TIME_PATTERN;
 
-import com.bithumbsystems.management.api.core.config.property.ApplicationProperties;
+import com.bithumbsystems.management.api.core.config.properties.ApplicationProperties;
 import com.bithumbsystems.management.api.core.config.resolver.CustomArgumentResolver;
 import com.bithumbsystems.management.api.core.config.resolver.QueryParamArgumentResolver;
 import com.fasterxml.jackson.databind.*;

@@ -8,8 +8,8 @@ import static com.bithumbsystems.management.api.core.config.constant.ParameterSt
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
-import com.bithumbsystems.management.api.core.config.property.MongoProperties;
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.MongoProperties;
 import javax.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;

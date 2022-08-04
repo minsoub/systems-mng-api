@@ -3,7 +3,7 @@ package com.bithumbsystems.management.api.v1.file.controller;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.file.service.FileService;
 import com.bithumbsystems.persistence.mongodb.file.model.entity.File;

@@ -52,11 +52,13 @@ spring:
     mongodb:
       host: localhost
       port: 27017
-      database: test
+      database: smartadmindb
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
-
+mail:
+  logo-url: http://localhost:3000/images/maillogo.png
+  login-url: http://localhost:3000/
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---
@@ -73,6 +75,9 @@ spring:
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
+mail:
+  logo-url: http://localhost:3000/images/maillogo.png
+  login-url: http://localhost:3000/
 logging:
   config: classpath:logback-spring-local.xml
 ---
@@ -84,6 +89,9 @@ spring:
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
+mail:
+  logo-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com/images/maillogo.png
+  login-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---
@@ -95,6 +103,9 @@ spring:
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
+mail:
+  logo-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com/images/maillogo.png
+  login-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com
 logging:
   config: classpath:logback-spring-dev.xml
 ---
@@ -106,6 +117,9 @@ spring:
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
+mail:
+  logo-url: https://smartadmin.bithumb.com/images/maillogo.png
+  login-url: https://smartadmin.bithumb.com
 springdoc:
   api-docs:
     enabled: false

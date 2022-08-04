@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum MailForm {
-  DEFAULT("subject", "mail/default.html");
+  DEFAULT("[Smart Admin] 임시 비밀번호 발급", "mail/default.html");
 
   private final String subject;
 

@@ -1,7 +1,8 @@
 package com.bithumbsystems.management.api.core.util.message;
 
 import com.amazonaws.util.IOUtils;
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.MailProperties;
 import com.bithumbsystems.management.api.core.exception.MailException;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
@@ -40,7 +41,7 @@ public class MailService implements MessageService {
   @Value("${spring.profiles.active:}")
   private String activeProfiles;
   private final AwsProperties awsProperties;
-
+  private final MailProperties mailProperties;
   private final SesClient sesClient;
 
   @Override
@@ -79,6 +80,8 @@ public class MailService implements MessageService {
       String html = FileUtil.readResourceFile(mailForm.getPath());
       log.info("send mail: " + html);
       html = html.replace("[PASSWORD]", "["+tempPassword+"]");
+      html = html.replace("[LOGOURL]", mailProperties.getLogoUrl());
+      html = html.replace("[LOGINURL]", mailProperties.getLoginUrl());
 
       send(
               MailSenderInfo.builder()

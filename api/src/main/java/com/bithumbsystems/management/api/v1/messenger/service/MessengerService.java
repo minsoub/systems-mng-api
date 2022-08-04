@@ -1,6 +1,6 @@
 package com.bithumbsystems.management.api.v1.messenger.service;
 
-import com.bithumbsystems.management.api.core.config.property.AwsProperties;
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.util.AES256Util;
 import com.bithumbsystems.management.api.v1.messenger.model.dto.Messenger.MessengerRequest;

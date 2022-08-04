@@ -1,4 +1,4 @@
-package com.bithumbsystems.management.api.core.config.property;
+package com.bithumbsystems.management.api.core.config.properties;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
