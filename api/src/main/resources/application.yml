@@ -52,7 +52,7 @@ spring:
     mongodb:
       host: localhost
       port: 27017
-      database: smartadmindb
+      database: test
 application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
