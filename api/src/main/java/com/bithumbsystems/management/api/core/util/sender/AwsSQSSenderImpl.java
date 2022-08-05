@@ -21,7 +21,7 @@ public class AwsSQSSenderImpl<T> implements AwsSQSSender<T> {
 
   /**
    * Usage :
-   *      private final AwsSQSSender<AuditLogRequest> sqsSender;
+   *      private final AwsSQSSender<AccessAllowIpRequest> sqsSender;
    *
    *      // 전송 객체
    *      AccessAllowIpRequest.builder

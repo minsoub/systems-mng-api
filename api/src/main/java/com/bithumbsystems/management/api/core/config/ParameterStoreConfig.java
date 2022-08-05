@@ -1,13 +1,5 @@
 package com.bithumbsystems.management.api.core.config;
 
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_NAME;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PASSWORD;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PORT;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_URL;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_USER;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
-
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.properties.MongoProperties;
 import javax.annotation.PostConstruct;
@@ -20,6 +12,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
+
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.*;
 
 @Log4j2
 @Data
@@ -56,7 +50,7 @@ public class ParameterStoreConfig {
         // KMS Parameter Key
         this.awsProperties.setKmsKey(getParameterValue(awsProperties.getParamStoreKmsName(), KMS_ALIAS_NAME));
         this.awsProperties.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
-
+        this.awsProperties.setSqsAccessIpUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_ACCESS_IP_URL));
     }
 
     protected String getParameterValue(String storeName, String type) {
