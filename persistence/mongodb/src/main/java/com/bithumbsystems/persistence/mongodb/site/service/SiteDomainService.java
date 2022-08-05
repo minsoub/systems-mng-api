@@ -83,4 +83,8 @@ public class SiteDomainService {
   public Flux<SiteFileInfo> findFileInfoList(Boolean isUse) {
     return siteFileInfoRepository.findByIsUse(isUse);
   }
+
+  public Mono<SiteFileInfo> findFileInfoById(String id) {
+    return siteFileInfoRepository.findById(id);
+  }
 }

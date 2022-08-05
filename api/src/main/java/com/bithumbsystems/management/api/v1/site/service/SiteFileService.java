@@ -57,4 +57,21 @@ public class SiteFileService {
         //return Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile));
     }).collectList();
   }
+
+  public Mono<SiteFileInfoResponse> getFile(String id) {
+    return siteDomainService.findFileInfoById(id).flatMap(siteFileInfo -> {
+          return siteDomainService.findById(siteFileInfo.getSiteId())
+              .flatMap(site -> {
+                return Mono.just(SiteFileInfoResponse.builder()
+                    .id(siteFileInfo.getId())
+                    .siteId(site.getId())
+                    .siteName(site.getName())
+                    .createDate(siteFileInfo.getCreateDate())
+                    .extensionLimit(siteFileInfo.getExtensionLimit())
+                    .isUse(siteFileInfo.getIsUse())
+                    .sizeLimit(siteFileInfo.getSizeLimit())
+                    .build());
+              });
+        });
+  }
 }

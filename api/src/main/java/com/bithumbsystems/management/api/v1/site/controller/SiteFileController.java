@@ -111,4 +111,17 @@ public class SiteFileController {
             .map(SingleResponse::new));
   }
 
+  /**
+   * Gets file detail.
+   *
+   * @param fileId the file id
+   * @return the file management
+   */
+  @GetMapping("/{fileId}")
+  @Operation(summary = "파일정보 상세 조회" , description = "통합 관리> 업로드 관리: 파일정보 상세 조회", tags = "통합 관리> 업로드 관리")
+  public ResponseEntity<Mono<?>> getFile(@PathVariable String fileId) {
+    return ResponseEntity.ok().body(
+        siteFileService.getFile(fileId)
+            .map(SingleResponse::new));
+  }
 }
