@@ -45,7 +45,7 @@ public class SiteService {
           SiteResponse SiteResponse = SiteMapper.INSTANCE.siteToSiteResponse(site);
           return Mono.just(SiteResponse);
         }
-    ).collectSortedList(Comparator.comparing(SiteResponse::getCreateDate));
+    ).collectSortedList(Comparator.comparing(SiteResponse::getCreateDate).reversed());
   }
 
   /**

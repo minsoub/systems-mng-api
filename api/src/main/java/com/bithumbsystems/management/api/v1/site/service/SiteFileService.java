@@ -5,6 +5,8 @@ import com.bithumbsystems.management.api.v1.site.model.mapper.SiteMapper;
 import com.bithumbsystems.management.api.v1.site.model.request.SiteFileInfoRequest;
 import com.bithumbsystems.management.api.v1.site.model.response.SiteFileInfoResponse;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
+
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,7 +57,7 @@ public class SiteFileService {
                 );
               });
         //return Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile));
-    }).collectList();
+    }).collectSortedList(Comparator.comparing(SiteFileInfoResponse::getCreateDate).reversed()); // .collectList();
   }
 
   public Mono<SiteFileInfoResponse> getFile(String id) {

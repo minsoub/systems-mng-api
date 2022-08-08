@@ -96,7 +96,7 @@ public class AccountService {
               return Mono.just(accountSearchResponseMap.getFirst());
             })
             .switchIfEmpty(Mono.just(accountSearchResponseMap.getFirst()))
-        ).collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+        ).collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate).reversed());
   }
 
   /**
@@ -119,7 +119,7 @@ public class AccountService {
                 adminAccount.getValidStartDate(),
                 adminAccount.getValidEndDate())
         ))
-        .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate).reversed());
   }
 
   /**
@@ -603,7 +603,7 @@ public class AccountService {
                   .build()
           ));
         })
-        .collectSortedList(Comparator.comparing(AccountResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(AccountResponse::getCreateDate).reversed());
   }
 
   /**
@@ -725,7 +725,7 @@ public class AccountService {
               }
             }
         )
-        .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(AccountSearchResponse::getCreateDate).reversed());
   }
 
   /**

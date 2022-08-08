@@ -29,7 +29,7 @@ public class ProgramService {
   public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse) {
     return programDomainService.findBySearchText(siteId, searchText, isUse)
         .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectSortedList(
-            Comparator.comparing(ProgramResponse::getCreateDate));
+            Comparator.comparing(ProgramResponse::getCreateDate).reversed());
   }
 
   public Mono<ProgramResponse> create(String siteId, ProgramRegisterRequest programRegisterRequest, Account account) {

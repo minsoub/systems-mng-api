@@ -111,7 +111,7 @@ public class RoleManagementService {
     return roleManagementDomainService.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText, isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
-        .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate).reversed());
   }
 
   /**
@@ -124,7 +124,7 @@ public class RoleManagementService {
     return adminAccessDomainService.findByRoleManagementId(roleManagementId)
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
-        .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate).reversed());
   }
 
   /**
