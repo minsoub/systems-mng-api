@@ -381,6 +381,9 @@ public class AccountService {
               if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
                 adminAccount.setOtpSecretKey("");
               }
+              if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
+                adminAccount.setLoginFailCount(0L);
+              }
               adminAccount.setUpdateAdminAccountId(account.getAccountId());
               adminAccount.setUpdateDate(LocalDateTime.now());
               adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
