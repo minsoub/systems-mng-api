@@ -24,7 +24,7 @@ public class AccessLogService {
                         fromDate,
                         toDate, keyword, mySiteId)
                 .map(AccessLogMapper.INSTANCE::accessLogResponse)
-                .collectSortedList(Comparator.comparing(AccessLogResponse::getCreateDate));
+                .collectSortedList(Comparator.comparing(AccessLogResponse::getCreateDate).reversed());
                 //.switchIfEmpty(Mono.error(new AuditLogException(ErrorCode.NOT_FOUND_CONTENT)));
     }
 }

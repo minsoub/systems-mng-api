@@ -5,10 +5,7 @@ import com.bithumbsystems.management.api.core.config.resolver.CurrentUser;
 import com.bithumbsystems.management.api.core.model.response.MultiResponse;
 import com.bithumbsystems.management.api.core.model.response.SingleResponse;
 import com.bithumbsystems.management.api.v1.role.model.mapper.RoleMapper;
-import com.bithumbsystems.management.api.v1.role.model.request.RoleAccountsRequest;
-import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementRegisterRequest;
-import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
-import com.bithumbsystems.management.api.v1.role.model.request.RoleResourceRequest;
+import com.bithumbsystems.management.api.v1.role.model.request.*;
 import com.bithumbsystems.management.api.v1.role.service.RoleManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -169,6 +166,24 @@ public class RoleManagementController {
     );
   }
 
+  /**
+   * Mapping accounts response entity.
+   *
+   * @param accounts         the accounts
+   * @param roleManagementId the role management id
+   * @param account          the account
+   * @return the response entity
+   */
+  @PostMapping("/role/{roleManagementId}/accounts")
+  @Operation(summary = "ROLE 사용자 매핑 (등록/삭제)", description = "Role 관리 : 사용자 매핑", tags = "통합 시스템 관리> 권한 관리")
+  public ResponseEntity<Mono<?>> mappingAccountsPuts(@RequestBody RoleMappingAccountsRequest accounts,
+                                                 @PathVariable String roleManagementId,
+                                                 @Parameter(hidden = true) @CurrentUser Account account) {
+    return ResponseEntity.ok().body(
+            roleManagementService.mappingAccountsPuts(accounts.getAccounts(), roleManagementId, account)
+                    .map(SingleResponse::new)
+    );
+  }
 
   /**
    * Role에 해당되는 메뉴를 불러 온다

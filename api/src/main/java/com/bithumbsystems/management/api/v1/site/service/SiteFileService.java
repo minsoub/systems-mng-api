@@ -5,6 +5,8 @@ import com.bithumbsystems.management.api.v1.site.model.mapper.SiteMapper;
 import com.bithumbsystems.management.api.v1.site.model.request.SiteFileInfoRequest;
 import com.bithumbsystems.management.api.v1.site.model.response.SiteFileInfoResponse;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
+
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,7 +41,39 @@ public class SiteFileService {
   }
 
   public Mono<List<SiteFileInfoResponse>> getFileManagements(Boolean isUse) {
-    return siteDomainService.findFileInfoList(isUse).flatMap(siteFile ->
-        Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile))).collectList();
+    return siteDomainService.findFileInfoList(isUse).flatMap(siteFile -> {
+      return siteDomainService.findById(siteFile.getSiteId())
+              .flatMap(result ->  {
+                return Mono.just(
+                        SiteFileInfoResponse.builder()
+                                .id(siteFile.getId())
+                                .siteId(siteFile.getSiteId())
+                                .siteName(result.getName())
+                                .sizeLimit(siteFile.getSizeLimit())
+                                .extensionLimit(siteFile.getExtensionLimit())
+                                .isUse(siteFile.getIsUse())
+                                .createDate(siteFile.getCreateDate())
+                                .build()
+                );
+              });
+        //return Mono.just(SiteMapper.INSTANCE.siteFileInfoToResponse(siteFile));
+    }).collectSortedList(Comparator.comparing(SiteFileInfoResponse::getCreateDate).reversed()); // .collectList();
+  }
+
+  public Mono<SiteFileInfoResponse> getFile(String id) {
+    return siteDomainService.findFileInfoById(id).flatMap(siteFileInfo -> {
+          return siteDomainService.findById(siteFileInfo.getSiteId())
+              .flatMap(site -> {
+                return Mono.just(SiteFileInfoResponse.builder()
+                    .id(siteFileInfo.getId())
+                    .siteId(site.getId())
+                    .siteName(site.getName())
+                    .createDate(siteFileInfo.getCreateDate())
+                    .extensionLimit(siteFileInfo.getExtensionLimit())
+                    .isUse(siteFileInfo.getIsUse())
+                    .sizeLimit(siteFileInfo.getSizeLimit())
+                    .build());
+              });
+        });
   }
 }

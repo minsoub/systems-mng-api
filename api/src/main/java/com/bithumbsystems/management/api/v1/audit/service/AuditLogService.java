@@ -26,7 +26,7 @@ public class AuditLogService {
             auditLogSearchRequest.getMySiteId(),
             PageRequest.of(auditLogSearchRequest.getPage(), auditLogSearchRequest.getSize()))
         .map(AuditLogMapper.INSTANCE::auditLogToResponse)
-        .collectSortedList(Comparator.comparing(AuditLogSearchResponse::getCreateDate))
+        .collectSortedList(Comparator.comparing(AuditLogSearchResponse::getCreateDate).reversed())
         .zipWith(auditLogDomainService.countBySearchText(auditLogSearchRequest.getSearchText(),
             auditLogSearchRequest.getStartDate(),
             auditLogSearchRequest.getEndDate(),

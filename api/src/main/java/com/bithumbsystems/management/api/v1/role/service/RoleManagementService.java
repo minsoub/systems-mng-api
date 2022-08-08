@@ -3,9 +3,11 @@ package com.bithumbsystems.management.api.v1.role.service;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
+import com.bithumbsystems.management.api.v1.role.model.enums.FlagEnum;
 import com.bithumbsystems.management.api.v1.role.model.mapper.RoleMapper;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementRegisterRequest;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleManagementUpdateRequest;
+import com.bithumbsystems.management.api.v1.role.model.request.RoleModeAccountRequest;
 import com.bithumbsystems.management.api.v1.role.model.request.RoleResourceRequest;
 import com.bithumbsystems.management.api.v1.role.model.response.MenuResourceResponse;
 import com.bithumbsystems.management.api.v1.role.model.response.ProgramResourceResponse;
@@ -25,11 +27,11 @@ import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleAuthorizatio
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleAuthorizationDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -109,7 +111,7 @@ public class RoleManagementService {
     return roleManagementDomainService.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText, isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
-        .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate).reversed());
   }
 
   /**
@@ -122,7 +124,7 @@ public class RoleManagementService {
     return adminAccessDomainService.findByRoleManagementId(roleManagementId)
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
-        .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate));
+        .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate).reversed());
   }
 
   /**
@@ -211,6 +213,97 @@ public class RoleManagementService {
           tuple.getT1().setEmailList(tuple.getT2());
           return tuple.getT1();
         });
+  }
+
+  @Transactional
+  public Mono<RoleMappingAccountResponse> mappingAccountsPuts(List<RoleModeAccountRequest> accounts, String roleManagementId, Account account) {
+      var roleManagementMappingResponse = roleManagementDomainService.findById(roleManagementId)
+              .switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE)))
+              .map(roleManagement -> RoleMappingAccountResponse.builder()
+                      .id(roleManagementId)
+                      .name(roleManagement.getName())
+                      .build());
+
+      var getAccountEmails =
+              Flux.fromIterable(accounts).flatMap(roleData -> {
+                  return adminAccountDomainService.findByAdminAccountId(roleData.getId())
+                          .flatMap(adminAccount -> {
+                              if (roleData.getFlag().equals(FlagEnum.INSERT)) {
+                                  return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                          .flatMap(adminAccess -> {
+                                              Set<String> roleList = adminAccess.getRoles(); // my role list
+
+                                              return isRoleRegisterCheck(roleList, roleManagementId)
+                                                      .flatMap(res -> {
+                                                          if (res.equals(true)) {
+                                                              adminAccess.getRoles().add(roleManagementId);
+                                                              return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
+                                                          } else {
+                                                              return Mono.error(new RoleManagementException(ErrorCode.INVALID_MAX_ROLE));
+                                                          }
+                                                      });
+                                          })
+                                          .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
+                                                  .adminAccountId(adminAccount.getId())
+                                                  .name(adminAccount.getName())
+                                                  .email(adminAccount.getEmail())
+                                                  .isUse(true)
+                                                  .roles(Set.of(roleManagementId))
+                                                  .build(), account.getAccountId()).map(AdminAccess::getEmail));
+                              } else if (roleData.getFlag().equals(FlagEnum.DELETE)) {
+                                  return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                          .flatMap(adminAccess -> {
+                                              log.info(adminAccess.getEmail());
+                                              Set<String> roleList = adminAccess.getRoles();
+                                              log.debug("{}", roleList);
+                                              roleList.remove(roleManagementId);
+                                              adminAccess.setRoles(roleList);
+                                              return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
+                                          });
+                              } else {
+                                  return Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE));
+                              }
+                          });
+              }).collectList();
+
+//            adminAccessDomainService.findByAdminAccountIds(accounts)
+//        .flatMap(adminAccess -> {
+//          log.info(adminAccess.getEmail());
+//          adminAccess.getRoles().add(roleManagementId);
+//          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
+//              AdminAccess::getEmail);
+//        })
+//        .collectList();
+
+      return roleManagementMappingResponse.zipWith(getAccountEmails)
+              .map(tuple -> {
+                  tuple.getT1().setEmailList(tuple.getT2());
+                  return tuple.getT1();
+              });
+  }
+
+  private Mono<Boolean> isRoleRegisterCheck(Set<String> roleList, String roleManagementId) {
+
+      return roleManagementDomainService.findById(roleManagementId)
+              .flatMap(result -> {
+                 return Flux.fromIterable(roleList)
+                         .flatMap(res -> {
+                             return roleManagementDomainService.findById(res)
+                                     .flatMap(check -> {
+                                         if (check.getSiteId().equals(result.getSiteId())) { // 동일사이트에 2개의 role은 안됨.
+                                             return Mono.just(false);
+                                         } else {
+                                             return Mono.just(true);
+                                         }
+                                     });
+                         }).collectList();
+              }).map(resultCheck -> {
+                  if (resultCheck.contains(false)) {
+                      return false;
+                  } else {
+                      return true;
+                  }
+              });
   }
 
   /**
