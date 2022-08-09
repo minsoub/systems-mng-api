@@ -1,5 +1,16 @@
 package com.bithumbsystems.management.api.core.config.local;
 
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_NAME;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PASSWORD;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PORT;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_URL;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_USER;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.JWT_SECRET_KEY;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SQS_ACCESS_IP_URL;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SQS_URL;
+
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.properties.MongoProperties;
 import javax.annotation.PostConstruct;
@@ -12,8 +23,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
-
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.*;
 
 @Log4j2
 @Data
@@ -54,6 +63,7 @@ public class LocalParameterStoreConfig {
         this.awsProperties.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
         this.awsProperties.setSqlUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_URL));
         this.awsProperties.setSqsAccessIpUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_ACCESS_IP_URL));
+        this.awsProperties.setJwtSecretKey(getParameterValue(awsProperties.getParamStoreAuthName(), JWT_SECRET_KEY));
     }
 
     protected String getParameterValue(String storeName, String type) {

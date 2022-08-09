@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.audit.listener;
 
+import com.bithumbsystems.management.api.core.config.SecurityConfig;
 import com.bithumbsystems.management.api.v1.audit.model.request.AuditLogRequest;
 import com.bithumbsystems.persistence.mongodb.audit.model.entity.AuditLog;
 import com.bithumbsystems.persistence.mongodb.audit.model.enums.Crud;
@@ -24,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class AwsAuditLogListener {
-  private final ReactiveJwtDecoder reactiveJwtDecoder;
+  private final SecurityConfig securityConfig;
   private final SiteDomainService siteDomainService;
   private final MenuDomainService menuDomainService;
   private final ProgramDomainService programDomainService;
@@ -89,7 +89,7 @@ public class AwsAuditLogListener {
     } else {
       final String BEARER_TYPE = "Bearer";
       final var token = auditLogRequest.getToken().substring(BEARER_TYPE.length()).trim();
-      return reactiveJwtDecoder.decode(token).flatMap(jwt -> {
+      return securityConfig.reactiveJwtDecoder().decode(token).flatMap(jwt -> {
         log.debug("reactiveJwtDecoder.decode {}", Thread.currentThread().getName());
         final var email = jwt.getClaim("iss").toString();
         final var roleObject = jwt.getClaims().get("ROLE");

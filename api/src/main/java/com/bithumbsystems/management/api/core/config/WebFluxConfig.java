@@ -5,7 +5,10 @@ import static com.bithumbsystems.persistence.mongodb.common.model.constant.Commo
 import com.bithumbsystems.management.api.core.config.properties.ApplicationProperties;
 import com.bithumbsystems.management.api.core.config.resolver.CustomArgumentResolver;
 import com.bithumbsystems.management.api.core.config.resolver.QueryParamArgumentResolver;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -22,7 +25,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.PathMatchConfigurer;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
@@ -35,11 +37,11 @@ import org.springframework.web.reactive.result.method.annotation.ArgumentResolve
 public class WebFluxConfig implements WebFluxConfigurer {
 
   private final ApplicationProperties applicationProperties;
-  private final ReactiveJwtDecoder reactiveJwtDecoder;
+  private final SecurityConfig securityConfig;
   @Override
   public void configurePathMatching(PathMatchConfigurer configurer) {
     configurer.addPathPrefix( applicationProperties.getPrefix() + applicationProperties.getVersion()
-        , (path) -> Arrays
+        , path -> Arrays
             .stream(applicationProperties.getExcludePrefixPath())
             .anyMatch(p -> path.getName().indexOf(p) <= 0)
     );
@@ -83,7 +85,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
   @Override
   public void configureArgumentResolvers(ArgumentResolverConfigurer configurer) {
     WebFluxConfigurer.super.configureArgumentResolvers(configurer);
-    CustomArgumentResolver customArgumentResolver = new CustomArgumentResolver(reactiveJwtDecoder);
+    CustomArgumentResolver customArgumentResolver = new CustomArgumentResolver(securityConfig.reactiveJwtDecoder());
     QueryParamArgumentResolver queryParamArgumentResolver = new QueryParamArgumentResolver();
     configurer.addCustomResolver(customArgumentResolver);
     configurer.addCustomResolver(queryParamArgumentResolver);

@@ -27,10 +27,13 @@ public class AwsProperties {
 
   @Value("${cloud.aws.param-store.message-name}")
   private String paramStoreMessageName;
+  @Value("${cloud.aws.param-store.auth-name}")
+  private String paramStoreAuthName;
 
   private String kmsKey;
   private String emailSender;
   private String sqlUrl;
   // 접근 제어 IP 전송 SQS URL
   private String sqsAccessIpUrl;
+  private String jwtSecretKey;
 }

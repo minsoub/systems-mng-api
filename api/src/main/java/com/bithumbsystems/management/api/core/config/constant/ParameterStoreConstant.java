@@ -13,4 +13,6 @@ public final class ParameterStoreConstant {
   public static final String SQS_URL = "sqs_url";
 
   public static final String SQS_ACCESS_IP_URL = "sqs_access_ip_url";
+  public static final String JWT_SECRET_KEY = "jwt_secret_key";
+
 }
