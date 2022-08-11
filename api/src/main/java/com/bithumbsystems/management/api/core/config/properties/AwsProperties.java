@@ -29,6 +29,8 @@ public class AwsProperties {
   private String paramStoreMessageName;
   @Value("${cloud.aws.param-store.auth-name}")
   private String paramStoreAuthName;
+  @Value("${cloud.aws.param-store.crypto-name}")
+  private String paramCryptoName;
 
   private String kmsKey;
   private String emailSender;
@@ -36,4 +38,5 @@ public class AwsProperties {
   // 접근 제어 IP 전송 SQS URL
   private String sqsAccessIpUrl;
   private String jwtSecretKey;
+  private String cryptoKey;
 }

@@ -5,6 +5,7 @@ import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
 
+import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
 import com.bithumbsystems.management.api.core.util.AES256Util;
@@ -63,6 +64,7 @@ public class AccountService {
   private final MessageService messageService;
 
   private final PasswordEncoder passwordEncoder;
+  private final AwsProperties properties;
 
   /**
    * Search mono.
@@ -329,16 +331,16 @@ public class AccountService {
       AccountUpdatePasswordRequest accountUpdatePasswordRequest, Account account) {
     return adminAccountDomainService.findByEmail(accountUpdatePasswordRequest.getEmail())
         .flatMap(result -> {
-          if (!passwordEncoder.matches(AES256Util.decryptAES(AES256Util.CLIENT_AES_KEY_ADM,
+          if (!passwordEncoder.matches(AES256Util.decryptAES(properties.getCryptoKey(),
                   accountUpdatePasswordRequest.getCurrentPassword()),
               result.getPassword())) {
             return Mono.error(new AccountException(FAIL_PASSWORD_UPDATE));
           }
           result.setPassword(passwordEncoder.encode(
-              AES256Util.decryptAES(AES256Util.CLIENT_AES_KEY_ADM,
+              AES256Util.decryptAES(properties.getCryptoKey(),
                   accountUpdatePasswordRequest.getNewPassword())));
           result.setOldPassword(passwordEncoder.encode(
-              AES256Util.decryptAES(AES256Util.CLIENT_AES_KEY_ADM,
+              AES256Util.decryptAES(properties.getCryptoKey(),
                   accountUpdatePasswordRequest.getCurrentPassword())));
           result.setUpdateDate(LocalDateTime.now());
           result.setUpdateAdminAccountId(account.getAccountId());

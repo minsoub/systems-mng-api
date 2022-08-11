@@ -18,6 +18,6 @@ cloud:
       kms-name: kms
       message-name: message
       auth-name: auth
-
+      crypto-name: crypto
     sqs:
       queue-name: audit_log_queue_dev.fifo
