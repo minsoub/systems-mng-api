@@ -37,4 +37,29 @@ public class AdminAccountCustomRepositoryImpl implements AdminAccountCustomRepos
         .find(condition, AdminAccount.class);
   }
 
+  @Override
+  public Flux<AdminAccount> findBySearchNameOrEmail(String name, String email) {
+    String reg;
+
+    Query query = new Query();
+
+    if (name != null) {
+      reg = ".*" + name + ".*";
+
+      query.addCriteria(
+          Criteria.where("name").regex(reg, "i")
+      );
+    } else if (email != null){
+      reg = ".*" + email + ".*";
+
+      query.addCriteria(
+          Criteria.where("email").regex(reg, "i")
+      );
+    }
+
+    return reactiveMongoTemplate.find(
+        query, AdminAccount.class
+    );
+  }
+
 }

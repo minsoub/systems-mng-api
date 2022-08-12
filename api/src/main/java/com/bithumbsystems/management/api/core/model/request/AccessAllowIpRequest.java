@@ -20,5 +20,5 @@ public class AccessAllowIpRequest {
     private String roleId;
     private LocalDate validStartDate;
     private LocalDate validEndDate;
-    private Set<String> allowIpList;
+    private String allowIp;
 }
