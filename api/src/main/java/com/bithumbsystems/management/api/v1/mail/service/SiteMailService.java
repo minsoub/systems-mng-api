@@ -85,7 +85,7 @@ public class SiteMailService {
         .serverInfo(request.getServerInfo())
         .adminUserEmail(request.getAdminUserEmail())
         .accountPassword(
-            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getAccountPassword(), true)
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getAccountPassword())
         );
   }
 
