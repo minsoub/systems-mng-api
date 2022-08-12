@@ -88,5 +88,10 @@ public class AdminAccountDomainService {
         adminAccount.setId(PREFIX + generateUUIDWithOutDash());
         return adminAccountRepository.insert(adminAccount);
     }
+
+    public Flux<AdminAccount> findBySearchNameOrEmail(String name, String email) {
+        return adminAccountRepository.findBySearchNameOrEmail(name, email);
+    }
+
 }
 
