@@ -37,22 +37,25 @@ public class AccessIpService {
   private final AccessIpMapper accessIpMapper;
 
   private final SiteDomainService siteDomainService;
+
   private final AwsSQSSender<AccessAllowIpRequest> awsSQSSender;
 
   private final AdminAccessDomainService adminAccessDomainService;
 
   private final RoleManagementDomainService roleManagementDomainService;
 
-  public Mono<List<AccessIpListResponse>> getAccessIpList(String siteId, String name, String email) {
-        return accessIpDomainService.findAccessIpBySearch(name, email, siteId).flatMap(
+  public Mono<List<AccessIpListResponse>> getAccessIpList(String siteId, String name,
+      String email) {
+    return accessIpDomainService.findAccessIpBySearch(name, email, siteId).flatMap(
             accessIp -> {
-              return adminAccessDomainService.findByAdminAccountId(accessIp.getAdminAccountId()).flatMap(
-                  adminAccess -> {
-                    return roleManagementDomainService.findById(accessIp.getRoleId()).flatMap(
-                        role -> {
-                          return siteDomainService.findById(accessIp.getSiteId()).flatMap(
-                              site -> {
-                                return Mono.just(AccessIpListResponse.builder()
+              return adminAccessDomainService.findByAdminAccountId(accessIp.getAdminAccountId())
+                  .flatMap(
+                      adminAccess -> {
+                        return roleManagementDomainService.findById(accessIp.getRoleId()).flatMap(
+                            role -> {
+                              return siteDomainService.findById(accessIp.getSiteId()).flatMap(
+                                  site -> {
+                                    return Mono.just(AccessIpListResponse.builder()
                                         .id(accessIp.getId())
                                         .adminAccountId(accessIp.getAdminAccountId())
                                         .name(adminAccess.getName())
@@ -62,25 +65,26 @@ public class AccessIpService {
                                         .roleId(role.getName())
                                         .build()
                                     );
-                          }
-                      );
-                    }
-                );
-              }
-          );
-        }
-    ).collect(Collectors.groupingBy(AccessIpListResponse::getAdminAccountId))
+                                  }
+                              );
+                            }
+                        );
+                      }
+                  );
+            }
+        ).collect(Collectors.groupingBy(AccessIpListResponse::getAdminAccountId))
         .map(this::makeAccessIpList);
   }
 
   public Mono<List<AccessIpDetailResponse>> getAccessIp(String siteId, String adminAccountId) {
-    return accessIpDomainService.findAccessIpByAdminAccountIdAndSiteId(adminAccountId, siteId).map(accessIpMapper::accessIpToDetailResponse).map(
-        response -> {
-          response.setValidStartDate(replaceValidDate(response.getValidStartDate()));
-          response.setValidEndDate(replaceValidDate(response.getValidEndDate()));
-          return response;
-        }
-    ).collectList();
+    return accessIpDomainService.findAccessIpByAdminAccountIdAndSiteId(adminAccountId, siteId)
+        .map(accessIpMapper::accessIpToDetailResponse).map(
+            response -> {
+              response.setValidStartDate(response.getValidStartDate());
+              response.setValidEndDate(response.getValidEndDate());
+              return response;
+            }
+        ).collectList();
   }
 
   @Transactional
@@ -93,7 +97,8 @@ public class AccessIpService {
               accessIp.setUpdateDate(LocalDateTime.now());
               accessIp.setUpdateAdminAccountId(account.getAccountId());
               accessIp.setIsUse(false);
-              sendMessageToSqs(makeAccessAllowRequest(accessIpMapper.accessIpToResponse(accessIp), JobType.DELETE));
+              sendMessageToSqs(makeAccessAllowRequest(accessIpMapper.accessIpToResponse(accessIp),
+                  JobType.DELETE));
               return accessIpDomainService.save(accessIp).map(accessIpMapper::accessIpToResponse);
             });
   }
@@ -107,8 +112,8 @@ public class AccessIpService {
 
     return accessIpDomainService.insert(accessIp).map(accessIpMapper::accessIpToResponse)
         .flatMap(accessIpResponse -> {
-          accessIpResponse.setValidStartDate(replaceValidDate(accessIpResponse.getValidStartDate()));
-          accessIpResponse.setValidEndDate(replaceValidDate(accessIpResponse.getValidEndDate()));
+          accessIpResponse.setValidStartDate(accessIpResponse.getValidStartDate());
+          accessIpResponse.setValidEndDate(accessIpResponse.getValidEndDate());
           sendMessageToSqs(makeAccessAllowRequest(accessIpResponse, JobType.INSERT));
           return Mono.just(accessIpResponse);
         });
@@ -124,8 +129,8 @@ public class AccessIpService {
         .adminAccessId(request.getId())
         .siteId(request.getSiteId())
         .roleId(request.getRoleId())
-        .validStartDate(stringToLocalDate(replaceValidDate(request.getValidStartDate())))
-        .validEndDate(stringToLocalDate(replaceValidDate(request.getValidEndDate())))
+        .validStartDate(request.getValidStartDate())
+        .validEndDate(request.getValidEndDate())
         .allowIp(request.getAllowIp())
         .build();
   }
@@ -136,11 +141,12 @@ public class AccessIpService {
         .allowIp(request.getAllowIp())
         .adminAccountId(request.getAdminAccountId())
         .siteId(request.getSiteId())
-        .validStartDate(stringToLocalDate(request.getValidStartDate()).atStartOfDay())
-        .validEndDate(stringToLocalDate(request.getValidEndDate()).atStartOfDay());
+        .validStartDate(request.getValidStartDate().atStartOfDay())
+        .validEndDate(request.getValidEndDate().atStartOfDay());
   }
 
-  private List<AccessIpListResponse> makeAccessIpList(Map<String, List<AccessIpListResponse>> accessIpListMap) {
+  private List<AccessIpListResponse> makeAccessIpList(
+      Map<String, List<AccessIpListResponse>> accessIpListMap) {
     return accessIpListMap.values().stream().map(
         accessIpListResponses -> {
           AccessIpListResponse accessIpListResponse = accessIpListResponses.get(0);
@@ -158,14 +164,4 @@ public class AccessIpService {
         }
     ).collect(Collectors.toList());
   }
-  private LocalDate stringToLocalDate(String date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-
-    return LocalDate.parse(date, formatter);
-  }
-
-  private String replaceValidDate(String date) {
-    return date.substring(0, 10).replaceAll("-", ".");
-  }
-
 }

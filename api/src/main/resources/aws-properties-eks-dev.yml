@@ -19,6 +19,8 @@ cloud:
       message-name: message
       auth-name: auth
       crypto-name: crypto
+      salt-name: salt
+      iv-name: iv
     sqs:
       queue-name: audit_log_queue_dev.fifo
 logging:

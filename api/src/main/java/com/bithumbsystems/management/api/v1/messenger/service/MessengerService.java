@@ -75,10 +75,10 @@ public class MessengerService {
         .sessionApi(request.getSessionApi())
         .isUse(request.getIsUse())
         .user(
-            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getUser())
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getUser(), awsProperties.getSaltKey(), awsProperties.getIvKey())
         )
         .pass(
-            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getPass())
+            AES256Util.encryptAES(awsProperties.getKmsKey(), request.getPass(), awsProperties.getSaltKey(), awsProperties.getIvKey())
         );
   }
 
