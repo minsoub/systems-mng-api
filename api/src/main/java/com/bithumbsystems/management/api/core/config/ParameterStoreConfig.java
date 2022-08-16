@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
 
+import java.net.URI;
+
 import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.*;
 
 @Log4j2
@@ -36,7 +38,8 @@ public class ParameterStoreConfig {
         log.debug("config store [name] => {}", awsProperties.getParamStoreDocName());
 
         this.ssmClient = SsmClient.builder()
-            .region(Region.of(awsProperties.getRegion()))
+                .endpointOverride(URI.create(awsProperties.getSsmEndPoint()))
+                .region(Region.of(awsProperties.getRegion()))
             .build();
 
         this.mongoProperties = new MongoProperties(

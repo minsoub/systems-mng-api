@@ -18,6 +18,8 @@ import software.amazon.awssdk.services.kms.KmsAsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.ses.SesClient;
 
+import java.net.URI;
+
 @Slf4j
 @Getter
 @Setter
@@ -47,6 +49,7 @@ public class LocalAwsConfig {
   public SesClient sesClient() {
     return SesClient.builder()
         .region(Region.of(awsProperties.getRegion()))
+            .endpointOverride(URI.create(awsProperties.getSesEndPoint()))
         .credentialsProvider(ProfileCredentialsProvider.create(profileName))
         .build();
   }
@@ -63,7 +66,8 @@ public class LocalAwsConfig {
   public void init() {
     kmsAsyncClient = KmsAsyncClient.builder()
         .region(Region.of(awsProperties.getRegion()))
-        .credentialsProvider(ProfileCredentialsProvider.create(profileName))
+            .endpointOverride(URI.create(awsProperties.getKmsEndPoint()))
+            .credentialsProvider(ProfileCredentialsProvider.create(profileName))
         .build();
 
     provider = new com.amazonaws.auth.profile.ProfileCredentialsProvider(profileName);

@@ -16,6 +16,8 @@ import software.amazon.awssdk.services.kms.KmsAsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.ses.SesClient;
 
+import java.net.URI;
+
 @Slf4j
 @Getter
 @Setter
@@ -44,6 +46,7 @@ public class AwsConfig {
   @Bean
   public SesClient sesClient() {
     return SesClient.builder()
+            .endpointOverride(URI.create(awsProperties.getSesEndPoint()))
         .region(Region.of(awsProperties.getRegion()))
         .build();
   }
@@ -56,6 +59,7 @@ public class AwsConfig {
   @PostConstruct
   public void init() {
     kmsAsyncClient = KmsAsyncClient.builder()
+            .endpointOverride(URI.create(awsProperties.getKmsEndPoint()))
         .region(Region.of(awsProperties.getRegion()))
         .build();
   }
