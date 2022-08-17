@@ -39,6 +39,8 @@ public class AwsProperties {
   private String ssmEndPoint;
   @Value("${cloud.aws.ses.endpoint}")
   private String sesEndPoint;
+  @Value("${cloud.aws.sqs.endpoint}")
+  private String sqsEndPoint;
   @Value("${cloud.aws.kms.endpoint}")
   private String kmsEndPoint;
 

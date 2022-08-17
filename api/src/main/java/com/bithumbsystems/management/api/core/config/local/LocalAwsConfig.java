@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.core.config.local;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
@@ -49,16 +50,21 @@ public class LocalAwsConfig {
   public SesClient sesClient() {
     return SesClient.builder()
         .region(Region.of(awsProperties.getRegion()))
-            .endpointOverride(URI.create(awsProperties.getSesEndPoint()))
+        .endpointOverride(URI.create(awsProperties.getSesEndPoint()))
         .credentialsProvider(ProfileCredentialsProvider.create(profileName))
         .build();
   }
 
   @Bean
   public AmazonSQSAsync amazonSQS() {
+    var endpointConfig = new AwsClientBuilder.EndpointConfiguration(
+        awsProperties.getSqsEndPoint(),
+        awsProperties.getRegion()
+    );
     return AmazonSQSAsyncClientBuilder.standard()
         .withCredentials(provider)
-        .withRegion(awsProperties.getRegion())
+//        .withRegion(awsProperties.getRegion())
+        .withEndpointConfiguration(endpointConfig)
         .build();
   }
 
@@ -66,8 +72,8 @@ public class LocalAwsConfig {
   public void init() {
     kmsAsyncClient = KmsAsyncClient.builder()
         .region(Region.of(awsProperties.getRegion()))
-            .endpointOverride(URI.create(awsProperties.getKmsEndPoint()))
-            .credentialsProvider(ProfileCredentialsProvider.create(profileName))
+        .endpointOverride(URI.create(awsProperties.getKmsEndPoint()))
+        .credentialsProvider(ProfileCredentialsProvider.create(profileName))
         .build();
 
     provider = new com.amazonaws.auth.profile.ProfileCredentialsProvider(profileName);
