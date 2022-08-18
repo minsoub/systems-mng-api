@@ -58,7 +58,7 @@ public class AwsConfig {
         awsProperties.getRegion()
     );
     return AmazonSQSAsyncClientBuilder.standard()
-            .withRegion(awsProperties.getRegion())
+//            .withRegion(awsProperties.getRegion())
             .withEndpointConfiguration(endpointConfig)
             .build();
   }
