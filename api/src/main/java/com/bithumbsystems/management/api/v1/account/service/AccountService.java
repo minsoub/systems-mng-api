@@ -285,8 +285,8 @@ public class AccountService {
     adminAccount.setEmail(accountRegisterRequest.getEmail());
     adminAccount.setIsUse(accountRegisterRequest.getIsUse());
     adminAccount.setStatus(accountRegisterRequest.getStatus());
-    adminAccount.setOldPassword("");
-    adminAccount.setOtpSecretKey("");
+    adminAccount.setOldPassword(null);
+    adminAccount.setOtpSecretKey(null);
     adminAccount.setLastPasswordUpdateDate(null);
     adminAccount.setCreateDate(LocalDateTime.now());
     adminAccount.setCreateAdminAccountId(account.getAccountId());
@@ -381,7 +381,7 @@ public class AccountService {
               adminAccount.setIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setStatus(accountRegisterRequest.getStatus());
               if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                adminAccount.setOtpSecretKey("");
+                adminAccount.setOtpSecretKey(null);
               }
               if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
                 adminAccount.setLoginFailCount(0L);
@@ -751,8 +751,8 @@ public class AccountService {
     adminAccount.setEmail(accountRegisterRequest.getEmail());
     adminAccount.setIsUse(accountRegisterRequest.getIsUse());
     adminAccount.setStatus(accountRegisterRequest.getStatus());
-    adminAccount.setOldPassword("");
-    adminAccount.setOtpSecretKey("");
+    adminAccount.setOldPassword(null);
+    adminAccount.setOtpSecretKey(null);
     adminAccount.setLastPasswordUpdateDate(null);
     adminAccount.setCreateDate(LocalDateTime.now());
     adminAccount.setCreateAdminAccountId(account.getAccountId());
