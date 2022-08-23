@@ -23,7 +23,7 @@ import java.net.URI;
 @Getter
 @Setter
 @Configuration
-@Profile("dev|prod|eks-dev")
+@Profile("dev|qa|prod|eks-dev")
 public class AwsConfig {
 
   private final AwsProperties awsProperties;
