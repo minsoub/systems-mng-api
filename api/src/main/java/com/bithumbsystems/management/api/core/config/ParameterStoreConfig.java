@@ -1,7 +1,21 @@
 package com.bithumbsystems.management.api.core.config;
 
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.CRYPTO_KEY;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_NAME;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PASSWORD;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_PORT;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_URL;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.DB_USER;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.JWT_SECRET_KEY;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.KMS_ALIAS_NAME;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.MAIL_SENDER;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SMTP_PASSWORD;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SMTP_USERNAME;
+import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.SQS_ACCESS_IP_URL;
+
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.properties.MongoProperties;
+import java.net.URI;
 import javax.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
@@ -12,10 +26,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
-
-import java.net.URI;
-
-import static com.bithumbsystems.management.api.core.config.constant.ParameterStoreConstant.*;
 
 @Log4j2
 @Data
@@ -58,6 +68,8 @@ public class ParameterStoreConfig {
         this.awsProperties.setSqsAccessIpUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_ACCESS_IP_URL));
         this.awsProperties.setJwtSecretKey(getParameterValue(awsProperties.getParamStoreAuthName(), JWT_SECRET_KEY));
         this.awsProperties.setCryptoKey(getParameterValue(awsProperties.getParamCryptoName(), CRYPTO_KEY));
+        this.awsProperties.setSmtpUserName(getParameterValue(awsProperties.getParamStoreMessageName(), SMTP_USERNAME));
+        this.awsProperties.setSmtpUserPassword(getParameterValue(awsProperties.getParamStoreMessageName(), SMTP_PASSWORD));
     }
 
     protected String getParameterValue(String storeName, String type) {
