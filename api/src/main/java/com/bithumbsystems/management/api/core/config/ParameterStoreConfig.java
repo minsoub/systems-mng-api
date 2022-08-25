@@ -20,7 +20,7 @@ import static com.bithumbsystems.management.api.core.config.constant.ParameterSt
 @Log4j2
 @Data
 @Configuration
-@Profile("dev|prod|eks-dev")
+@Profile("dev|qa|prod|eks-dev")
 public class ParameterStoreConfig {
 
     private SsmClient ssmClient;
