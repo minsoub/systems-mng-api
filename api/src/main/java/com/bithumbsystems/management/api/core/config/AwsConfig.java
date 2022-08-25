@@ -4,6 +4,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
+import java.net.URI;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,9 +16,6 @@ import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kms.KmsAsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.ses.SesClient;
-
-import java.net.URI;
 
 @Slf4j
 @Getter
@@ -44,13 +42,6 @@ public class AwsConfig {
         .build();
   }
 
-  @Bean
-  public SesClient sesClient() {
-    return SesClient.builder()
-        .endpointOverride(URI.create(awsProperties.getSesEndPoint()))
-        .region(Region.of(awsProperties.getRegion()))
-        .build();
-  }
   @Bean
   public AmazonSQSAsync amazonSQS() {
     var endpointConfig = new AwsClientBuilder.EndpointConfiguration(

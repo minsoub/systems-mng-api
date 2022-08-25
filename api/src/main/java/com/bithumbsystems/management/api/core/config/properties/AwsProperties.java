@@ -47,10 +47,17 @@ public class AwsProperties {
   private String kmsKey;
   private String saltKey;
   private String ivKey;
-  private String emailSender;
   private String sqlUrl;
   // 접근 제어 IP 전송 SQS URL
   private String sqsAccessIpUrl;
   private String jwtSecretKey;
   private String cryptoKey;
+  @Value("${cloud.aws.ses.port}")
+  private String smtpPort;
+  @Setter
+  private String emailSender;
+  @Setter
+  private String smtpUserName;
+  @Setter
+  private String smtpUserPassword;
 }
