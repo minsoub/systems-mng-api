@@ -6,7 +6,7 @@ cloud:
     stack:
       auto: ${management.aws.stack.auto:false}
     s3:
-      bucket: ${management.aws.s3.bucket:bithumb-bs-dev-lrc-bucket}
+      bucket: ${management.aws.s3.bucket:bithumb-bs-qa-lrc-bucket}
     region:
       static: ${management.aws.region:ap-northeast-2}
       auto: ${management.aws.region.auto:false}
