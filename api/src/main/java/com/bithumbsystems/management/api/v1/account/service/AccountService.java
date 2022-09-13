@@ -2,6 +2,7 @@ package com.bithumbsystems.management.api.v1.account.service;
 
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_ACCOUNT_REGISTER;
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.FAIL_PASSWORD_UPDATE;
+import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.INVALID_PASSWORD;
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
 
@@ -34,6 +35,8 @@ import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -224,6 +227,9 @@ public class AccountService {
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
             adminAccount -> {
+              if(!isValidPassword(accountRegisterRequest.getPassword())) {
+                return Mono.error(new AccountException(INVALID_PASSWORD));
+              }
               adminAccount.setUpdateAdminAccountId(account.getAccountId());
               adminAccount.setUpdateDate(LocalDateTime.now());
               adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
@@ -277,11 +283,13 @@ public class AccountService {
   @Transactional
   public Mono<AccountResponse> createAccount(AccountRegisterRequest accountRegisterRequest,
       Account account) {
+    if(!isValidPassword(accountRegisterRequest.getPassword())) {
+      return Mono.error(new AccountException(INVALID_PASSWORD));
+    }
     AdminAccount adminAccount = new AdminAccount();
     adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
-    adminAccount.setPassword(
-        passwordEncoder.encode(accountRegisterRequest.getPassword()));     // 패스워드 encode
+    adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));     // 패스워드 encode
     adminAccount.setEmail(accountRegisterRequest.getEmail());
     adminAccount.setIsUse(accountRegisterRequest.getIsUse());
     adminAccount.setStatus(accountRegisterRequest.getStatus());
@@ -329,30 +337,28 @@ public class AccountService {
    */
   public Mono<AccountResponse> updateAccountPassword(
       AccountUpdatePasswordRequest accountUpdatePasswordRequest, Account account) {
-    return adminAccountDomainService.findByEmail(accountUpdatePasswordRequest.getEmail())
+    return adminAccountDomainService.findByEmail(AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getEmail()))
         .flatMap(result -> {
-          if (!passwordEncoder.matches(AES256Util.decryptAES(properties.getCryptoKey(),
-                  accountUpdatePasswordRequest.getCurrentPassword()),
-              result.getPassword())) {
+          var currentPassword = AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getCurrentPassword());
+          var newPassword = AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getNewPassword());
+
+          if (!passwordEncoder.matches(currentPassword, result.getPassword())) {
             return Mono.error(new AccountException(FAIL_PASSWORD_UPDATE));
           }
-          result.setPassword(passwordEncoder.encode(
-              AES256Util.decryptAES(properties.getCryptoKey(),
-                  accountUpdatePasswordRequest.getNewPassword())));
-          result.setOldPassword(passwordEncoder.encode(
-              AES256Util.decryptAES(properties.getCryptoKey(),
-                  accountUpdatePasswordRequest.getCurrentPassword())));
+          if(!isValidPassword(newPassword)) {
+            return Mono.error(new AccountException(INVALID_PASSWORD));
+          }
+          result.setPassword(passwordEncoder.encode(newPassword));
+          result.setOldPassword(passwordEncoder.encode(currentPassword));
           result.setUpdateDate(LocalDateTime.now());
           result.setUpdateAdminAccountId(account.getAccountId());
           return adminAccountDomainService.update(result, account.getAccountId())
-              .flatMap(r -> {
-                return Mono.just(AccountResponse.builder()
-                    .id(result.getId())
-                    .name(result.getName())
-                    .email(result.getEmail())
-                    .build());
-              });
-        });
+              .flatMap(r -> Mono.just(AccountResponse.builder()
+                  .id(result.getId())
+                  .name(result.getName())
+                  .email(result.getEmail())
+                  .build()));
+        }).switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)));
   }
 
   /**
@@ -370,6 +376,9 @@ public class AccountService {
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
             adminAccount -> {
+              if(!isValidPassword(accountRegisterRequest.getPassword())) {
+                return Mono.error(new AccountException(INVALID_PASSWORD));
+              }
               if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
                 adminAccount.setPassword(
                     passwordEncoder.encode(accountRegisterRequest.getPassword()));
@@ -743,7 +752,9 @@ public class AccountService {
   @Transactional
   public Mono<AdminAccount> createMngAccount(AccountMngRegisterRequest accountRegisterRequest,
       Account account) {
-
+    if(!isValidPassword(accountRegisterRequest.getPassword())) {
+      return Mono.error(new AccountException(INVALID_PASSWORD));
+    }
     AdminAccount adminAccount = new AdminAccount();
     adminAccount.setId(UUID.randomUUID().toString());
     adminAccount.setName(accountRegisterRequest.getName());
@@ -783,6 +794,9 @@ public class AccountService {
       String adminAccountId, Account account) {
     return adminAccountDomainService.findByAdminAccountId(adminAccountId)
         .flatMap(result -> {
+          if(!isValidPassword(accountMngUpdateRequest.getPassword())) {
+            return Mono.error(new AccountException(INVALID_PASSWORD));
+          }
           if ((StringUtils.hasLength(accountMngUpdateRequest.getPassword()))) {
             result.setPassword(passwordEncoder.encode(accountMngUpdateRequest.getPassword()));
             result.setLastPasswordUpdateDate(LocalDateTime.now());
@@ -825,5 +839,12 @@ public class AccountService {
               .count(Integer.parseInt(String.valueOf(count.get()))).build();
           return Mono.just(res);
         }));
+  }
+
+  private static boolean isValidPassword(String password) {
+    var regex = "^.*(?=^.{8,64}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^*]).*$";
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(password);
+    return matcher.matches();
   }
 }

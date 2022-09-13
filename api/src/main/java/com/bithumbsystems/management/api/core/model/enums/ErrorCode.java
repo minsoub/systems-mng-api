@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
   UNKNOWN_ERROR("F001", "error"),
   INVALID_DATA("F999", "data is null or empty"),
+  INVALID_PASSWORD("F505","Invalid password!"),
 
   INVALID_FILE("F002","file is invalid"),
   FAIL_SAVE_FILE("F003","file save fail"),
