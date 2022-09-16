@@ -29,7 +29,7 @@ cloud:
       salt-name: salt
       iv-name: iv
     sqs:
-      queue-name: audit_log_queue_dev.fifo
+      queue-name: bs-audit_log_queue_dev.fifo
       endpoint: https://vpce-07a90f7df933a6c14-35ehn7t3.sqs.ap-northeast-2.vpce.amazonaws.com
 logging:
   level:
