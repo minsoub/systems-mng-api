@@ -12,4 +12,6 @@ public interface MessageService {
 
   void sendMail(String emailAddress, MailForm mailForm);
   void sendMail(String emailAddress, String tempPassword, MailForm mailForm);
+
+  void sendMail(String emailAddress, String barcodeUrl);
 }
