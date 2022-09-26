@@ -266,7 +266,7 @@ public class AccountService {
   }
 
     /**
-     * 통합 어드민 관리자가 사용자 접근 정보를 수정한다.
+     * 어드민 관리자가 사용자 접근 정보를 수정한다.
      *
      * @param accountUpdateRequest the account Update request
      * @param adminAccountId         the admin account id
@@ -418,6 +418,8 @@ public class AccountService {
   @Transactional
   public Mono<List<AccountResponse>> updateAccount(AccountRegisterRequest accountRegisterRequest,
       String adminAccountId, Account account) {
+    OtpResponse otpResponse = OtpUtil.generate(accountRegisterRequest.getEmail(), null);
+
     return adminAccountDomainService.findByAdminAccountId(adminAccountId)
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
@@ -438,7 +440,7 @@ public class AccountService {
               adminAccount.setIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setStatus(accountRegisterRequest.getStatus());
               if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                adminAccount.setOtpSecretKey(null);
+                adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
               }
               if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
                 adminAccount.setLoginFailCount(0L);
@@ -473,10 +475,10 @@ public class AccountService {
               );
             }
         ).doOnSuccess((a) -> {
-          if (accountRegisterRequest.getIsSendMail() != null && accountRegisterRequest.getIsSendMail()) {
+          if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+            // otp 메일 전송
             log.info("send mail");
-            messageService.sendMail(a.getT1().getEmail(), accountRegisterRequest.getPassword(),
-                MailForm.DEFAULT);
+            messageService.sendMail(accountRegisterRequest.getEmail(), otpResponse.getUrl());
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();
