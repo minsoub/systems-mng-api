@@ -9,21 +9,13 @@ import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_E
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
+import com.bithumbsystems.management.api.core.model.response.OtpResponse;
 import com.bithumbsystems.management.api.core.util.AES256Util;
+import com.bithumbsystems.management.api.core.util.OtpUtil;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
-import com.bithumbsystems.management.api.v1.account.model.request.AccessRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountMngUpdateRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRegisterRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRoleRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountRolesRequest;
-import com.bithumbsystems.management.api.v1.account.model.request.AccountUpdatePasswordRequest;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountDetailRoleResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.AccountSearchResponse;
-import com.bithumbsystems.management.api.v1.account.model.response.DeleteResponse;
+import com.bithumbsystems.management.api.v1.account.model.request.*;
+import com.bithumbsystems.management.api.v1.account.model.response.*;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccess;
 import com.bithumbsystems.persistence.mongodb.account.model.entity.AdminAccount;
@@ -273,6 +265,60 @@ public class AccountService {
         }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
   }
 
+    /**
+     * 어드민 관리자가 사용자 접근 정보를 수정한다.
+     *
+     * @param accountUpdateRequest the account Update request
+     * @param adminAccountId         the admin account id
+     * @param account                the account
+     * @return mono
+     */
+    @Transactional
+    public Mono<AccessUpdateResponse> updateAccessAccount(AccessUpdateRequest accountUpdateRequest,
+                                                           String adminAccountId, Account account) {
+
+        OtpResponse otpResponse = OtpUtil.generate(accountUpdateRequest.getEmail(), null);
+
+        return adminAccountDomainService.findByAdminAccountId(adminAccountId)
+                .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
+                .flatMap(
+                        adminAccount -> {
+                            adminAccount.setName(accountUpdateRequest.getName());
+                            adminAccount.setEmail(accountUpdateRequest.getEmail());
+                            adminAccount.setIsUse(accountUpdateRequest.getIsUse());
+                            adminAccount.setStatus(accountUpdateRequest.getStatus());
+                            if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                                // OTP 바코드 생성 및 OTP 키 생성 후 아래 데이터를 설정하고 메일을 번송해야 한다.
+                                adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
+                            }
+                            if(accountUpdateRequest.getStatus().equals(Status.NORMAL)){
+                                adminAccount.setLoginFailCount(0L);
+                            }
+                            adminAccount.setUpdateAdminAccountId(account.getAccountId());
+                            adminAccount.setUpdateDate(LocalDateTime.now());
+                            adminAccount.setValidStartDate(accountUpdateRequest.getValidStartDate());
+                            adminAccount.setValidEndDate(accountUpdateRequest.getValidEndDate());
+                            return adminAccountDomainService.update(adminAccount, account.getAccountId())
+                                    .flatMap(result -> {
+
+                                        return Mono.just(AccessUpdateResponse.builder()
+                                                .id(result.getId())
+                                                .name(result.getName())
+                                                .email(result.getEmail())
+                                                .status(result.getStatus())
+                                                .validStartDate(result.getValidStartDate())
+                                                .validEndDate(result.getValidEndDate()).build());
+                                    });
+                        }
+                ).doOnSuccess((a) -> {
+                    if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                    // otp 메일 전송
+                        log.info("send mail");
+                        messageService.sendMail(accountUpdateRequest.getEmail(), otpResponse.getUrl());
+                    }
+                }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
+    }
+
   /**
    * 통합 어드민 관리자가 계정을 등록한다.
    *
@@ -372,14 +418,18 @@ public class AccountService {
   @Transactional
   public Mono<List<AccountResponse>> updateAccount(AccountRegisterRequest accountRegisterRequest,
       String adminAccountId, Account account) {
+    OtpResponse otpResponse = OtpUtil.generate(accountRegisterRequest.getEmail(), null);
+
     return adminAccountDomainService.findByAdminAccountId(adminAccountId)
         .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
         .flatMap(
             adminAccount -> {
-              if(!isValidPassword(accountRegisterRequest.getPassword())) {
-                return Mono.error(new AccountException(INVALID_PASSWORD));
-              }
               if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
+
+                  if(!isValidPassword(accountRegisterRequest.getPassword())) {
+                      return Mono.error(new AccountException(INVALID_PASSWORD));
+                  }
+
                 adminAccount.setPassword(
                     passwordEncoder.encode(accountRegisterRequest.getPassword()));
                 adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
@@ -390,7 +440,7 @@ public class AccountService {
               adminAccount.setIsUse(accountRegisterRequest.getIsUse());
               adminAccount.setStatus(accountRegisterRequest.getStatus());
               if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                adminAccount.setOtpSecretKey(null);
+                adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
               }
               if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
                 adminAccount.setLoginFailCount(0L);
@@ -425,10 +475,10 @@ public class AccountService {
               );
             }
         ).doOnSuccess((a) -> {
-          if (accountRegisterRequest.getIsSendMail() != null && accountRegisterRequest.getIsSendMail()) {
+          if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+            // otp 메일 전송
             log.info("send mail");
-            messageService.sendMail(a.getT1().getEmail(), accountRegisterRequest.getPassword(),
-                MailForm.DEFAULT);
+            messageService.sendMail(accountRegisterRequest.getEmail(), otpResponse.getUrl());
           }
         }).flatMap(tuple -> {
           AdminAccount adminAccount = tuple.getT1();

@@ -75,7 +75,22 @@ public class AccountController {
             .map(SingleResponse::new));
   }
 
-
+  /**
+   * 사용자 접근 관리 계정 정보를 수정한다.
+   *
+   * @param adminAccountId         the admin account id
+   * @param accountUpdateRequest the account register request
+   * @param account                the account
+   * @return the response entity
+   */
+  @PutMapping("/access/{adminAccountId}")
+  @Operation(summary = "접근 계정 생성", description = "사이트관리 > 사용자 접근관리 : 접근정보 수정" , tags = "사이트관리 > 사용자 접근관리")
+  public ResponseEntity<Mono<?>> accessUpdate(@PathVariable String adminAccountId, @RequestBody AccessUpdateRequest accountUpdateRequest,
+                                        @Parameter(hidden = true) @CurrentUser Account account) {
+    return ResponseEntity.ok()
+            .body(accountService.updateAccessAccount(accountUpdateRequest, adminAccountId, account)
+                    .map(SingleResponse::new));
+  }
   /**
    * Access list response entity.
    *

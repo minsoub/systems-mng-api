@@ -85,4 +85,26 @@ public class MailService implements MessageService {
     transport.sendMessage(msg, msg.getAllRecipients());
   }
 
+  @Override
+  public void sendMail(String emailAddress, String barcodeUrl) {
+    try {
+      MailForm mailForm = MailForm.OTPFORM;
+      String html = FileUtil.readResourceFile(mailForm.getPath());
+      log.info("send mail: " + html);
+      html = html.replace("[BARCODE_IMAGE]", "<img src='"+barcodeUrl+"'>");
+      html = html.replace("[LOGOURL]", mailProperties.getLogoUrl());
+      html = html.replace("[LOGINURL]", mailProperties.getLoginUrl());
+      send(
+              MailSenderInfo.builder()
+                      .bodyHTML(html)
+                      .subject(mailForm.getSubject())
+                      .emailAddress(emailAddress)
+                      .build()
+      );
+    } catch (MessagingException | IOException e) {
+      log.error(e.toString());
+      throw new MailException(ErrorCode.FAIL_SEND_MAIL);
+    }
+  }
+
 }
