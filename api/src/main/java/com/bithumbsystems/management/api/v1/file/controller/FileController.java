@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.CacheControl;
@@ -39,6 +40,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
+@Profile("local")
 @Tag(name = "File Test APIs", description = "File Test APIs for demo purpose")
 public class FileController {
 
