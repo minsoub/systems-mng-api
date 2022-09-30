@@ -13,7 +13,7 @@ cloud:
     ssm:
       endpoint: https://vpce-04326400aef7645c7-kdwr2h83.ssm.ap-northeast-2.vpce.amazonaws.com
     ses:
-      endpoint: https://vpce-0bf60f241bc6a2e72-qojbj6s0.email-smtp.ap-northeast-2.vpce.amazonaws.com
+      endpoint: vpce-0b0ba29de6d8fbd9c-8vu3ti47.email-smtp.ap-northeast-2.vpce.amazonaws.com
       port: 2587
     kms:
       endpoint: https://vpce-08afe93a2964ce800-2gp1tcsw.kms.ap-northeast-2.vpce.amazonaws.com
@@ -29,7 +29,7 @@ cloud:
       salt-name: salt
       iv-name: iv
     sqs:
-      queue-name: audit_log_queue_dev.fifo
+      queue-name: bs-audit_log_queue_qa.fifo
       endpoint: https://vpce-07a90f7df933a6c14-35ehn7t3.sqs.ap-northeast-2.vpce.amazonaws.com
 logging:
   level:
