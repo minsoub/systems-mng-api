@@ -89,8 +89,8 @@ application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
 mail:
-  logo-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com/images/maillogo.png
-  login-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com
+  logo-url: https://smartadmin.dev.bithumb.com/images/maillogo.png
+  login-url: https://smartadmin.dev.bithumb.com
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---
@@ -117,8 +117,8 @@ application:
   role-type: ADMIN
   site-id: 62a15f4ae4129b518b133129
 mail:
-  logo-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com/images/maillogo.png
-  login-url: http://k8s-systemsd-systemsm-5b1ad0cbb7-1915523199.ap-northeast-2.elb.amazonaws.com
+  logo-url: https://smartadmin.qa.bithumb.com/images/maillogo.png
+  login-url: https://smartadmin.qa.bithumb.com
 logging:
   config: classpath:logback-spring-${spring.profiles.active}.xml
 ---
