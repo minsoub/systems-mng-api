@@ -31,6 +31,6 @@ cloud:
     sqs:
       endpoint: https://vpce-05d66ad0576f0715e-kb70y93b.sqs.ap-northeast-2.vpce.amazonaws.com
       audit:
-        queue-name: audit_log_queue_dev.fifo
+        queue-name: bs-audit_log_queue_dev.fifo
       authorization:
-        queue-name: authorization_queue_dev.fifo
+        queue-name: bs-authorization_queue_dev.fifo

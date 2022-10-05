@@ -31,9 +31,9 @@ cloud:
     sqs:
       endpoint: https://vpce-0252aacd7d5b8ecbb-0d9ak2w8.sqs.ap-northeast-2.vpce.amazonaws.com
       audit:
-        queue-name: audit_log_queue_prod.fifo
+        queue-name: bs-audit_log_queue_prod.fifo
       authorization:
-        queue-name: authorization_queue_prod.fifo
+        queue-name: bs-authorization_queue_prod.fifo
 logging:
   level:
     root: ${management.api.logging.level.root:DEBUG}
