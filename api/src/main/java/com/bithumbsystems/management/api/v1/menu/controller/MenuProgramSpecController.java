@@ -49,8 +49,7 @@ public class MenuProgramSpecController {
                   actionProgram -> programs.stream()
                       .filter(program ->
                           program.getActionMethod().name().equals(actionProgram.getActionMethod())
-                              && pathMatcher.match(program.getActionUrl(),
-                              actionProgram.getActionUrl()))
+                              && pathMatcher.match(program.getActionUrl(), actionProgram.getActionUrl()))
                       .forEach(program -> menuDomainService.saveMapping(SiteMenuProgram.builder()
                           .id(PROGRAM_MENU_PREFIX + generateUUIDWithOutDash())
                           .menuId(menu.getId())
@@ -84,8 +83,7 @@ public class MenuProgramSpecController {
   public ResponseEntity<?> mappingMenuProgramsInRole() {
     return ResponseEntity.ok(
         roleAuthorizationDomainService.findAll().publishOn(Schedulers.boundedElastic())
-            .doOnNext(roleAuthorization -> Flux.fromIterable(
-                    roleAuthorization.getAuthorizationResources())
+            .doOnNext(roleAuthorization -> Flux.fromIterable(roleAuthorization.getAuthorizationResources())
                 .flatMap(authorizationResource ->
                     menuDomainService.findSiteMenuProgramByMenuId(authorizationResource.getMenuId())
                         .map(SiteMenuProgram::getProgramId).collectList()
@@ -96,8 +94,9 @@ public class MenuProgramSpecController {
                         })
                 ).collectList()
                 .doOnNext(roleAuthorization::setAuthorizationResources)
-                .publishOn(Schedulers.boundedElastic()).doOnSuccess(authorizationResources ->
-                    roleAuthorizationDomainService.update(roleAuthorization).subscribe())
-                .subscribe()).subscribe());
+                .publishOn(Schedulers.boundedElastic())
+                .doOnSuccess(authorizationResources -> roleAuthorizationDomainService.update(roleAuthorization).subscribe())
+                .subscribe())
+            .subscribe());
   }
 }
