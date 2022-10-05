@@ -3,6 +3,8 @@ package com.bithumbsystems.persistence.mongodb.menu.service;
 import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
 
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Menu;
+import com.bithumbsystems.persistence.mongodb.menu.model.entity.SiteMenuProgram;
+import com.bithumbsystems.persistence.mongodb.menu.model.enums.MenuType;
 import com.bithumbsystems.persistence.mongodb.menu.repository.MenuRepository;
 import com.bithumbsystems.persistence.mongodb.menu.repository.SiteMenuProgramRepository;
 import java.time.LocalDateTime;
@@ -59,12 +61,24 @@ public class MenuDomainService {
   }
 
   public Mono<Menu> findBySiteIdAndId(String siteId, String menuId) {
-    return menuRepository.findBySiteIdAndId(siteId, menuId).log();
+    return menuRepository.findBySiteIdAndId(siteId, menuId);
   }
 
   public Flux<Menu> findMenuByProgramId(String programId) {
     return siteMenuProgramRepository.findByProgramId(programId)
         .flatMap(siteMenuProgram -> menuRepository.findById(siteMenuProgram.getMenuId()));
+  }
+
+  public Flux<Menu> findByUrl(String path) {
+    return menuRepository.findByUrlAndType(path, MenuType.ITEM.name());
+  }
+
+  public Mono<SiteMenuProgram> saveMapping(SiteMenuProgram siteMenuProgram) {
+    return siteMenuProgramRepository.save(siteMenuProgram);
+  }
+
+  public Flux<SiteMenuProgram> findSiteMenuProgramByMenuId(String menuId) {
+    return siteMenuProgramRepository.findByMenuId(menuId);
   }
 
 }

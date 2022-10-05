@@ -12,4 +12,6 @@ public interface MenuRepository extends ReactiveMongoRepository<Menu, String>, M
 
   Flux<Menu> findByIsUseIsTrue();
 
+  Flux<Menu> findByUrlAndType(String path, String type);
+
 }

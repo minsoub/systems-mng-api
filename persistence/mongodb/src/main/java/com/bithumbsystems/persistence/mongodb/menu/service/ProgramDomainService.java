@@ -53,8 +53,12 @@ public class ProgramDomainService {
     return programRepository.findBySiteIdAndId(siteId, programId);
   }
 
-  public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse) {
-    return programRepository.findBySearchText(siteId, searchText, isUse);
+  public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse, Boolean isWhole) {
+    return programRepository.findBySearchText(siteId, searchText, isUse, isWhole);
+  }
+
+  public Flux<Program> findPrograms(List<String> programIds) {
+    return programRepository.findByIdIn(programIds);
   }
 
   public Flux<Program> findMenuPrograms(String siteId, String menuId) {
@@ -93,5 +97,9 @@ public class ProgramDomainService {
 
   public Flux<Program> findAllUrls(String method) {
     return programRepository.findAllUrls(method);
+  }
+
+  public Flux<Program> findAll() {
+    return programRepository.findAll();
   }
 }

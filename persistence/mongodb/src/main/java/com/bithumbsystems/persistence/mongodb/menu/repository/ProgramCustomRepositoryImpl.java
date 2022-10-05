@@ -21,18 +21,29 @@ public class ProgramCustomRepositoryImpl implements ProgramCustomRepository {
   private final ReactiveMongoTemplate reactiveMongoTemplate;
 
   @Override
-  public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse) {
+  public Flux<Program> findBySearchText(String siteId, String searchText, Boolean isUse, Boolean isWhole) {
     var reg = ".*" + searchText + ".*";
     var condition = new ArrayList<Criteria>();
-    //condition.add(new Criteria().andOperator(where("site_id").is(siteId)));
+    if(Boolean.FALSE.equals(isWhole)) {
+      condition.add(new Criteria().andOperator(where("site_id").is(siteId)));
+    }
     if(isUse == null) {
       condition.add(new Criteria().orOperator(
           where("name").regex(reg),
-          where("id").regex(reg)));
+          where("id").regex(reg),
+          where("kind_name").regex(reg),
+          where("action_url").regex(reg)
+          )
+      );
     } else {
       condition.add(new Criteria().orOperator(
           where("name").regex(reg),
           where("id").regex(reg),
+          where("kind_name").regex(reg),
+          where("action_url").regex(reg)
+          )
+      );
+      condition.add(new Criteria().andOperator(
           where("is_use").is(isUse)
       ));
     }

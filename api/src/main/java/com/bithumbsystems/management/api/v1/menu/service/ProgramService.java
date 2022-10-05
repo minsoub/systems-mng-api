@@ -26,8 +26,8 @@ public class ProgramService {
   private final SiteDomainService siteDomainService;
   private final ProgramDomainService programDomainService;
 
-  public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse) {
-    return programDomainService.findBySearchText(siteId, searchText, isUse)
+  public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse, Boolean isWhole) {
+    return programDomainService.findBySearchText(siteId, searchText, isUse, isWhole)
         .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectSortedList(
             Comparator.comparing(ProgramResponse::getCreateDate).reversed());
   }

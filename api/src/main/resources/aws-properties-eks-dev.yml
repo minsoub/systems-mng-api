@@ -29,8 +29,11 @@ cloud:
       salt-name: salt
       iv-name: iv
     sqs:
-      queue-name: audit_log_queue_dev.fifo
       endpoint: https://sqs.ap-northeast-2.amazonaws.com
+      audit:
+        queue-name: audit_log_queue_dev.fifo
+      authorization:
+        queue-name: authorization_queue_dev.fifo
 logging:
   level:
     root: ${management.api.logging.level.root:DEBUG}

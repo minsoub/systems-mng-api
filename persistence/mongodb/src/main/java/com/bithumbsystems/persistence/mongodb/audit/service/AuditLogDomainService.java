@@ -2,6 +2,7 @@ package com.bithumbsystems.persistence.mongodb.audit.service;
 
 import com.bithumbsystems.persistence.mongodb.audit.model.entity.AuditLog;
 import com.bithumbsystems.persistence.mongodb.audit.repository.AuditLogRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,5 +26,19 @@ public class AuditLogDomainService {
 
   public Mono<AuditLog> save(AuditLog auditLog) {
     return auditLogRepository.save(auditLog);
+  }
+
+  public Flux<AuditLog> findPageBySearchText(LocalDate fromDate, LocalDate toDate, String keyword, String mySiteId) {
+    return auditLogRepository.findPageBySearchText(fromDate, toDate, keyword, mySiteId);
+  }
+
+  /**
+   * 감사 로그 상세 정보를 조회한다.
+   *
+   * @param id
+   * @return
+   */
+  public Mono<AuditLog> findById(String id) {
+    return auditLogRepository.findById(id);
   }
 }
