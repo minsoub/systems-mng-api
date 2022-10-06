@@ -8,11 +8,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
-@Document(collection = "menu_program_specifications")
+@Document(collection = "menu_program_specification")
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class MenuProgramSpecifications {
+public class MenuProgramSpecification {
   @MongoId(targetType = FieldType.OBJECT_ID)
   private String id;
   private String path;

@@ -21,6 +21,7 @@ public class MenuDomainService {
 
   private final SiteMenuProgramRepository siteMenuProgramRepository;
   private static final String PREFIX = "MENU_";
+  private static final String PROGRAM_MENU_PREFIX = "PROGRAM_MENU_";
 
   public Mono<Menu> save(Menu menu, String accountId) {
     menu.setCreateDate(LocalDateTime.now());
@@ -74,7 +75,12 @@ public class MenuDomainService {
   }
 
   public Mono<SiteMenuProgram> saveMapping(SiteMenuProgram siteMenuProgram) {
+    siteMenuProgram.setId(PROGRAM_MENU_PREFIX + generateUUIDWithOutDash());
     return siteMenuProgramRepository.save(siteMenuProgram);
+  }
+
+  public Mono<Void> deleteAllMapping() {
+    return siteMenuProgramRepository.deleteAll();
   }
 
   public Flux<SiteMenuProgram> findSiteMenuProgramByMenuId(String menuId) {

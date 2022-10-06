@@ -2,8 +2,10 @@ package com.bithumbsystems.persistence.mongodb.menu.service;
 
 import static com.bithumbsystems.persistence.mongodb.common.util.StringUtil.generateUUIDWithOutDash;
 
+import com.bithumbsystems.persistence.mongodb.menu.model.entity.MenuProgramSpecification;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.Program;
 import com.bithumbsystems.persistence.mongodb.menu.model.entity.SiteMenuProgram;
+import com.bithumbsystems.persistence.mongodb.menu.repository.MenuProgramSpecificationsRepository;
 import com.bithumbsystems.persistence.mongodb.menu.repository.ProgramRepository;
 import com.bithumbsystems.persistence.mongodb.menu.repository.SiteMenuProgramRepository;
 import java.time.LocalDateTime;
@@ -21,6 +23,8 @@ public class ProgramDomainService {
 
   private final ProgramRepository programRepository;
   private final SiteMenuProgramRepository siteMenuProgramRepository;
+  private final MenuProgramSpecificationsRepository menuProgramSpecificationsRepository;
+
   private static final String PROGRAM_PREFIX = "PROGRAM_";
   private static final String PROGRAM_MENU_PREFIX = "PROGRAM_MENU_";
 
@@ -102,4 +106,8 @@ public class ProgramDomainService {
   public Flux<Program> findAll() {
     return programRepository.findAll();
   }
+  public Mono<List<MenuProgramSpecification>> findMenuProgramSpecificationsAll() {
+    return menuProgramSpecificationsRepository.findAll().collectList();
+  }
+
 }

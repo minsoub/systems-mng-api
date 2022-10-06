@@ -223,47 +223,49 @@ public class RoleManagementService {
             .build());
 
     var getAccountEmails =
-        Flux.fromIterable(accounts).flatMap(roleData -> adminAccountDomainService.findByAdminAccountId(roleData.getId())
-            .flatMap(adminAccount -> {
-              if (roleData.getFlag().equals(FlagEnum.INSERT)) {
-                return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                    .flatMap(adminAccess -> {
-                      Set<String> roleList = adminAccess.getRoles(); // my role list
+        Flux.fromIterable(accounts)
+            .flatMap(roleData -> adminAccountDomainService.findByAdminAccountId(roleData.getId())
+                .flatMap(adminAccount -> {
+                  if (roleData.getFlag().equals(FlagEnum.INSERT)) {
+                    return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                        .flatMap(adminAccess -> {
+                          Set<String> roleList = adminAccess.getRoles(); // my role list
 
-                      return isRoleRegisterCheck(roleList, roleManagementId)
-                          .flatMap(res -> {
-                            if (res.equals(true)) {
-                              adminAccess.getRoles().add(roleManagementId);
-                              return adminAccessDomainService.update(adminAccess,
-                                  account.getAccountId()).map(AdminAccess::getEmail);
-                            } else {
-                              return Mono.error(
-                                  new RoleManagementException(ErrorCode.INVALID_MAX_ROLE));
-                            }
-                          });
-                    })
-                    .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
-                        .adminAccountId(adminAccount.getId())
-                        .name(adminAccount.getName())
-                        .email(adminAccount.getEmail())
-                        .isUse(true)
-                        .roles(Set.of(roleManagementId))
-                        .build(), account.getAccountId()).map(AdminAccess::getEmail));
-              } else if (roleData.getFlag().equals(FlagEnum.DELETE)) {
-                return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                    .flatMap(adminAccess -> {
-                      log.debug(adminAccess.getEmail());
-                      Set<String> roleList = adminAccess.getRoles();
-                      log.debug("{}", roleList);
-                      roleList.remove(roleManagementId);
-                      adminAccess.setRoles(roleList);
-                      return adminAccessDomainService.update(adminAccess, account.getAccountId())
-                          .map(AdminAccess::getEmail);
-                    });
-              } else {
-                return Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE));
-              }
-            })).collectList();
+                          return isRoleRegisterCheck(roleList, roleManagementId)
+                              .flatMap(res -> {
+                                if (res.equals(true)) {
+                                  adminAccess.getRoles().add(roleManagementId);
+                                  return adminAccessDomainService.update(adminAccess,
+                                      account.getAccountId()).map(AdminAccess::getEmail);
+                                } else {
+                                  return Mono.error(
+                                      new RoleManagementException(ErrorCode.INVALID_MAX_ROLE));
+                                }
+                              });
+                        })
+                        .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
+                            .adminAccountId(adminAccount.getId())
+                            .name(adminAccount.getName())
+                            .email(adminAccount.getEmail())
+                            .isUse(true)
+                            .roles(Set.of(roleManagementId))
+                            .build(), account.getAccountId()).map(AdminAccess::getEmail));
+                  } else if (roleData.getFlag().equals(FlagEnum.DELETE)) {
+                    return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                        .flatMap(adminAccess -> {
+                          log.debug(adminAccess.getEmail());
+                          Set<String> roleList = adminAccess.getRoles();
+                          log.debug("{}", roleList);
+                          roleList.remove(roleManagementId);
+                          adminAccess.setRoles(roleList);
+                          return adminAccessDomainService.update(adminAccess,
+                                  account.getAccountId())
+                              .map(AdminAccess::getEmail);
+                        });
+                  } else {
+                    return Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE));
+                  }
+                })).collectList();
 
     return roleManagementMappingResponse.zipWith(getAccountEmails)
         .map(tuple -> {
@@ -277,7 +279,8 @@ public class RoleManagementService {
     return roleManagementDomainService.findById(roleManagementId)
         .flatMap(result -> Flux.fromIterable(roleList)
             .flatMap(res -> roleManagementDomainService.findById(res)
-                .flatMap(check -> Mono.just(!check.getSiteId().equals(result.getSiteId())))).collectList()).map(resultCheck -> !resultCheck.contains(false));
+                .flatMap(check -> Mono.just(!check.getSiteId().equals(result.getSiteId()))))
+            .collectList()).map(resultCheck -> !resultCheck.contains(false));
   }
 
   /**
@@ -423,11 +426,13 @@ public class RoleManagementService {
                       account.getAccountId());
                 })
                 .doOnSuccess(authorization -> {
-                  awsSQSSender.sendMessage(authorization.getAuthorizationResources(), authorization.getRoleManagementId());
+                  awsSQSSender.sendMessage(authorization.getAuthorizationResources(),
+                      authorization.getRoleManagementId());
                 })
                 .flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
                     .stream()
                     .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
                     .collect(Collectors.toList()))));
   }
+
 }
