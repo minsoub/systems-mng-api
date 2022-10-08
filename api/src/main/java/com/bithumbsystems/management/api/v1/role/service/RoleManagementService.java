@@ -2,6 +2,7 @@ package com.bithumbsystems.management.api.v1.role.service;
 
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
+import com.bithumbsystems.management.api.core.util.MaskingUtil;
 import com.bithumbsystems.management.api.core.util.sender.AwsSQSSender;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
 import com.bithumbsystems.management.api.v1.role.model.enums.FlagEnum;
@@ -128,6 +129,11 @@ public class RoleManagementService {
    */
   public Mono<List<RoleAccessResponse>> getAccessUserList(String roleManagementId) {
     return adminAccessDomainService.findByRoleManagementId(roleManagementId)
+            .flatMap(result -> {
+                result.setName(MaskingUtil.getNameMask(result.getName()));
+                result.setEmail(MaskingUtil.getEmailMask(result.getEmail()));
+                return Mono.just(result);
+            })
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
         .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate).reversed());

@@ -11,6 +11,7 @@ import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
 import com.bithumbsystems.management.api.core.model.response.OtpResponse;
 import com.bithumbsystems.management.api.core.util.AES256Util;
+import com.bithumbsystems.management.api.core.util.MaskingUtil;
 import com.bithumbsystems.management.api.core.util.OtpUtil;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
@@ -756,8 +757,8 @@ public class AccountService {
                     log.debug("adminAccess search => {}", adminAccess);
                     return Pair.of(new AccountSearchResponse(
                         adminAccount.getId(),
-                        adminAccount.getName(),
-                        adminAccount.getEmail(),
+                        MaskingUtil.getNameMask(adminAccount.getName()),
+                        MaskingUtil.getEmailMask(adminAccount.getEmail()),
                         adminAccount.getLastLoginDate(),
                         adminAccount.getStatus(),
                         adminAccess.getCreateDate() != null ? adminAccess.getCreateDate()
