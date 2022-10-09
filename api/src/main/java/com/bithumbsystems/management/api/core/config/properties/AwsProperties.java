@@ -21,7 +21,6 @@ public class AwsProperties {
 
   @Value("${cloud.aws.param-store.doc-name}")
   private String paramStoreDocName;
-
   @Value("${cloud.aws.param-store.kms-name}")
   private String paramStoreKmsName;
   @Value("${cloud.aws.param-store.salt-name}")
