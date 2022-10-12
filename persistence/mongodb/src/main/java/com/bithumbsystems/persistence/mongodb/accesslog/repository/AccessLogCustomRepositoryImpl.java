@@ -28,7 +28,7 @@ public class AccessLogCustomRepositoryImpl implements AccessLogCustomRepository 
 //        query.addCriteria(new Criteria().andOperator(
 //                Criteria.where("site_id").is(mySiteId)
 //        ));
-        if (StringUtils.hasLength(keyword)) {   //서비스 로그 관리 목록
+        if (StringUtils.hasLength(keyword)) {   //감사 로그 관리 목록
             query.addCriteria(new Criteria().orOperator(
                     Criteria.where("email").regex(".*" + keyword + ".*", "i"),
                     Criteria.where("ip").regex(".*" + keyword + ".*", "i"),

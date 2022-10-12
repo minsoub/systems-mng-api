@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -159,7 +158,7 @@ public class MenuController {
    * @param menuMappingRequest the menu mapping request
    * @return the programs
    */
-  @DeleteMapping("/site/{siteId}/menu/{menuId}/programs")
+  @PostMapping("/site/{siteId}/menu/{menuId}/programs")
   @Operation(summary = "메뉴와 연결된 프로그램 삭제" , description = "사이트 관리> 메뉴관리: 메뉴에 속한 프로그램 연결 삭제", tags = "사이트 관리> 메뉴관리")
   public ResponseEntity<Mono<?>> deleteMappingMenuPrograms(@PathVariable String siteId,
       @PathVariable String menuId,

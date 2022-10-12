@@ -41,7 +41,7 @@ public class AwsAuditLogListener {
   private final ProgramDomainService programDomainService;
   private final AuditLogDomainService auditLogDomainService;
 
-  @SqsListener(value = {"${cloud.aws.sqs.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+  @SqsListener(value = {"${cloud.aws.sqs.audit.queue-name}"}, deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
   private void auditLogMessage(@Headers Map<String, String> header, @Payload String message) {
     log.debug("header: {} message: {}", header, message);
     AuditLogRequest auditLogRequest = new Gson().fromJson(message, AuditLogRequest.class);
@@ -127,28 +127,6 @@ public class AwsAuditLogListener {
               audit.setMenuName(m.getName());
               return Mono.just(audit);
             })).defaultIfEmpty(auditLog);
-
-//    return menuDomainService.findAllUrls()
-//        .filter(menu -> {
-//          log.debug("menu URL {}, auditLog path {}", menu.getUrl(), auditLog.getPath());
-//          return pathMatcher.match(menu.getUrl(), auditLog.getPath());
-//        })
-//        .flatMap(m -> {
-//          log.debug("urlMappingJob menu {}", Thread.currentThread().getName());
-//          auditLog.setMenuId(m.getId());
-//          auditLog.setMenuName(m.getName());
-//          return Mono.just(auditLog);
-//        })
-//        .flatMap(auditLog1 -> {
-//          log.debug("urlMappingJob program {}", Thread.currentThread().getName());
-//          return programDomainService.findAllUrls(auditLog1.getMethod())
-//              .filter(program -> pathMatcher.match(program.getActionUrl(), auditLog1.getPath()))
-//              .flatMap(p -> {
-//                auditLog1.setProgramId(p.getId());
-//                auditLog1.setProgramName(p.getName());
-//                return Mono.just(auditLog1);
-//              });
-//        }).defaultIfEmpty(auditLog);
   }
 
   private Device checkDevice(String userAgent) {

@@ -26,19 +26,23 @@ public class ProgramService {
   private final SiteDomainService siteDomainService;
   private final ProgramDomainService programDomainService;
 
-  public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse) {
-    return programDomainService.findBySearchText(siteId, searchText, isUse)
-        .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program))).collectSortedList(
+  public Mono<List<ProgramResponse>> getList(String siteId, String searchText, Boolean isUse,
+      Boolean isWhole) {
+    return programDomainService.findBySearchText(siteId, searchText, isUse, isWhole)
+        .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program)))
+        .collectSortedList(
             Comparator.comparing(ProgramResponse::getCreateDate).reversed());
   }
 
-  public Mono<ProgramResponse> create(String siteId, ProgramRegisterRequest programRegisterRequest, Account account) {
+  public Mono<ProgramResponse> create(String siteId, ProgramRegisterRequest programRegisterRequest,
+      Account account) {
     return siteDomainService.existsById(siteId)
         .flatMap(isExist -> {
-          if(!isExist) {
+          if (!isExist) {
             return Mono.error(new ProgramException(ErrorCode.NOT_EXIST_SITE));
           }
-          Program program = ProgramMapper.INSTANCE.programRegisterRequestToProgram(programRegisterRequest);
+          Program program = ProgramMapper.INSTANCE.programRegisterRequestToProgram(
+              programRegisterRequest);
           program.setSiteId(siteId);
           return Mono.from(programDomainService.save(program, account.getAccountId())
               .map(ProgramMapper.INSTANCE::programToProgramResponse));
@@ -51,13 +55,15 @@ public class ProgramService {
             .map(ProgramMapper.INSTANCE::programToProgramResponse));
   }
 
-  public Mono<ProgramResponse> update(String siteId, String programId, ProgramUpdateRequest programUpdateRequest, Account account) {
+  public Mono<ProgramResponse> update(String siteId, String programId,
+      ProgramUpdateRequest programUpdateRequest, Account account) {
     return siteDomainService.existsById(siteId)
         .flatMap(isExist -> {
-              if (!isExist) {
-                return Mono.error(new ProgramException(ErrorCode.NOT_EXIST_SITE));
-              }
-          Program program = ProgramMapper.INSTANCE.programUpdateRequestToProgram(programUpdateRequest);
+          if (!isExist) {
+            return Mono.error(new ProgramException(ErrorCode.NOT_EXIST_SITE));
+          }
+          Program program = ProgramMapper.INSTANCE.programUpdateRequestToProgram(
+              programUpdateRequest);
           program.setId(programId);
           program.setSiteId(siteId);
           return Mono.from(programDomainService.update(program, account.getAccountId())

@@ -1,6 +1,7 @@
 package com.bithumbsystems.persistence.mongodb.audit.repository;
 
 import com.bithumbsystems.persistence.mongodb.audit.model.entity.AuditLog;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
@@ -10,4 +11,6 @@ public interface AuditLogCustomRepository {
   Flux<AuditLog> findPageBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId, Pageable pageable);
 
   Mono<Long> countBySearchText(String searchText, LocalDateTime startDate, LocalDateTime endDate, String mySiteId);
+  Flux<AuditLog> findPageBySearchText(LocalDate fromDate, LocalDate toDate, String keyword, String mySiteId);
+
 }

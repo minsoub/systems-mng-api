@@ -1,5 +1,6 @@
 package com.bithumbsystems.management.api.v1.accesslog.service;
 
+import com.bithumbsystems.management.api.core.util.MaskingUtil;
 import com.bithumbsystems.management.api.v1.accesslog.mapper.AccessLogMapper;
 import com.bithumbsystems.management.api.v1.accesslog.request.AccessLogRequest;
 import com.bithumbsystems.management.api.v1.accesslog.request.AccessLogResponse;
@@ -23,6 +24,10 @@ public class AccessLogService {
         return accessLogDomainService.findPageBySearchText(
                         fromDate,
                         toDate, keyword, mySiteId)
+                .flatMap(result -> {
+                    result.setEmail(MaskingUtil.getEmailMask(result.getEmail()));
+                    return Mono.just(result);
+                })
                 .map(AccessLogMapper.INSTANCE::accessLogResponse)
                 .collectSortedList(Comparator.comparing(AccessLogResponse::getCreateDate).reversed());
                 //.switchIfEmpty(Mono.error(new AuditLogException(ErrorCode.NOT_FOUND_CONTENT)));

@@ -21,7 +21,6 @@ public class AwsProperties {
 
   @Value("${cloud.aws.param-store.doc-name}")
   private String paramStoreDocName;
-
   @Value("${cloud.aws.param-store.kms-name}")
   private String paramStoreKmsName;
   @Value("${cloud.aws.param-store.salt-name}")
@@ -47,9 +46,9 @@ public class AwsProperties {
   private String kmsKey;
   private String saltKey;
   private String ivKey;
-  private String sqlUrl;
   // 접근 제어 IP 전송 SQS URL
   private String sqsAccessIpUrl;
+  private String sqsAuthorizationUrl;
   private String jwtSecretKey;
   private String cryptoKey;
   @Value("${cloud.aws.ses.port}")

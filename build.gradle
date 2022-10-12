@@ -52,6 +52,7 @@ allprojects {
         implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
         implementation 'net.logstash.logback:logstash-logback-encoder:7.1.1'
 
+        implementation 'org.apache.commons:commons-lang3:3.12.0'
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         annotationProcessor 'org.projectlombok:lombok'

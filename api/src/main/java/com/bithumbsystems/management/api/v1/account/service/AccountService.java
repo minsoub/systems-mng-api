@@ -6,11 +6,13 @@ import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.INVAL
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ACCOUNT;
 import static com.bithumbsystems.management.api.core.model.enums.ErrorCode.NOT_EXIST_ROLE;
 
+import com.bithumbsystems.management.api.core.cipher.RsaCipherService;
 import com.bithumbsystems.management.api.core.config.properties.AwsProperties;
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.MailForm;
 import com.bithumbsystems.management.api.core.model.response.OtpResponse;
 import com.bithumbsystems.management.api.core.util.AES256Util;
+import com.bithumbsystems.management.api.core.util.MaskingUtil;
 import com.bithumbsystems.management.api.core.util.OtpUtil;
 import com.bithumbsystems.management.api.core.util.message.MessageService;
 import com.bithumbsystems.management.api.v1.account.exception.AccountException;
@@ -23,6 +25,8 @@ import com.bithumbsystems.persistence.mongodb.account.model.enums.Status;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccessDomainService;
 import com.bithumbsystems.persistence.mongodb.account.service.AdminAccountDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
+import com.bithumbsystems.persistence.mongodb.rsacipherinfo.entity.RsaCipherInfo;
+import com.bithumbsystems.persistence.mongodb.rsacipherinfo.service.RsaCipherInfoDomainService;
 import com.bithumbsystems.persistence.mongodb.site.service.SiteDomainService;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -60,6 +64,11 @@ public class AccountService {
 
   private final PasswordEncoder passwordEncoder;
   private final AwsProperties properties;
+
+    private final RsaCipherInfoDomainService rsaCipherInfoDomainService;
+
+    private final RsaCipherService rsaCipherService;
+    private static String RSA_CIPHER_KEY = "rsa-cipher-key";
 
   /**
    * Search mono.
@@ -267,7 +276,7 @@ public class AccountService {
 
     /**
      * 어드민 관리자가 사용자 접근 정보를 수정한다.
-     *
+     * - 패스워드 수정은 없다.
      * @param accountUpdateRequest the account Update request
      * @param adminAccountId         the admin account id
      * @param account                the account
@@ -277,46 +286,48 @@ public class AccountService {
     public Mono<AccessUpdateResponse> updateAccessAccount(AccessUpdateRequest accountUpdateRequest,
                                                            String adminAccountId, Account account) {
 
-        OtpResponse otpResponse = OtpUtil.generate(accountUpdateRequest.getEmail(), null);
 
         return adminAccountDomainService.findByAdminAccountId(adminAccountId)
                 .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
                 .flatMap(
                         adminAccount -> {
-                            adminAccount.setName(accountUpdateRequest.getName());
-                            adminAccount.setEmail(accountUpdateRequest.getEmail());
-                            adminAccount.setIsUse(accountUpdateRequest.getIsUse());
-                            adminAccount.setStatus(accountUpdateRequest.getStatus());
-                            if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                                // OTP 바코드 생성 및 OTP 키 생성 후 아래 데이터를 설정하고 메일을 번송해야 한다.
-                                adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
-                            }
-                            if(accountUpdateRequest.getStatus().equals(Status.NORMAL)){
-                                adminAccount.setLoginFailCount(0L);
-                            }
-                            adminAccount.setUpdateAdminAccountId(account.getAccountId());
-                            adminAccount.setUpdateDate(LocalDateTime.now());
-                            adminAccount.setValidStartDate(accountUpdateRequest.getValidStartDate());
-                            adminAccount.setValidEndDate(accountUpdateRequest.getValidEndDate());
-                            return adminAccountDomainService.update(adminAccount, account.getAccountId())
-                                    .flatMap(result -> {
-
-                                        return Mono.just(AccessUpdateResponse.builder()
-                                                .id(result.getId())
-                                                .name(result.getName())
-                                                .email(result.getEmail())
-                                                .status(result.getStatus())
-                                                .validStartDate(result.getValidStartDate())
-                                                .validEndDate(result.getValidEndDate()).build());
+                            return getRsaPrivateKey()
+                                    .flatMap(privateKey -> {
+                                        OtpResponse otpResponse = OtpUtil.generate(rsaCipherService.decryptRSA(accountUpdateRequest.getEmail(), privateKey),  null);
+                                        adminAccount.setName(rsaCipherService.decryptRSA(accountUpdateRequest.getName(), privateKey));
+                                        adminAccount.setEmail(rsaCipherService.decryptRSA(accountUpdateRequest.getEmail(), privateKey));
+                                        adminAccount.setIsUse(accountUpdateRequest.getIsUse());
+                                        adminAccount.setStatus(accountUpdateRequest.getStatus());
+                                        if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                                            // OTP 바코드 생성 및 OTP 키 생성 후 아래 데이터를 설정하고 메일을 번송해야 한다.
+                                            adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
+                                        }
+                                        if(accountUpdateRequest.getStatus().equals(Status.NORMAL)){
+                                            adminAccount.setLoginFailCount(0L);
+                                        }
+                                        adminAccount.setUpdateAdminAccountId(account.getAccountId());
+                                        adminAccount.setUpdateDate(LocalDateTime.now());
+                                        adminAccount.setValidStartDate(accountUpdateRequest.getValidStartDate());
+                                        adminAccount.setValidEndDate(accountUpdateRequest.getValidEndDate());
+                                        return adminAccountDomainService.update(adminAccount, account.getAccountId())
+                                                .flatMap(result -> {
+                                                    return Mono.just(AccessUpdateResponse.builder()
+                                                            .id(result.getId())
+                                                            .name(result.getName())
+                                                            .email(result.getEmail())
+                                                            .status(result.getStatus())
+                                                            .validStartDate(result.getValidStartDate())
+                                                            .validEndDate(result.getValidEndDate()).build());
+                                                }).doOnSuccess((a) -> {
+                                                    if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                                                        // otp 메일 전송
+                                                        log.info("send mail");
+                                                        messageService.sendMail(accountUpdateRequest.getEmail(), otpResponse.getUrl());
+                                                    }
+                                                }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
                                     });
                         }
-                ).doOnSuccess((a) -> {
-                    if(accountUpdateRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                    // otp 메일 전송
-                        log.info("send mail");
-                        messageService.sendMail(accountUpdateRequest.getEmail(), otpResponse.getUrl());
-                    }
-                }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
+                );
     }
 
   /**
@@ -329,51 +340,144 @@ public class AccountService {
   @Transactional
   public Mono<AccountResponse> createAccount(AccountRegisterRequest accountRegisterRequest,
       Account account) {
-    if(!isValidPassword(accountRegisterRequest.getPassword())) {
-      return Mono.error(new AccountException(INVALID_PASSWORD));
-    }
-    AdminAccount adminAccount = new AdminAccount();
-    adminAccount.setId(UUID.randomUUID().toString());
-    adminAccount.setName(accountRegisterRequest.getName());
-    adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));     // 패스워드 encode
-    adminAccount.setEmail(accountRegisterRequest.getEmail());
-    adminAccount.setIsUse(accountRegisterRequest.getIsUse());
-    adminAccount.setStatus(accountRegisterRequest.getStatus());
-    adminAccount.setOldPassword(null);
-    adminAccount.setOtpSecretKey(null);
-    adminAccount.setLastPasswordUpdateDate(null);
-    adminAccount.setCreateDate(LocalDateTime.now());
-    adminAccount.setCreateAdminAccountId(account.getAccountId());
-    adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
-    adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
-    return adminAccountDomainService.save(adminAccount, account.getAccountId())
-        .flatMap(result -> {
-          return createAdminAccess(accountRegisterRequest, account, result, adminAccount.getName(),
-              adminAccount.getEmail());
-        })
-        .flatMap(adminAccess -> {
-          return roleManagementDomainService.findByRoleInIds(accountRegisterRequest.getRoles())
-              .flatMap(roleManagement -> Mono.just(roleManagement.getName())).collectList()
-              .flatMap(roleNames -> Mono.just(AccountResponse.builder()
-                  .id(adminAccess.getAdminAccountId())
-                  .name(adminAccount.getName())
-                  .email(adminAccount.getEmail())
-                  .roleManagementName(roleNames.toString())
-                  .status(adminAccount.getStatus())
-                  .createDate(adminAccount.getCreateDate())
-                  //.lastLoginDate(adminAccount.getLastLoginDate())
-                  .build()
-              ));
-        })
-        .doOnSuccess((a) -> {
-          if (accountRegisterRequest.getIsSendMail()) {
-            log.info("send mail");
-            messageService.sendMail(adminAccount.getEmail(), accountRegisterRequest.getPassword(),
-                MailForm.DEFAULT);
-          }
-        }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
-  }
 
+      return getRsaPrivateKey()
+              .flatMap(privateKey -> {
+                  if (!isValidPassword(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey))) {
+                      return Mono.error(new AccountException(INVALID_PASSWORD));
+                  }
+                  AdminAccount adminAccount = new AdminAccount();
+                  adminAccount.setId(UUID.randomUUID().toString());
+                  adminAccount.setName(rsaCipherService.decryptRSA(accountRegisterRequest.getName(), privateKey));
+                  adminAccount.setPassword(passwordEncoder.encode(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey)));     // 패스워드 encode
+                  adminAccount.setEmail(rsaCipherService.decryptRSA(accountRegisterRequest.getEmail(), privateKey));
+                  adminAccount.setIsUse(accountRegisterRequest.getIsUse());
+                  adminAccount.setStatus(accountRegisterRequest.getStatus());
+                  adminAccount.setOldPassword(null);
+                  adminAccount.setOtpSecretKey(null);
+                  adminAccount.setLastPasswordUpdateDate(null);
+                  adminAccount.setCreateDate(LocalDateTime.now());
+                  adminAccount.setCreateAdminAccountId(account.getAccountId());
+                  adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
+                  adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
+                  return adminAccountDomainService.save(adminAccount, account.getAccountId())
+                          .flatMap(result -> {
+                              return createAdminAccess(accountRegisterRequest, account, result, adminAccount.getName(),
+                                      adminAccount.getEmail());
+                          })
+                          .flatMap(adminAccess -> {
+                              return roleManagementDomainService.findByRoleInIds(accountRegisterRequest.getRoles())
+                                      .flatMap(roleManagement -> Mono.just(roleManagement.getName())).collectList()
+                                      .flatMap(roleNames -> Mono.just(AccountResponse.builder()
+                                              .id(adminAccess.getAdminAccountId())
+                                              .name(adminAccount.getName())
+                                              .email(adminAccount.getEmail())
+                                              .roleManagementName(roleNames.toString())
+                                              .status(adminAccount.getStatus())
+                                              .createDate(adminAccount.getCreateDate())
+                                              //.lastLoginDate(adminAccount.getLastLoginDate())
+                                              .build()
+                                      ));
+                          })
+                          .doOnSuccess((a) -> {
+                              if (accountRegisterRequest.getIsSendMail()) { // 임시 패스워드 발송
+                                  log.info("send mail");
+                                  messageService.sendMail(adminAccount.getEmail(), accountRegisterRequest.getPassword(),
+                                          MailForm.DEFAULT);
+                              }
+                          }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
+              });
+
+
+  }
+    /**
+     * 통합 어드민 관리자가 계정을 수정한다. (메일 정보 수정안됨)
+     *
+     * @param accountRegisterRequest the account register request
+     * @param adminAccountId         the admin account id
+     * @param account                the account
+     * @return mono
+     */
+    @Transactional
+    public Mono<List<AccountResponse>> updateAccount(AccountRegisterRequest accountRegisterRequest,
+                                                     String adminAccountId, Account account) {
+        return adminAccountDomainService.findByAdminAccountId(adminAccountId)
+                .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
+                .flatMap(
+                        adminAccount -> {
+                            return getRsaPrivateKey()
+                                    .flatMap(privateKey -> {
+                                        OtpResponse otpResponse = OtpUtil.generate(rsaCipherService.decryptRSA(accountRegisterRequest.getEmail(), privateKey), null);
+
+                                        if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
+                                            if(!isValidPassword(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey))) {
+                                                return Mono.error(new AccountException(INVALID_PASSWORD));
+                                            }
+                                            adminAccount.setPassword(passwordEncoder.encode(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey)));
+                                            adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
+                                            adminAccount.setOldPassword(adminAccount.getPassword().trim());
+                                        }
+                                        adminAccount.setName(rsaCipherService.decryptRSA(accountRegisterRequest.getName(), privateKey));
+                                        adminAccount.setEmail(rsaCipherService.decryptRSA(accountRegisterRequest.getEmail(), privateKey));
+                                        adminAccount.setIsUse(accountRegisterRequest.getIsUse());
+                                        adminAccount.setStatus(accountRegisterRequest.getStatus());
+                                        if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                                            adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
+                                        }
+                                        if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
+                                            adminAccount.setLoginFailCount(0L);
+                                        }
+                                        adminAccount.setUpdateAdminAccountId(account.getAccountId());
+                                        adminAccount.setUpdateDate(LocalDateTime.now());
+                                        adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
+                                        adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
+                                        return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
+                                                // admin_account_id, role_management_id, site_id로 찾는다.
+                                                adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                                                        .flatMap(adminAccess -> {  // 수정모드
+
+                                                            return adminAccessDomainService.update(AdminAccess.builder()
+                                                                    .id(adminAccess.getId())
+                                                                    .adminAccountId(adminAccount.getId())
+                                                                    .name(adminAccount.getName().trim())
+                                                                    .email(adminAccount.getEmail().trim())
+                                                                    .roles(accountRegisterRequest.getRoles())
+                                                                    .isUse(accountRegisterRequest.getIsUse())
+                                                                    .createAdminAccountId(account.getAccountId())
+                                                                    .build(), account.getAccountId());
+                                                        })
+                                                        .switchIfEmpty(
+                                                                Mono.defer(
+                                                                        () -> createAdminAccess(accountRegisterRequest, account, adminAccount,
+                                                                                adminAccount.getName(),
+                                                                                adminAccount.getEmail())
+                                                                )  // 신규 등록
+                                                        )
+                                        ).doOnSuccess((a) -> {
+                                            if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
+                                                // otp 메일 전송
+                                                log.info("send mail");
+                                                messageService.sendMail(accountRegisterRequest.getEmail(), otpResponse.getUrl());
+                                            }
+                                        }).flatMap(tuple -> {
+                                            AdminAccount acm = tuple.getT1();
+                                            AdminAccess adminAccess = tuple.getT2();
+                                            return roleManagementDomainService.findByRoleInIds(adminAccess.getRoles())
+                                                    .flatMap(roleManagement -> Mono.just(AccountResponse.builder()
+                                                            .id(adminAccess.getAdminAccountId())
+                                                            .name(acm.getName())
+                                                            .email(acm.getEmail())
+                                                            .roleManagementName(roleManagement.getName())
+                                                            .status(acm.getStatus())
+                                                            .createDate(acm.getCreateDate())
+                                                            //.lastLoginDate(adminAccount.getLastLoginDate())
+                                                            .build()
+                                                    )).collectList();
+                                        }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
+                                    });
+                        }
+                );
+    }
   /**
    * 패스워드를 수정한다.
    *
@@ -407,95 +511,7 @@ public class AccountService {
         }).switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)));
   }
 
-  /**
-   * 통합 어드민 관리자가 계정을 수정한다.
-   *
-   * @param accountRegisterRequest the account register request
-   * @param adminAccountId         the admin account id
-   * @param account                the account
-   * @return mono
-   */
-  @Transactional
-  public Mono<List<AccountResponse>> updateAccount(AccountRegisterRequest accountRegisterRequest,
-      String adminAccountId, Account account) {
-    OtpResponse otpResponse = OtpUtil.generate(accountRegisterRequest.getEmail(), null);
 
-    return adminAccountDomainService.findByAdminAccountId(adminAccountId)
-        .switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)))
-        .flatMap(
-            adminAccount -> {
-              if (StringUtils.hasLength(accountRegisterRequest.getPassword())) {
-
-                  if(!isValidPassword(accountRegisterRequest.getPassword())) {
-                      return Mono.error(new AccountException(INVALID_PASSWORD));
-                  }
-
-                adminAccount.setPassword(
-                    passwordEncoder.encode(accountRegisterRequest.getPassword()));
-                adminAccount.setLastPasswordUpdateDate(LocalDateTime.now());
-                adminAccount.setOldPassword(adminAccount.getPassword().trim());
-              }
-              adminAccount.setName(accountRegisterRequest.getName());
-              adminAccount.setEmail(accountRegisterRequest.getEmail());
-              adminAccount.setIsUse(accountRegisterRequest.getIsUse());
-              adminAccount.setStatus(accountRegisterRequest.getStatus());
-              if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-                adminAccount.setOtpSecretKey(otpResponse.getEncodeKey());
-              }
-              if(accountRegisterRequest.getStatus().equals(Status.NORMAL)){
-                adminAccount.setLoginFailCount(0L);
-              }
-              adminAccount.setUpdateAdminAccountId(account.getAccountId());
-              adminAccount.setUpdateDate(LocalDateTime.now());
-              adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
-              adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
-              return adminAccountDomainService.update(adminAccount, account.getAccountId()).zipWith(
-                  // admin_account_id, role_management_id, site_id로 찾는다.
-                  adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                      .flatMap(adminAccess -> {  // 수정모드
-
-                        return adminAccessDomainService.update(AdminAccess.builder()
-                            .id(adminAccess.getId())
-                            .adminAccountId(adminAccount.getId())
-                            .name(adminAccount.getName().trim())
-                            .email(adminAccount.getEmail().trim())
-                            .roles(accountRegisterRequest.getRoles())
-                            .isUse(accountRegisterRequest.getIsUse())
-                            .createAdminAccountId(account.getAccountId())
-                            .build(), account.getAccountId());
-                      })
-                      .switchIfEmpty(
-                          Mono.defer(
-                              () -> createAdminAccess(accountRegisterRequest, account, adminAccount,
-                                  adminAccount.getName(),
-                                  adminAccount.getEmail())
-                          )  // 신규 등록
-
-                      )
-              );
-            }
-        ).doOnSuccess((a) -> {
-          if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
-            // otp 메일 전송
-            log.info("send mail");
-            messageService.sendMail(accountRegisterRequest.getEmail(), otpResponse.getUrl());
-          }
-        }).flatMap(tuple -> {
-          AdminAccount adminAccount = tuple.getT1();
-          AdminAccess adminAccess = tuple.getT2();
-          return roleManagementDomainService.findByRoleInIds(adminAccess.getRoles())
-              .flatMap(roleManagement -> Mono.just(AccountResponse.builder()
-                  .id(adminAccess.getAdminAccountId())
-                  .name(adminAccount.getName())
-                  .email(adminAccount.getEmail())
-                  .roleManagementName(roleManagement.getName())
-                  .status(adminAccount.getStatus())
-                  .createDate(adminAccount.getCreateDate())
-                  //.lastLoginDate(adminAccount.getLastLoginDate())
-                  .build()
-              )).collectList();
-        }).doOnCancel(() -> Mono.error(new AccountException(FAIL_ACCOUNT_REGISTER)));
-  }
 
   /**
    * 통합 어드민 관리자가 계정 Role을 수정한다.
@@ -756,8 +772,8 @@ public class AccountService {
                     log.debug("adminAccess search => {}", adminAccess);
                     return Pair.of(new AccountSearchResponse(
                         adminAccount.getId(),
-                        adminAccount.getName(),
-                        adminAccount.getEmail(),
+                        MaskingUtil.getNameMask(adminAccount.getName()),
+                        MaskingUtil.getEmailMask(adminAccount.getEmail()),
                         adminAccount.getLastLoginDate(),
                         adminAccount.getStatus(),
                         adminAccess.getCreateDate() != null ? adminAccess.getCreateDate()
@@ -802,24 +818,28 @@ public class AccountService {
   @Transactional
   public Mono<AdminAccount> createMngAccount(AccountMngRegisterRequest accountRegisterRequest,
       Account account) {
-    if(!isValidPassword(accountRegisterRequest.getPassword())) {
-      return Mono.error(new AccountException(INVALID_PASSWORD));
-    }
-    AdminAccount adminAccount = new AdminAccount();
-    adminAccount.setId(UUID.randomUUID().toString());
-    adminAccount.setName(accountRegisterRequest.getName());
-    adminAccount.setPassword(passwordEncoder.encode(accountRegisterRequest.getPassword()));
-    adminAccount.setEmail(accountRegisterRequest.getEmail());
-    adminAccount.setIsUse(accountRegisterRequest.getIsUse());
-    adminAccount.setStatus(accountRegisterRequest.getStatus());
-    adminAccount.setOldPassword(null);
-    adminAccount.setOtpSecretKey(null);
-    adminAccount.setLastPasswordUpdateDate(null);
-    adminAccount.setCreateDate(LocalDateTime.now());
-    adminAccount.setCreateAdminAccountId(account.getAccountId());
-    adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
-    adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
-    return adminAccountDomainService.save(adminAccount, account.getAccountId());
+
+        return getRsaPrivateKey()
+                .flatMap(privateKey -> {
+                    if(!isValidPassword(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey))) {
+                        return Mono.error(new AccountException(INVALID_PASSWORD));
+                    }
+                    AdminAccount adminAccount = new AdminAccount();
+                    adminAccount.setId(UUID.randomUUID().toString());
+                    adminAccount.setName(rsaCipherService.decryptRSA(accountRegisterRequest.getName(), privateKey ));
+                    adminAccount.setPassword(passwordEncoder.encode(rsaCipherService.decryptRSA(accountRegisterRequest.getPassword(), privateKey)));
+                    adminAccount.setEmail(rsaCipherService.decryptRSA(accountRegisterRequest.getEmail(), privateKey));
+                    adminAccount.setIsUse(accountRegisterRequest.getIsUse());
+                    adminAccount.setStatus(accountRegisterRequest.getStatus());
+                    adminAccount.setOldPassword(null);
+                    adminAccount.setOtpSecretKey(null);
+                    adminAccount.setLastPasswordUpdateDate(null);
+                    adminAccount.setCreateDate(LocalDateTime.now());
+                    adminAccount.setCreateAdminAccountId(account.getAccountId());
+                    adminAccount.setValidStartDate(accountRegisterRequest.getValidStartDate());
+                    adminAccount.setValidEndDate(accountRegisterRequest.getValidEndDate());
+                    return adminAccountDomainService.save(adminAccount, account.getAccountId());
+                });
   }
 
   /**
@@ -844,21 +864,26 @@ public class AccountService {
       String adminAccountId, Account account) {
     return adminAccountDomainService.findByAdminAccountId(adminAccountId)
         .flatMap(result -> {
-          if(!isValidPassword(accountMngUpdateRequest.getPassword())) {
-            return Mono.error(new AccountException(INVALID_PASSWORD));
-          }
-          if ((StringUtils.hasLength(accountMngUpdateRequest.getPassword()))) {
-            result.setPassword(passwordEncoder.encode(accountMngUpdateRequest.getPassword()));
-            result.setLastPasswordUpdateDate(LocalDateTime.now());
-          }
-          result.setName(accountMngUpdateRequest.getName());
-          result.setIsUse(accountMngUpdateRequest.getIsUse());
-          if (Boolean.TRUE.equals(accountMngUpdateRequest.getIsUse())) {
-            result.setStatus(Status.NORMAL);
-          }
-          result.setValidStartDate(accountMngUpdateRequest.getValidStartDate());
-          result.setValidEndDate(accountMngUpdateRequest.getValidEndDate());
-          return adminAccountDomainService.update(result, account.getAccountId());
+            return getRsaPrivateKey()
+                    .flatMap(privateKey -> {
+                        if ((StringUtils.hasLength(accountMngUpdateRequest.getPassword()))) {
+                            if(!isValidPassword(rsaCipherService.decryptRSA(accountMngUpdateRequest.getPassword(), privateKey))) {
+                                return Mono.error(new AccountException(INVALID_PASSWORD));
+                            }
+                            result.setPassword(passwordEncoder.encode(rsaCipherService.decryptRSA(accountMngUpdateRequest.getPassword(), privateKey)));
+                            result.setLastPasswordUpdateDate(LocalDateTime.now());
+                        }
+                        // 수정모드일 때 메일주소를 변경할 수 없다.
+                        result.setName(rsaCipherService.decryptRSA(accountMngUpdateRequest.getName(), privateKey));
+                        result.setIsUse(accountMngUpdateRequest.getIsUse());
+                        if (Boolean.TRUE.equals(accountMngUpdateRequest.getIsUse())) {
+                            result.setStatus(Status.NORMAL);
+                        }
+                        result.setValidStartDate(accountMngUpdateRequest.getValidStartDate());
+                        result.setValidEndDate(accountMngUpdateRequest.getValidEndDate());
+                        return adminAccountDomainService.update(result, account.getAccountId());
+                    });
+
         });
   }
 
@@ -890,6 +915,15 @@ public class AccountService {
           return Mono.just(res);
         }));
   }
+
+    /**
+     * return RSA Private Key
+     * @return
+     */
+    private Mono<String> getRsaPrivateKey() {
+        return rsaCipherInfoDomainService.findById(RSA_CIPHER_KEY)
+                .map(RsaCipherInfo::getServerPrivateKey);
+    }
 
   private static boolean isValidPassword(String password) {
     var regex = "^.*(?=^.{8,64}$)(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^*]).*$";

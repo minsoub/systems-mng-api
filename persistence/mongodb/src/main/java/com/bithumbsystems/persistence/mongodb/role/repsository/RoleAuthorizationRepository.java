@@ -6,7 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface RoleAuthorizationRepository extends ReactiveMongoRepository<RoleAuthorization, String> {
   Mono<RoleAuthorization> findByRoleManagementId(String roleManagementId);
-
   Mono<Void> deleteByRoleManagementId(String roleManagementId);
 
 }

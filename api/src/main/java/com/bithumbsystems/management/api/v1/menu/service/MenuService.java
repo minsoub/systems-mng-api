@@ -101,7 +101,7 @@ public class MenuService {
       Account account) {
     return siteDomainService.existsById(siteId)
         .flatMap(isExist -> {
-          if (!isExist) {
+          if (Boolean.FALSE.equals(isExist)) {
             return Mono.error(new MenuException(ErrorCode.NOT_EXIST_SITE));
           }
           Menu menu = MenuMapper.INSTANCE.menuRegisterRequestToMenu(menuRegisterRequest);
@@ -206,9 +206,7 @@ public class MenuService {
   public Mono<List<ProgramResponse>> getPrograms(String siteId, String menuId) {
     return menuDomainService.findBySiteIdAndId(siteId, menuId)
         .flatMap(menu -> programDomainService.findMenuPrograms(siteId, menu.getId())
-            .log()
             .flatMap(program -> Mono.just(ProgramMapper.INSTANCE.programToProgramResponse(program)))
-            .log()
             .collectSortedList(Comparator.comparing(ProgramResponse::getCreateDate)));
   }
 

@@ -2,6 +2,8 @@ package com.bithumbsystems.management.api.v1.role.service;
 
 import com.bithumbsystems.management.api.core.config.resolver.Account;
 import com.bithumbsystems.management.api.core.model.enums.ErrorCode;
+import com.bithumbsystems.management.api.core.util.MaskingUtil;
+import com.bithumbsystems.management.api.core.util.sender.AwsSQSSender;
 import com.bithumbsystems.management.api.v1.role.exception.RoleManagementException;
 import com.bithumbsystems.management.api.v1.role.model.enums.FlagEnum;
 import com.bithumbsystems.management.api.v1.role.model.mapper.RoleMapper;
@@ -27,11 +29,11 @@ import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleAuthorizatio
 import com.bithumbsystems.persistence.mongodb.role.model.entity.RoleManagement;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleAuthorizationDomainService;
 import com.bithumbsystems.persistence.mongodb.role.service.RoleManagementDomainService;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,7 @@ public class RoleManagementService {
   private final MenuDomainService menuDomainService;
   private final ProgramDomainService programDomainService;
   private final RoleAuthorizationDomainService roleAuthorizationDomainService;
+  private final AwsSQSSender awsSQSSender;
 
   /**
    * Check duplicate mono.
@@ -73,7 +76,8 @@ public class RoleManagementService {
    */
   public Mono<RoleManagement> create(Mono<RoleManagementRegisterRequest> registerRequest,
       Account account) {
-    return registerRequest.filter(request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
+    return registerRequest.filter(
+            request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
         .map(RoleMapper.INSTANCE::registerRequestToRoleManagement)
         .flatMap(roleManagement ->
             roleManagementDomainService.save(roleManagement, account.getAccountId())
@@ -90,7 +94,8 @@ public class RoleManagementService {
    */
   public Mono<RoleManagement> update(Mono<RoleManagementUpdateRequest> updateRequest,
       Account account, String roleManagementId) {
-    return updateRequest.filter(request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
+    return updateRequest.filter(
+            request -> (request.getValidStartDate() != null && request.getValidEndDate() != null))
         .map(RoleMapper.INSTANCE::updateRequestToRoleManagement)
         .flatMap(roleManagement ->
             roleManagementDomainService.update(roleManagement, account.getAccountId(),
@@ -106,9 +111,11 @@ public class RoleManagementService {
    * @param type   the type
    * @return the role managements
    */
-  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, String searchText, Boolean isUse,
+  public Mono<List<RoleManagementResponse>> getRoleManagements(String siteId, String searchText,
+      Boolean isUse,
       String type) {
-    return roleManagementDomainService.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText, isUse, type)
+    return roleManagementDomainService.findBySiteIdSearchTextAndIsUseAndType(siteId, searchText,
+            isUse, type)
         .flatMap(roleManagement ->
             Mono.just(RoleMapper.INSTANCE.roleManagementToResponse(roleManagement)))
         .collectSortedList(Comparator.comparing(RoleManagementResponse::getCreateDate).reversed());
@@ -122,6 +129,11 @@ public class RoleManagementService {
    */
   public Mono<List<RoleAccessResponse>> getAccessUserList(String roleManagementId) {
     return adminAccessDomainService.findByRoleManagementId(roleManagementId)
+            .flatMap(result -> {
+                result.setName(MaskingUtil.getNameMask(result.getName()));
+                result.setEmail(MaskingUtil.getEmailMask(result.getEmail()));
+                return Mono.just(result);
+            })
         .flatMap(roleAccess ->
             Mono.just(RoleMapper.INSTANCE.roleAccessToResponse(roleAccess)))
         .collectSortedList(Comparator.comparing(RoleAccessResponse::getCreateDate).reversed());
@@ -183,30 +195,21 @@ public class RoleManagementService {
             .build());
 
     var getAccountEmails = adminAccountDomainService.findByAdminAccountIds(accounts)
-                    .flatMap(adminAccount -> {
-                        return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                                .flatMap(adminAccess -> {
-                                    log.info(adminAccess.getEmail());
-                                    adminAccess.getRoles().add(roleManagementId);
-                                    return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
-                                })
-                                .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
-                                        .adminAccountId(adminAccount.getId())
-                                        .name(adminAccount.getName())
-                                        .email(adminAccount.getEmail())
-                                        .isUse(true)
-                                        .roles(Set.of(roleManagementId))
-                                        .build(), account.getAccountId()).map(AdminAccess::getEmail));
-                    })
-                   .collectList();
-//            adminAccessDomainService.findByAdminAccountIds(accounts)
-//        .flatMap(adminAccess -> {
-//          log.info(adminAccess.getEmail());
-//          adminAccess.getRoles().add(roleManagementId);
-//          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
-//              AdminAccess::getEmail);
-//        })
-//        .collectList();
+        .flatMap(adminAccount -> adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+            .flatMap(adminAccess -> {
+              log.debug(adminAccess.getEmail());
+              adminAccess.getRoles().add(roleManagementId);
+              return adminAccessDomainService.update(adminAccess, account.getAccountId())
+                  .map(AdminAccess::getEmail);
+            })
+            .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
+                .adminAccountId(adminAccount.getId())
+                .name(adminAccount.getName())
+                .email(adminAccount.getEmail())
+                .isUse(true)
+                .roles(Set.of(roleManagementId))
+                .build(), account.getAccountId()).map(AdminAccess::getEmail)))
+        .collectList();
 
     return roleManagementMappingResponse.zipWith(getAccountEmails)
         .map(tuple -> {
@@ -216,94 +219,74 @@ public class RoleManagementService {
   }
 
   @Transactional
-  public Mono<RoleMappingAccountResponse> mappingAccountsPuts(List<RoleModeAccountRequest> accounts, String roleManagementId, Account account) {
-      var roleManagementMappingResponse = roleManagementDomainService.findById(roleManagementId)
-              .switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE)))
-              .map(roleManagement -> RoleMappingAccountResponse.builder()
-                      .id(roleManagementId)
-                      .name(roleManagement.getName())
-                      .build());
+  public Mono<RoleMappingAccountResponse> mappingAccountsPuts(List<RoleModeAccountRequest> accounts,
+      String roleManagementId, Account account) {
+    var roleManagementMappingResponse = roleManagementDomainService.findById(roleManagementId)
+        .switchIfEmpty(Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE)))
+        .map(roleManagement -> RoleMappingAccountResponse.builder()
+            .id(roleManagementId)
+            .name(roleManagement.getName())
+            .build());
 
-      var getAccountEmails =
-              Flux.fromIterable(accounts).flatMap(roleData -> {
-                  return adminAccountDomainService.findByAdminAccountId(roleData.getId())
-                          .flatMap(adminAccount -> {
-                              if (roleData.getFlag().equals(FlagEnum.INSERT)) {
-                                  return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                                          .flatMap(adminAccess -> {
-                                              Set<String> roleList = adminAccess.getRoles(); // my role list
+    var getAccountEmails =
+        Flux.fromIterable(accounts)
+            .flatMap(roleData -> adminAccountDomainService.findByAdminAccountId(roleData.getId())
+                .flatMap(adminAccount -> {
+                  if (roleData.getFlag().equals(FlagEnum.INSERT)) {
+                    return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                        .flatMap(adminAccess -> {
+                          Set<String> roleList = adminAccess.getRoles(); // my role list
 
-                                              return isRoleRegisterCheck(roleList, roleManagementId)
-                                                      .flatMap(res -> {
-                                                          if (res.equals(true)) {
-                                                              adminAccess.getRoles().add(roleManagementId);
-                                                              return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
-                                                          } else {
-                                                              return Mono.error(new RoleManagementException(ErrorCode.INVALID_MAX_ROLE));
-                                                          }
-                                                      });
-                                          })
-                                          .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
-                                                  .adminAccountId(adminAccount.getId())
-                                                  .name(adminAccount.getName())
-                                                  .email(adminAccount.getEmail())
-                                                  .isUse(true)
-                                                  .roles(Set.of(roleManagementId))
-                                                  .build(), account.getAccountId()).map(AdminAccess::getEmail));
-                              } else if (roleData.getFlag().equals(FlagEnum.DELETE)) {
-                                  return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
-                                          .flatMap(adminAccess -> {
-                                              log.info(adminAccess.getEmail());
-                                              Set<String> roleList = adminAccess.getRoles();
-                                              log.debug("{}", roleList);
-                                              roleList.remove(roleManagementId);
-                                              adminAccess.setRoles(roleList);
-                                              return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(AdminAccess::getEmail);
-                                          });
-                              } else {
-                                  return Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE));
-                              }
-                          });
-              }).collectList();
+                          return isRoleRegisterCheck(roleList, roleManagementId)
+                              .flatMap(res -> {
+                                if (res.equals(true)) {
+                                  adminAccess.getRoles().add(roleManagementId);
+                                  return adminAccessDomainService.update(adminAccess,
+                                      account.getAccountId()).map(AdminAccess::getEmail);
+                                } else {
+                                  return Mono.error(
+                                      new RoleManagementException(ErrorCode.INVALID_MAX_ROLE));
+                                }
+                              });
+                        })
+                        .switchIfEmpty(adminAccessDomainService.save(AdminAccess.builder()
+                            .adminAccountId(adminAccount.getId())
+                            .name(adminAccount.getName())
+                            .email(adminAccount.getEmail())
+                            .isUse(true)
+                            .roles(Set.of(roleManagementId))
+                            .build(), account.getAccountId()).map(AdminAccess::getEmail));
+                  } else if (roleData.getFlag().equals(FlagEnum.DELETE)) {
+                    return adminAccessDomainService.findByAdminAccountId(adminAccount.getId())
+                        .flatMap(adminAccess -> {
+                          log.debug(adminAccess.getEmail());
+                          Set<String> roleList = adminAccess.getRoles();
+                          log.debug("{}", roleList);
+                          roleList.remove(roleManagementId);
+                          adminAccess.setRoles(roleList);
+                          return adminAccessDomainService.update(adminAccess,
+                                  account.getAccountId())
+                              .map(AdminAccess::getEmail);
+                        });
+                  } else {
+                    return Mono.error(new RoleManagementException(ErrorCode.NOT_EXIST_ROLE));
+                  }
+                })).collectList();
 
-//            adminAccessDomainService.findByAdminAccountIds(accounts)
-//        .flatMap(adminAccess -> {
-//          log.info(adminAccess.getEmail());
-//          adminAccess.getRoles().add(roleManagementId);
-//          return adminAccessDomainService.update(adminAccess, account.getAccountId()).map(
-//              AdminAccess::getEmail);
-//        })
-//        .collectList();
-
-      return roleManagementMappingResponse.zipWith(getAccountEmails)
-              .map(tuple -> {
-                  tuple.getT1().setEmailList(tuple.getT2());
-                  return tuple.getT1();
-              });
+    return roleManagementMappingResponse.zipWith(getAccountEmails)
+        .map(tuple -> {
+          tuple.getT1().setEmailList(tuple.getT2());
+          return tuple.getT1();
+        });
   }
 
   private Mono<Boolean> isRoleRegisterCheck(Set<String> roleList, String roleManagementId) {
 
-      return roleManagementDomainService.findById(roleManagementId)
-              .flatMap(result -> {
-                 return Flux.fromIterable(roleList)
-                         .flatMap(res -> {
-                             return roleManagementDomainService.findById(res)
-                                     .flatMap(check -> {
-                                         if (check.getSiteId().equals(result.getSiteId())) { // 동일사이트에 2개의 role은 안됨.
-                                             return Mono.just(false);
-                                         } else {
-                                             return Mono.just(true);
-                                         }
-                                     });
-                         }).collectList();
-              }).map(resultCheck -> {
-                  if (resultCheck.contains(false)) {
-                      return false;
-                  } else {
-                      return true;
-                  }
-              });
+    return roleManagementDomainService.findById(roleManagementId)
+        .flatMap(result -> Flux.fromIterable(roleList)
+            .flatMap(res -> roleManagementDomainService.findById(res)
+                .flatMap(check -> Mono.just(!check.getSiteId().equals(result.getSiteId()))))
+            .collectList()).map(resultCheck -> !resultCheck.contains(false));
   }
 
   /**
@@ -319,8 +302,8 @@ public class RoleManagementService {
         .build();
     var roleAuthorization = roleAuthorizationDomainService.findByRoleManagementId(roleManagementId);
     var allMenuList = getMenuResourceFlux(menuDomainService.findAll(), roleAuthorization)
-            .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
-            .flatMap(Mono::just);
+        .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
+        .flatMap(Mono::just);
 
     return allMenuList.flatMap(list -> {
       roleMappingResourceResponse.setMenuList(list);
@@ -341,14 +324,17 @@ public class RoleManagementService {
         .roleManagementId(roleManagementId)
         .build();
     var roleAuthorization = roleAuthorizationDomainService.findByRoleManagementId(roleManagementId);
-    var allMenuList = getMenuResourceFlux(menuDomainService.findList(siteId, true, ""), roleAuthorization)
-        .flatMap(topMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, topMenu.getId()), roleAuthorization)
-                .flatMap(middleMenu -> getMenuResourceFlux(menuDomainService.findList(siteId, true, middleMenu.getId()), roleAuthorization)
-                    .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
-                    .flatMap(childResource -> {
-                      middleMenu.setChildMenuResources(childResource);
-                      return Mono.just(middleMenu);
-                    })).collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
+    var allMenuList = getMenuResourceFlux(menuDomainService.findList(siteId, true, ""),
+        roleAuthorization)
+        .flatMap(topMenu -> getMenuResourceFlux(
+            menuDomainService.findList(siteId, true, topMenu.getId()), roleAuthorization)
+            .flatMap(middleMenu -> getMenuResourceFlux(
+                menuDomainService.findList(siteId, true, middleMenu.getId()), roleAuthorization)
+                .collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
+                .flatMap(childResource -> {
+                  middleMenu.setChildMenuResources(childResource);
+                  return Mono.just(middleMenu);
+                })).collectSortedList(Comparator.comparing(MenuResourceResponse::getOrder))
             .flatMap(middleResource -> {
               topMenu.setChildMenuResources(middleResource);
               return Mono.just(topMenu);
@@ -367,7 +353,8 @@ public class RoleManagementService {
    * @param roleAuthorizationMono the role authorization mono
    * @return the menu resource flux
    */
-  private Flux<MenuResourceResponse> getMenuResourceFlux(Flux<Menu> menuFlux, Mono<RoleAuthorization> roleAuthorizationMono) {
+  private Flux<MenuResourceResponse> getMenuResourceFlux(Flux<Menu> menuFlux,
+      Mono<RoleAuthorization> roleAuthorizationMono) {
     return menuFlux.flatMap(menu -> Mono.just(MenuResourceResponse.builder()
         .id(menu.getId())
         .name(menu.getName())
@@ -383,7 +370,7 @@ public class RoleManagementService {
     ).flatMap(menu -> roleAuthorizationMono.flatMap(r -> {
           var visible = r.getAuthorizationResources().stream()
               .anyMatch(a -> a.getMenuId().equals(menu.getId()));
-          log.info("v {}", visible);
+          log.debug("v {}", visible);
           menu.setVisible(visible);
           return Mono.just(menu);
         }).switchIfEmpty(Mono.just(menu))
@@ -402,7 +389,7 @@ public class RoleManagementService {
         .flatMap(program -> roleAuthorizationMono.flatMap(r -> {
               var isCheck = r.getAuthorizationResources().stream()
                   .anyMatch(a -> a.getProgramId().contains(program.getId()));
-              log.info("isCheck {}", isCheck);
+              log.debug("isCheck {}", isCheck);
               program.setIsCheck(isCheck);
               return Mono.just(program);
             }).switchIfEmpty(Mono.just(program))
@@ -422,6 +409,7 @@ public class RoleManagementService {
    * @param account              the account
    * @return the mono
    */
+  @Transactional
   public Mono<List<RoleResourceResponse>> mappingResources(
       RoleResourceRequest roleResourceRequests,
       String roleManagementId,
@@ -429,40 +417,28 @@ public class RoleManagementService {
     final var roleAuthorization = RoleAuthorization.builder()
         .roleManagementId(roleManagementId)
         .build();
-      return roleAuthorizationDomainService.deleteByRoleManagementId(roleManagementId)
-              .then(
-                      Flux.fromIterable(roleResourceRequests.getResources())
-                                      .flatMap(roleResourceListRequest -> {
-                                          return Mono.just(AuthorizationResource.builder()
-                                                  .menuId(roleResourceListRequest.getMenuId())
-                                                  .visible(true)
-                                                  .programId(roleResourceListRequest.getProgramId())
-                                                  .build());
-                                      })
-                                     .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
-                                             .flatMap(authorizationResources -> {
-                                                 roleAuthorization.setAuthorizationResources(authorizationResources);
-                                                 return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());
-                                             })
-                                                     .flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
-                                                             .stream()
-                                                             .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
-                                                             .collect(Collectors.toList()))));
-
-
-//                      roleResourceRequests.flatMap(
-//                              roleResourceRequest -> Mono.just(AuthorizationResource.builder()
-//                                      .menuId(roleResourceRequest.getMenuId())
-//                                      .visible(true)
-//                                      .programId(roleResourceRequest.getProgramId())
-//                                      .build()))
-//                      .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
-//                      .flatMap(authorizationResources -> {
-//                          roleAuthorization.setAuthorizationResources(authorizationResources);
-//                          return roleAuthorizationDomainService.save(roleAuthorization, account.getAccountId());
-//                      }).flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
-//                              .stream()
-//                              .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
-//                              .collect(Collectors.toList()))));
+    return roleAuthorizationDomainService.deleteByRoleManagementId(roleManagementId)
+        .then(
+            Flux.fromIterable(roleResourceRequests.getResources())
+                .flatMap(roleResourceListRequest -> Mono.just(AuthorizationResource.builder()
+                    .menuId(roleResourceListRequest.getMenuId())
+                    .visible(true)
+                    .programId(roleResourceListRequest.getProgramId())
+                    .build()))
+                .collectSortedList(Comparator.comparing(AuthorizationResource::getMenuId))
+                .flatMap(authorizationResources -> {
+                  roleAuthorization.setAuthorizationResources(authorizationResources);
+                  return roleAuthorizationDomainService.save(roleAuthorization,
+                      account.getAccountId());
+                })
+                .doOnSuccess(authorization -> {
+                  awsSQSSender.sendMessage(authorization.getAuthorizationResources(),
+                      authorization.getRoleManagementId());
+                })
+                .flatMap(authorization -> Mono.just(authorization.getAuthorizationResources()
+                    .stream()
+                    .map(RoleMapper.INSTANCE::resourceToRoleResourceResponse)
+                    .collect(Collectors.toList()))));
   }
+
 }
