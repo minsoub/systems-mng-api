@@ -40,6 +40,10 @@ public class AwsProperties {
   private String sesEndPoint;
   @Value("${cloud.aws.sqs.endpoint}")
   private String sqsEndPoint;
+  @Value("${cloud.aws.sqs.audit.queue-name}")
+  private String sqsAuditQueueName;
+  @Value("${cloud.aws.sqs.authorization.queue-name}")
+  private String sqsAuthorizationQueueName;
   @Value("${cloud.aws.kms.endpoint}")
   private String kmsEndPoint;
 

@@ -40,9 +40,9 @@ public class AwsSQSSenderImpl<T> implements AwsSQSSender<T> {
   public SendMessageResult sendMessage(AccessAllowIpRequest accessAllowIpRequest, String groupId) {
     log.debug("AwsSQSSender Thread {}", Thread.currentThread().getName());
     return amazonSQS.sendMessage(
-        new SendMessageRequest(awsProperties.getSqsAccessIpUrl(),
+        new SendMessageRequest(awsProperties.getSqsEndPoint() + "/" + awsProperties.getSqsAuditQueueName(),
             new Gson().toJson(accessAllowIpRequest))
-            .withMessageGroupId(groupId)
+                .withMessageGroupId(groupId)
             .withMessageDeduplicationId(UUID.randomUUID().toString())
     );
   }
@@ -53,9 +53,9 @@ public class AwsSQSSenderImpl<T> implements AwsSQSSender<T> {
     log.debug("AwsSQSSender Thread {}", Thread.currentThread().getName());
 
     return amazonSQS.sendMessage(
-        new SendMessageRequest(awsProperties.getSqsAuthorizationUrl(),
+        new SendMessageRequest(awsProperties.getSqsEndPoint() + "/" + awsProperties.getSqsAuthorizationQueueName(),
             new Gson().toJson(changeProgramString(authorizationResources)))
-            .withMessageGroupId(roleManagementId)
+                .withMessageGroupId(roleManagementId)
             .withMessageDeduplicationId(UUID.randomUUID().toString())
     );
   }
