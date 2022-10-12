@@ -69,8 +69,6 @@ public class LocalParameterStoreConfig {
         this.awsProperties.setIvKey(getParameterValue(awsProperties.getParamStoreIvName(), KMS_ALIAS_NAME));
         log.debug(">> DB Crypto:{}, {}, {}", this.awsProperties.getKmsKey(), this.awsProperties.getSaltKey(), this.awsProperties.getIvKey());
         this.awsProperties.setEmailSender(getParameterValue(awsProperties.getParamStoreMessageName(), MAIL_SENDER));
-        this.awsProperties.setSqsAccessIpUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_ACCESS_IP_URL));
-        this.awsProperties.setSqsAuthorizationUrl(getParameterValue(awsProperties.getParamStoreMessageName(), SQS_AUTHORIZATION_URL));
 
         this.awsProperties.setJwtSecretKey(getParameterValue(awsProperties.getParamStoreAuthName(), JWT_SECRET_KEY));
         this.awsProperties.setCryptoKey(getParameterValue(awsProperties.getParamCryptoName(), CRYPTO_KEY));
