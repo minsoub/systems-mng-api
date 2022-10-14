@@ -90,6 +90,7 @@ public class MailService implements MessageService {
     try {
       MailForm mailForm = MailForm.OTPFORM;
       String html = FileUtil.readResourceFile(mailForm.getPath());
+      log.info("send email => {}", emailAddress);
       log.info("send mail: " + html);
       html = html.replace("[BARCODE_IMAGE]", "<img src='"+barcodeUrl+"'>");
       html = html.replace("[LOGOURL]", mailProperties.getLogoUrl());

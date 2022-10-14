@@ -457,10 +457,11 @@ public class AccountService {
                                             if(accountRegisterRequest.getStatus().equals(Status.INIT_OTP_COMPLETE)){
                                                 // otp 메일 전송
                                                 log.info("send mail");
-                                                messageService.sendMail(accountRegisterRequest.getEmail(), otpResponse.getUrl());
+                                                messageService.sendMail(rsaCipherService.decryptRSA(accountRegisterRequest.getEmail(), privateKey), otpResponse.getUrl());
                                             }
                                         }).flatMap(tuple -> {
                                             AdminAccount acm = tuple.getT1();
+                                            log.info("acm => {}", acm);
                                             AdminAccess adminAccess = tuple.getT2();
                                             return roleManagementDomainService.findByRoleInIds(adminAccess.getRoles())
                                                     .flatMap(roleManagement -> Mono.just(AccountResponse.builder()
