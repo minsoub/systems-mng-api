@@ -488,28 +488,33 @@ public class AccountService {
    */
   public Mono<AccountResponse> updateAccountPassword(
       AccountUpdatePasswordRequest accountUpdatePasswordRequest, Account account) {
-    return adminAccountDomainService.findByEmail(AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getEmail()))
-        .flatMap(result -> {
-          var currentPassword = AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getCurrentPassword());
-          var newPassword = AES256Util.decryptAES(properties.getCryptoKey(), accountUpdatePasswordRequest.getNewPassword());
 
-          if (!passwordEncoder.matches(currentPassword, result.getPassword())) {
-            return Mono.error(new AccountException(FAIL_PASSWORD_UPDATE));
-          }
-          if(!isValidPassword(newPassword)) {
-            return Mono.error(new AccountException(INVALID_PASSWORD));
-          }
-          result.setPassword(passwordEncoder.encode(newPassword));
-          result.setOldPassword(passwordEncoder.encode(currentPassword));
-          result.setUpdateDate(LocalDateTime.now());
-          result.setUpdateAdminAccountId(account.getAccountId());
-          return adminAccountDomainService.update(result, account.getAccountId())
-              .flatMap(r -> Mono.just(AccountResponse.builder()
-                  .id(result.getId())
-                  .name(result.getName())
-                  .email(result.getEmail())
-                  .build()));
-        }).switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)));
+      return getRsaPrivateKey()
+              .flatMap(privateKey -> {
+                  return adminAccountDomainService.findByEmail(rsaCipherService.decryptRSA(accountUpdatePasswordRequest.getEmail(), privateKey))
+                          .flatMap(result -> {
+                              var currentPassword = rsaCipherService.decryptRSA( accountUpdatePasswordRequest.getCurrentPassword(), privateKey);
+                              var newPassword = rsaCipherService.decryptRSA(accountUpdatePasswordRequest.getNewPassword(), privateKey);
+
+                              if (!passwordEncoder.matches(currentPassword, result.getPassword())) {
+                                  return Mono.error(new AccountException(FAIL_PASSWORD_UPDATE));
+                              }
+                              if(!isValidPassword(newPassword)) {
+                                  return Mono.error(new AccountException(INVALID_PASSWORD));
+                              }
+                              result.setPassword(passwordEncoder.encode(newPassword));
+                              result.setOldPassword(passwordEncoder.encode(currentPassword));
+                              result.setUpdateDate(LocalDateTime.now());
+                              result.setUpdateAdminAccountId(account.getAccountId());
+                              return adminAccountDomainService.update(result, account.getAccountId())
+                                      .flatMap(r -> Mono.just(AccountResponse.builder()
+                                              .id(result.getId())
+                                              .name(result.getName())
+                                              .email(result.getEmail())
+                                              .build()));
+                          }).switchIfEmpty(Mono.error(new AccountException(NOT_EXIST_ACCOUNT)));
+              });
+
   }
 
 
