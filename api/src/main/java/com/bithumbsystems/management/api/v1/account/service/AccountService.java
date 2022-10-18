@@ -491,7 +491,7 @@ public class AccountService {
 
       return getRsaPrivateKey()
               .flatMap(privateKey -> {
-                  return adminAccountDomainService.findByEmail(rsaCipherService.decryptRSA(accountUpdatePasswordRequest.getEmail(), privateKey))
+                  return adminAccountDomainService.findByAdminAccountId(account.getAccountId()) //    findByEmail(rsaCipherService.decryptRSA(accountUpdatePasswordRequest.getEmail(), privateKey))
                           .flatMap(result -> {
                               var currentPassword = rsaCipherService.decryptRSA( accountUpdatePasswordRequest.getCurrentPassword(), privateKey);
                               var newPassword = rsaCipherService.decryptRSA(accountUpdatePasswordRequest.getNewPassword(), privateKey);
