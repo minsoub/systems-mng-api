@@ -6,7 +6,7 @@ metadata:
   labels:
     app: systems-mng-api
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: systems-mng-api
