@@ -1,0 +1,49 @@
+cloud:
+  aws:
+    credentials:
+      profile-name: ${aws.default.profile:eks-prod}
+      instanceProfile: true
+    stack:
+      auto: ${management.aws.stack.auto:false}
+    s3:
+      bucket: ${management.aws.s3.bucket:lrc-dev-bucket}
+    region:
+      static: ${management.aws.region:ap-northeast-2}
+      auto: ${management.aws.region.auto:false}
+    ssm:
+      endpoint: https://ssm.ap-northeast-2.amazonaws.com
+    ses:
+      endpoint: vpce-0268e56a68fbd82e0-ikatyjh3.email-smtp.ap-northeast-2.vpce.amazonaws.com
+      port: 2587
+    kms:
+      endpoint: https://kms.ap-northeast-2.amazonaws.com
+    param-store:
+      enabled: true
+      fail-fast: true
+      prefix: /smartadmin
+      doc-name: docdb
+      kms-name: kms
+      message-name: message
+      auth-name: auth
+      crypto-name: crypto
+      salt-name: salt
+      iv-name: iv
+    sqs:
+      endpoint: https://sqs.ap-northeast-2.amazonaws.com
+      audit:
+        queue-name: audit_log_queue_prod.fifo
+      authorization:
+        queue-name: authorization_queue_prod.fifo
+logging:
+  level:
+    root: ${management.api.logging.level.root:DEBUG}
+    org.springframework.data.convert.CustomConversions: ERROR
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: ${management.api.logging.level.mongo:INFO}
+    io:
+      spring:
+        cloud: INFO
