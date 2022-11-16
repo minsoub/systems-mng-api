@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -80,23 +81,26 @@ public class AutoGeneratorProgramConfig {
                   .getPatternString())
               .isUse(true)
               .description(operation.description())
+              .siteId(applicationProperties.getSiteId())
+              .createDate(LocalDateTime.now())
+              .createAdminAccountId(ACCOUNT_ID)
+              .id(PROGRAM_PREFIX + generateUUIDWithOutDash())
               .build();
         })
-        .forEach(
-            program -> existsRegisterUrls(program.getActionMethod().name(),
-                program.getActionUrl())
-                .filter(exists -> !exists)
-                .map(exist -> {
-                  program.setSiteId(applicationProperties.getSiteId());
-                  program.setCreateDate(LocalDateTime.now());
-                  program.setCreateAdminAccountId(ACCOUNT_ID);
-                  program.setId(PROGRAM_PREFIX + generateUUIDWithOutDash());
-                  return program;
-                }).flatMap(p -> {
-                  log.debug(">> register program : {}" , p.toString());
-                  return reactiveMongoTemplate.save(program);
-                }).subscribe()
-        );
+        .forEach(this::saveProgram);
+  }
+
+  public Disposable saveProgram(Program program) {
+    return existsRegisterUrls(program.getActionMethod().name(),
+        program.getActionUrl())
+        .filter(exists -> !exists)
+        .flatMap(p -> {
+          program.id = PROGRAM_PREFIX + generateUUIDWithOutDash();
+          program.createDate = LocalDateTime.now();
+          program.createAdminAccountId = ACCOUNT_ID;
+          log.debug(">> register program : {}", p.toString());
+          return reactiveMongoTemplate.save(program);
+        }).subscribe();
   }
 
   public Mono<Boolean> existsRegisterUrls(String method, String path) {

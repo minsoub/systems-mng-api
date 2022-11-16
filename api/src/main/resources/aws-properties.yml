@@ -33,3 +33,5 @@ cloud:
         queue-name: audit_log_queue_local.fifo
       authorization:
         queue-name: authorization_queue_local.fifo
+      program:
+        queue-name: program_queue_local.fifo
