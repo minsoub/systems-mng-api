@@ -82,6 +82,25 @@ logging:
 ---
 spring:
   config:
+    import: classpath:aws-properties-localstack.yml, classpath:springdoc.yml
+    activate:
+      on-profile: localstack
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: test
+application:
+  role-type: ADMIN
+  site-id: 62a15f4ae4129b518b133129
+mail:
+  logo-url: http://localhost:3000/images/maillogo.png
+  login-url: http://localhost:3000/
+logging:
+  config: classpath:logback-spring-local.xml
+---
+spring:
+  config:
     import: classpath:aws-properties-dev.yml, classpath:springdoc.yml
     activate:
       on-profile: dev

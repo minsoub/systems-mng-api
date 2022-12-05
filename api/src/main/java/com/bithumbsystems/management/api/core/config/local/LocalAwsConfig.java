@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 @Setter
 @Configuration
 @RequiredArgsConstructor
-@Profile("local")
+@Profile("local|localstack")
 public class LocalAwsConfig {
 
   @Value("${cloud.aws.credentials.profile-name}")
