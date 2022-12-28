@@ -34,6 +34,8 @@ cloud:
         queue-name: bs-audit_log_queue_qa.fifo
       authorization:
         queue-name: bs-authorization_queue_qa.fifo
+      program:
+        queue-name: bs-program_queue_qa.fifo
 logging:
   level:
     root: ${management.api.logging.level.root:DEBUG}

@@ -34,3 +34,5 @@ cloud:
         queue-name: bs-audit_log_queue_dev.fifo
       authorization:
         queue-name: bs-authorization_queue_dev.fifo
+      program:
+        queue-name: bs-program_queue_dev.fifo
